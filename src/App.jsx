@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Wiki from './pages/Wiki';
 import Download from './pages/Download';
 import Login from './pages/Login';
+import SuperAdmin from './pages/SuperAdmin';
 import './index.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/wiki" element={<Wiki />} />
             <Route path="/download" element={<Download />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/superadmin" element={<SuperAdmin />} />
           </Routes>
         </main>
 

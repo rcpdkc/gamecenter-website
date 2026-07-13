@@ -49,8 +49,12 @@ const Login = () => {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary w-full mt-2">
-            Giriş Yap <ChevronRight size={18} />
+          <button 
+            type="button" 
+            onClick={() => window.location.href = '/superadmin'}
+            className="btn btn-primary w-full mt-2"
+          >
+            Giriş Yap (Süper Admin) <ChevronRight size={18} />
           </button>
         </form>
         
