@@ -4,14 +4,14 @@ import Footer from './Footer';
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-bg-primary text-text-main font-sans relative">
+    <div className="min-h-screen bg-bg-primary text-text-main font-sans relative flex flex-col">
       {/* Global Background Orbs */}
       <div className="bg-glow-orb orb-1"></div>
       <div className="bg-glow-orb orb-2"></div>
       
       <Navbar />
       
-      <main>
+      <main className="flex-1 flex flex-col">
         <Outlet />
       </main>
       

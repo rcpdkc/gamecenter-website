@@ -218,7 +218,7 @@ const Wiki = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen pt-[72px] flex relative bg-bg-primary">
+    <div className="flex-1 w-full flex relative bg-bg-primary pt-[72px] md:pt-0">
       
       {/* MOBILE HEADER (Only visible on small screens) */}
       <div className="md:hidden fixed top-[72px] left-0 right-0 z-30 bg-[#12141d] border-b border-white/5 p-4 flex items-center justify-between">
