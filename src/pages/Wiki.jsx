@@ -88,25 +88,94 @@ const WIKI_ARTICLES = {
   ),
   "server-setup": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Sunucu Kurulumu</h1>
-      <p className="text-lg text-muted mb-8">Game Center'ın kalbi olan Sunucu (Server) yazılımının ana makineye kurulması.</p>
-      
-      <h2 className="text-2xl font-bold text-white mb-4 mt-8">1. Setup Dosyasını İndirin</h2>
-      <p className="text-muted mb-4">Download sayfasından "Server Installer" paketini indirin. Inno Setup ile hazırlanan bu paket tüm bağımlılıkları içerir.</p>
+      <h1 className="text-4xl font-bold text-white mb-4">Sistem Kurulumu</h1>
+      <p className="text-lg text-muted mb-10">Game Center'ın kalbi olan yazılımın ana makineye kurulması ve adım adım yapılandırma rehberi.</p>
 
-      <h2 className="text-2xl font-bold text-white mb-4 mt-8">2. Kurulumu Başlatın</h2>
-      <div className="bg-[#050608] border border-white/10 rounded-lg p-4 font-mono text-sm text-green-400 mb-6">
-        <div className="flex items-center gap-2 mb-2 text-gray-500 border-b border-white/10 pb-2">
-          <Terminal size={14} /> Terminal
+      <div className="space-y-12">
+        {/* Adım 1 */}
+        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-8xl font-black italic">1</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">1</span> 
+            Kurulumu Başlatın
+          </h2>
+          <p className="text-muted mb-6">İndirdiğiniz GameCenter Setup dosyasına (örn: GameCenter_Setup.exe) çift tıklayarak kurulumu başlatın. Yönetici onayı (UAC) isterse onaylayın.</p>
+          <img src="/images/setup_1.png" alt="Setup Ekranı 1" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
-        <p>1. GameCenter_Setup_v1.0.exe'yi Yönetici Olarak Çalıştırın</p>
-        <p>2. Kurulum dizinini seçin (Önerilen: D:\GameCenter_Server)</p>
-        <p>3. Kurulum bitince "Veritabanını Başlat" tikini işaretleyin.</p>
+
+        {/* Adım 2 */}
+        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-8xl font-black italic">2</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">2</span> 
+            Değişiklikleri İnceleyin
+          </h2>
+          <p className="text-muted mb-6">Yenilikler (Changelog) ekranını okuyabilir ve kurulacak sürüme ait en son eklenen yeni özellikleri ve notları görebilirsiniz.</p>
+          <img src="/images/setup_2_changelog.png" alt="Changelog" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+        </div>
+
+        {/* Adım 3 */}
+        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-8xl font-black italic">3</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">3</span> 
+            Bileşen Seçimi
+          </h2>
+          <p className="text-muted mb-6">GameCenter ana sistemi otomatik olarak seçilidir. Gereksiniminize göre diğer modülleri seçebilirsiniz.</p>
+          <img src="/images/setup_3_bilesen.png" alt="Bileşen Seçimi" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+        </div>
+
+        {/* Adım 4 */}
+        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-8xl font-black italic">4</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">4</span> 
+            Ağ & IP Ayarları
+          </h2>
+          <p className="text-muted mb-6">Sistemin kafedeki ağınızla sorunsuz iletişim kurabilmesi için sunucu makinenizin sabit IP adresini girmelisiniz. (Örn: 192.168.1.100)</p>
+          <img src="/images/setup_4_ip.png" alt="IP Ayarları" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+        </div>
+
+        {/* Adım 5 */}
+        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-8xl font-black italic">5</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">5</span> 
+            Kurulum Konumu
+          </h2>
+          <p className="text-muted mb-6">Kurulum yapılacak disk ve dizini seçin. Genellikle oyunlarınızı barındırdığınız veya geniş alana sahip ikincil bir disk olan D: veya E: sürücüsü tavsiye edilir.</p>
+          <img src="/images/setup_5_folder.png" alt="Kurulum Klasörü" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+        </div>
+
+        {/* Adım 6 */}
+        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-8xl font-black italic">6</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">6</span> 
+            Tamamlanıyor
+          </h2>
+          <p className="text-muted mb-6">Gerekli kısayolları eklemek isteyip istemediğinizi seçtikten sonra kurulumu hızlıca tamamlayabilirsiniz.</p>
+          <img src="/images/setup_6_kısayol.png" alt="Kısayol ve Son Adımlar" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+        </div>
       </div>
 
-      <div className="glass-panel p-6 border-l-4 border-l-emerald-500">
-         <h3 className="text-emerald-400 font-bold mb-2">Kurulum Sonrası İlk Çalıştırma</h3>
-         <p className="text-muted text-sm">Sunucu ilk açıldığında `gameserver.db` SQLite veritabanını otomatik oluşturur ve "admin" kullanıcısını tanımlar. Varsayılan şifre: <strong>admin</strong></p>
+      <div className="glass-panel p-6 border-l-4 border-l-emerald-500 mt-12">
+         <h3 className="text-emerald-400 font-bold mb-2 flex items-center gap-2"><CheckCircle2 size={20} /> Kurulum Sonrası İlk Çalıştırma</h3>
+         <p className="text-muted text-sm leading-relaxed">
+           Sunucu ilk açıldığında <code className="text-emerald-300 bg-emerald-500/10 px-1 py-0.5 rounded">gameserver.db</code> SQLite veritabanını otomatik oluşturur ve bulut bağlantısını sağlar. Tüm işlemler bittiğinde "admin" kullanıcı adıyla sisteme giriş yapabilirsiniz!
+         </p>
       </div>
     </div>
   ),
