@@ -23,6 +23,8 @@ const CoversPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadForm, setUploadForm] = useState({ game_name: '', files: null });
   const [uploadProgress, setUploadProgress] = useState({ active: false, total: 0, current: 0, success: 0, fail: 0 });
+  const [uploadLogs, setUploadLogs] = useState([]);
+  const cancelUploadRef = useRef(false);
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
 
@@ -58,14 +60,21 @@ const CoversPage = () => {
     e.preventDefault();
     if (!uploadForm.files || uploadForm.files.length === 0) return;
     
+    cancelUploadRef.current = false;
     const filesArray = Array.from(uploadForm.files);
     setUploading(true);
     setUploadProgress({ active: true, total: filesArray.length, current: 0, success: 0, fail: 0 });
+    setUploadLogs([]);
     
     let sCount = 0;
     let fCount = 0;
     
     for (let i = 0; i < filesArray.length; i++) {
+      if (cancelUploadRef.current) {
+        setUploadLogs(prev => [...prev, "🛑 Yükleme işlemi kullanıcı tarafından iptal edildi!"]);
+        break;
+      }
+      
       const f = filesArray[i];
       const finalGameName = uploadForm.game_name || f.name.replace(/\.[^/.]+$/, "");
       const fd = new FormData();
@@ -80,11 +89,14 @@ const CoversPage = () => {
         const data = await res.json();
         if (data.success) {
           sCount++;
+          setUploadLogs(prev => [...prev, `✅ ${f.name} başarıyla yüklendi.`]);
         } else {
           fCount++;
+          setUploadLogs(prev => [...prev, `❌ ${f.name} - Hata: ${data.error || 'Bilinmeyen Hata'}`]);
         }
       } catch (err) {
         fCount++;
+        setUploadLogs(prev => [...prev, `❌ ${f.name} - Ağ Hatası: ${err.message}`]);
       }
       
       setUploadProgress(prev => ({ ...prev, current: i + 1, success: sCount, fail: fCount }));
@@ -94,11 +106,11 @@ const CoversPage = () => {
     if (fileRef.current) fileRef.current.value = ''; 
     fetchCovers(); 
     
+    setUploading(false);
+    // Hide active bar after 5 seconds of finish, but keep logs visible until next upload.
     setTimeout(() => {
-      setUploadProgress({ active: false, total: 0, current: 0, success: 0, fail: 0 });
-      setUploading(false);
-      alert(`Toplu yükleme tamamlandı!\nBaşarılı: ${sCount}\nHatalı: ${fCount}${user.role !== 'admin' ? '\n(Onay bekleyenler panele eklendi)' : ''}`);
-    }, 500);
+      setUploadProgress(prev => ({ ...prev, active: false }));
+    }, 5000);
   };
 
   const handleDownload = (cover_url) => {
@@ -196,23 +208,64 @@ const CoversPage = () => {
             </button>
           </form>
 
-          {/* Progress Bar Display */}
-          {uploadProgress.active && (
+          {/* Progress Bar & Logs Display */}
+          {(uploadProgress.active || uploadLogs.length > 0) && (
             <div className="mt-6 pt-6 border-t border-white/5 relative z-10">
-              <div className="flex items-center justify-between text-xs font-semibold mb-2">
-                <span className="text-orange-400">Yükleniyor... ({uploadProgress.current} / {uploadProgress.total})</span>
-                <span className="text-white">{Math.round((uploadProgress.current / uploadProgress.total) * 100)}%</span>
-              </div>
-              <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-300"
-                  style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
-                ></div>
-              </div>
-              <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
-                <span className="text-emerald-500">Başarılı: {uploadProgress.success}</span>
-                {uploadProgress.fail > 0 && <span className="text-red-500">Hatalı: {uploadProgress.fail}</span>}
-              </div>
+              
+              {uploadProgress.active && (
+                <>
+                  <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                    <span className="text-orange-400">Yükleniyor... ({uploadProgress.current} / {uploadProgress.total})</span>
+                    <span className="text-white">{Math.round((uploadProgress.current / uploadProgress.total) * 100)}%</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden flex-shrink-0">
+                    <div 
+                      className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-300"
+                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex gap-4 text-[10px] text-gray-500">
+                      <span className="text-emerald-500">Başarılı: {uploadProgress.success}</span>
+                      {uploadProgress.fail > 0 && <span className="text-red-500">Hatalı: {uploadProgress.fail}</span>}
+                    </div>
+                    
+                    {/* İptal Butonu */}
+                    {uploading && (
+                      <button 
+                        onClick={() => { cancelUploadRef.current = true; }} 
+                        className="text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-1 rounded transition-colors"
+                      >
+                        İptal Et
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Log Window */}
+              {uploadLogs.length > 0 && (
+                <div className="mt-4 bg-black/50 border border-white/5 rounded-xl p-3 h-40 overflow-y-auto font-mono text-[11px] leading-relaxed flex flex-col-reverse">
+                  <div>
+                    {uploadLogs.map((log, idx) => (
+                      <div key={idx} className={`mb-1 ${log.includes('✅') ? 'text-emerald-400' : log.includes('🛑') ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Kapat / Temizle Butonu */}
+              {!uploading && uploadLogs.length > 0 && (
+                <button 
+                  onClick={() => { setUploadLogs([]); setUploadProgress({ active: false, total: 0, current: 0, success: 0, fail: 0 }); }}
+                  className="mt-3 w-full py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg text-xs font-semibold transition-colors"
+                >
+                  Günlükleri Temizle
+                </button>
+              )}
             </div>
           )}
         </div>
