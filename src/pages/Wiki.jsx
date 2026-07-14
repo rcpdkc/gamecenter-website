@@ -1,49 +1,239 @@
-import { BookOpen, Server, Monitor, Shield, Settings, Activity } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, Menu, Terminal, AlertTriangle, CheckCircle2 } from 'lucide-react';
+
+// --- WIKI CONTENT DATA ---
+const WIKI_STRUCTURE = [
+  {
+    section: "Başlangıç",
+    items: [
+      { id: "intro", title: "Game Center Nedir?", icon: <BookOpen size={16} /> },
+      { id: "requirements", title: "Sistem Gereksinimleri", icon: <CheckCircle2 size={16} /> },
+    ]
+  },
+  {
+    section: "Kurulum Rehberi",
+    items: [
+      { id: "server-setup", title: "Sunucu (Server) Kurulumu", icon: <Server size={16} /> },
+      { id: "client-setup", title: "İstemci (Client) Kurulumu", icon: <Monitor size={16} /> },
+    ]
+  },
+  {
+    section: "Gelişmiş Sistemler",
+    items: [
+      { id: "mklink", title: "MkLink / Ağdan Oyun Oynatma", icon: <Activity size={16} /> },
+      { id: "security", title: "Güvenlik & Otomasyon", icon: <Shield size={16} /> },
+      { id: "config", title: "Ayarlar ve Veritabanı", icon: <Settings size={16} /> },
+    ]
+  }
+];
+
+const WIKI_ARTICLES = {
+  "intro": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4">Game Center Nedir?</h1>
+      <p className="text-lg text-muted mb-8">
+        Game Center, internet kafeler ve e-spor merkezleri için geliştirilmiş, ultra hızlı ve modern bir oyun yönetim platformudur.
+      </p>
+      
+      <div className="glass-panel p-6 mb-8 border-l-4 border-l-blue-500">
+        <h3 className="text-white font-bold mb-2 flex items-center gap-2"><CheckCircle2 className="text-blue-500" /> Temel Mantık</h3>
+        <p className="text-muted text-sm">
+          Sistem iki parçadan oluşur: Ana makinede çalışan <strong>Server</strong> ve oyuncu bilgisayarlarında çalışan <strong>Client</strong>.
+          Kullanıcılar oyunlara Client üzerinden tıklar, Server bu verileri anlık olarak buluta ve yerel ağa işler.
+        </p>
+      </div>
+
+      <h2 className="text-2xl font-bold text-white mb-4 mt-8">Öne Çıkan Özellikler</h2>
+      <ul className="list-none space-y-3 text-muted">
+        <li className="flex items-start gap-2"><ChevronRight className="text-orange-500 shrink-0 mt-1" size={16} /> <strong>Smart Sync (Akıllı Senkronizasyon):</strong> Ağ trafiğini %90 oranında azaltarak sadece değişen resimleri yükler.</li>
+        <li className="flex items-start gap-2"><ChevronRight className="text-orange-500 shrink-0 mt-1" size={16} /> <strong>Dahili Sesli Sohbet (LAN):</strong> İnternet olmadan, UDP üzerinden çalışan Bas-Konuş telsiz sistemi.</li>
+        <li className="flex items-start gap-2"><ChevronRight className="text-orange-500 shrink-0 mt-1" size={16} /> <strong>Cloud Telemetry:</strong> Tüm şubelerin canlı verilerini Vercel Postgres üzerinden tek bir panelde birleştirir.</li>
+      </ul>
+    </div>
+  ),
+  "requirements": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4">Sistem Gereksinimleri</h1>
+      <p className="text-lg text-muted mb-8">Uygulamanın sorunsuz çalışması için hem Server hem de Client makinelerin belirli donanım seviyesinde olması gerekir.</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="glass-panel p-6">
+          <h3 className="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2">Sunucu (Server)</h3>
+          <ul className="space-y-2 text-muted text-sm">
+            <li><strong>İşletim Sistemi:</strong> Windows 10/11 veya Windows Server 2019+</li>
+            <li><strong>İşlemci:</strong> Minimum 4 Çekirdek (Intel i5 / Ryzen 5)</li>
+            <li><strong>RAM:</strong> 16 GB veya üzeri (Önbellekleme için)</li>
+            <li><strong>Ağ:</strong> 1 Gbps veya 10 Gbps Yerel Ağ Bağlantısı</li>
+          </ul>
+        </div>
+        <div className="glass-panel p-6">
+          <h3 className="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2">İstemci (Client)</h3>
+          <ul className="space-y-2 text-muted text-sm">
+            <li><strong>İşletim Sistemi:</strong> Windows 10/11 (64-bit)</li>
+            <li><strong>İşlemci:</strong> Çift Çekirdekli herhangi bir CPU</li>
+            <li><strong>RAM:</strong> 4 GB RAM (Uygulama ortalama 50MB kullanır)</li>
+            <li><strong>Ağ:</strong> 1 Gbps Yerel Ağ Bağlantısı</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div className="bg-orange-500/10 border border-orange-500/30 p-4 rounded-lg flex items-start gap-3">
+        <AlertTriangle className="text-orange-500 shrink-0 mt-1" size={20} />
+        <div>
+          <h4 className="text-orange-400 font-bold mb-1">Güvenlik Duvarı Uyarısı</h4>
+          <p className="text-orange-400/80 text-sm">Sunucu kurulumu sırasında Windows Güvenlik Duvarı'ndan (Firewall) TCP 5000 ve UDP 5001 portlarına izin verdiğinizden emin olun.</p>
+        </div>
+      </div>
+    </div>
+  ),
+  "server-setup": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4">Sunucu Kurulumu</h1>
+      <p className="text-lg text-muted mb-8">Game Center'ın kalbi olan Sunucu (Server) yazılımının ana makineye kurulması.</p>
+      
+      <h2 className="text-2xl font-bold text-white mb-4 mt-8">1. Setup Dosyasını İndirin</h2>
+      <p className="text-muted mb-4">Download sayfasından "Server Installer" paketini indirin. Inno Setup ile hazırlanan bu paket tüm bağımlılıkları içerir.</p>
+
+      <h2 className="text-2xl font-bold text-white mb-4 mt-8">2. Kurulumu Başlatın</h2>
+      <div className="bg-[#050608] border border-white/10 rounded-lg p-4 font-mono text-sm text-green-400 mb-6">
+        <div className="flex items-center gap-2 mb-2 text-gray-500 border-b border-white/10 pb-2">
+          <Terminal size={14} /> Terminal
+        </div>
+        <p>1. GameCenter_Setup_v1.0.exe'yi Yönetici Olarak Çalıştırın</p>
+        <p>2. Kurulum dizinini seçin (Önerilen: D:\GameCenter_Server)</p>
+        <p>3. Kurulum bitince "Veritabanını Başlat" tikini işaretleyin.</p>
+      </div>
+
+      <div className="glass-panel p-6 border-l-4 border-l-emerald-500">
+         <h3 className="text-emerald-400 font-bold mb-2">Kurulum Sonrası İlk Çalıştırma</h3>
+         <p className="text-muted text-sm">Sunucu ilk açıldığında `gameserver.db` SQLite veritabanını otomatik oluşturur ve "admin" kullanıcısını tanımlar. Varsayılan şifre: <strong>admin</strong></p>
+      </div>
+    </div>
+  ),
+  "mklink": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4">MkLink Sistemi (Smart Junction)</h1>
+      <p className="text-lg text-muted mb-8">Ağ üzerindeki oyun dosyalarını, sanki kullanıcının C:\ diski içindeymiş gibi gösteren sihirli otomasyon.</p>
+      
+      <p className="text-muted mb-6">
+        Özellikle Riot Games, Epic Games ve Save dosyaları C:\Users\AppData gibi spesifik dizinlerde çalışmaya programlanmıştır. Game Center, oyuna girilmeden saniyeler önce ağdaki bir klasörü veya DeepFreeze kurulu diski MkLink (Junction) ile yerel diske bağlar.
+      </p>
+
+      <h2 className="text-2xl font-bold text-white mb-4 mt-8">Örnek MkLink Kullanımı</h2>
+      <div className="bg-[#050608] border border-white/10 rounded-lg overflow-hidden mb-6">
+         <div className="bg-white/5 px-4 py-2 text-xs font-bold text-gray-400 border-b border-white/10">KOMUT SATIRI MANTIĞI</div>
+         <div className="p-4 font-mono text-sm text-blue-400">
+           <span className="text-gray-500"># Arka planda Client şu komutu çalıştırır:</span><br/>
+           mklink /J "C:\Users\Player\AppData\Local\Riot Games" "\\192.168.1.100\Oyunlar\Riot_AppData"
+         </div>
+      </div>
+      
+      <p className="text-muted mb-4">
+        Server üzerinden "Eklentiler" menüsüne girip <strong>MkLink</strong> profillerini yönetebilir ve oyunlara özel şablonlar atayabilirsiniz.
+      </p>
+    </div>
+  )
+};
+
+// Fallback for empty ones
+const getArticle = (id) => WIKI_ARTICLES[id] || (
+  <div className="animate-fade-in-up">
+    <h1 className="text-4xl font-bold text-white mb-4">İçerik Hazırlanıyor</h1>
+    <p className="text-muted">Bu dokümantasyon sayfası henüz yazılmadı. Lütfen daha sonra tekrar kontrol edin.</p>
+  </div>
+);
+
 
 const Wiki = () => {
-  const categories = [
-    { icon: <Server className="text-orange-500" />, title: "Sunucu Kurulumu", desc: "Game Center sunucusunu Windows Server veya Windows 10/11 makineye kurma adımları." },
-    { icon: <Monitor className="text-blue-500" />, title: "İstemci (Client) Ayarları", desc: "Kullanıcı bilgisayarlarına client yükleme, yetkilendirme ve arka plan hizmetleri." },
-    { icon: <BookOpen className="text-purple-500" />, title: "MkLink / Save Sistemi", desc: "Oyun dosyalarını ağdan veya SSD'den bağlayarak (Junction) %100 uyumlu çalıştırma rehberi." },
-    { icon: <Activity className="text-emerald-500" />, title: "OSD ve Monitör Yönetimi", desc: "Ağdaki tüm monitörlerin parlaklık ve kontrastını uzaktan (DDC/CI) kontrol etme." },
-    { icon: <Shield className="text-red-500" />, title: "Güvenlik ve Otomasyon", desc: "Steam, Epic Games oturumlarının otomatik kapatılması ve donanım limitleri belirleme." },
-    { icon: <Settings className="text-gray-400" />, title: "Gelişmiş Ayarlar", desc: "Veritabanı yedekleme, Port değiştirme ve sorun giderme işlemleri." }
-  ];
+  const [activeArticle, setActiveArticle] = useState("intro");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="pt-32 pb-20 min-h-screen">
-      <div className="container">
+    <div className="min-h-screen pt-[72px] flex relative bg-bg-primary">
+      
+      {/* MOBILE HEADER (Only visible on small screens) */}
+      <div className="md:hidden fixed top-[72px] left-0 right-0 z-30 bg-[#12141d] border-b border-white/5 p-4 flex items-center justify-between">
+        <span className="text-white font-bold flex items-center gap-2">
+          <BookOpen className="text-orange-500" size={18} /> Dokümantasyon Menüsü
+        </span>
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white/70 hover:text-white">
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* SIDEBAR */}
+      <aside className={`
+        fixed md:sticky top-[72px] md:top-[72px] left-0 h-[calc(100vh-72px)] 
+        w-72 bg-[#0a0b10] border-r border-white/5 p-6 overflow-y-auto
+        transition-transform duration-300 z-40
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Game Center <span className="text-accent-gradient">Wiki</span>
-          </h1>
-          <p className="text-lg text-muted max-w-2xl mx-auto">
-            Yazılımı en verimli şekilde kullanmanız için hazırlanan kapsamlı dokümantasyon ve kullanım kılavuzları.
-          </p>
+        <div className="relative mb-8 mt-12 md:mt-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+          <input 
+            type="text" 
+            placeholder="Dokümantasyonda ara..." 
+            className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-orange-500/50 transition-colors"
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((cat, i) => (
-            <div 
-              key={i} 
-              className="glass-panel p-6 hover:cursor-pointer group animate-fade-in-up"
-              style={{ animationDelay: `${0.1 * i}s` }}
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-orange-500/30 transition-all">
-                  {cat.icon}
-                </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-orange-400 transition-colors">{cat.title}</h3>
-              </div>
-              <p className="text-muted text-sm leading-relaxed">
-                {cat.desc}
-              </p>
+        <nav>
+          {WIKI_STRUCTURE.map((section, idx) => (
+            <div key={idx} className="mb-8">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                {section.section}
+              </h4>
+              <ul className="space-y-1">
+                {section.items.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => {
+                        setActiveArticle(item.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all text-left
+                        ${activeArticle === item.id 
+                          ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' 
+                          : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'}
+                      `}
+                    >
+                      {item.icon} {item.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
-        </div>
+        </nav>
+      </aside>
 
-      </div>
+      {/* OVERLAY FOR MOBILE */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-30 md:hidden" 
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-x-hidden pt-20 md:pt-10 px-6 md:px-16 pb-20 relative">
+        <div className="max-w-4xl mx-auto">
+          {getArticle(activeArticle)}
+          
+          {/* Bottom Navigation (Next/Prev placeholders) */}
+          <div className="mt-16 pt-8 border-t border-white/10 flex justify-between">
+            <button className="text-gray-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
+              Geri Dön
+            </button>
+            <button className="text-orange-400 hover:text-orange-300 text-sm font-bold flex items-center gap-1 transition-colors">
+              Sonraki Konu <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      </main>
+
     </div>
   );
 };
