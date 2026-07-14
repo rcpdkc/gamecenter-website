@@ -1,5 +1,5 @@
-import { Outlet, Navigate, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, LogOut, Activity } from 'lucide-react';
+import { Outlet, Navigate, useNavigate, Link } from 'react-router-dom';
+import { LayoutDashboard, Server, Settings, LogOut, Activity, Key } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const AdminLayout = () => {
@@ -36,12 +36,15 @@ const AdminLayout = () => {
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
-          <a href="/superadmin" className="flex items-center gap-3 px-4 py-3 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-lg font-medium transition-colors">
+          <Link to="/superadmin" className="flex items-center gap-3 px-4 py-3 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-lg font-medium transition-colors">
             <LayoutDashboard size={18} /> Dashboard
-          </a>
+          </Link>
           <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg font-medium transition-colors">
             <Activity size={18} /> Tüm Kafeler
           </button>
+          <Link to="/superadmin/references" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg font-medium transition-colors">
+            <Key size={18} /> Referans & Davet
+          </Link>
           <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg font-medium transition-colors">
             <Settings size={18} /> Ayarlar
           </button>

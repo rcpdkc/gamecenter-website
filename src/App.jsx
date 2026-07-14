@@ -5,7 +5,9 @@ import Home from './pages/Home';
 import Wiki from './pages/Wiki';
 import Download from './pages/Download';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import SuperAdmin from './pages/SuperAdmin';
+import References from './pages/References';
 import './index.css';
 
 function App() {
@@ -20,12 +22,14 @@ function App() {
           <Route path="/download" element={<Download />} />
         </Route>
 
-        {/* Standalone Login Page */}
+        {/* Standalone Auth Pages */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Protected Admin Pages with Sidebar */}
-        <Route element={<AdminLayout />}>
-          <Route path="/superadmin" element={<SuperAdmin />} />
+        <Route path="/superadmin" element={<AdminLayout />}>
+          <Route index element={<SuperAdmin />} />
+          <Route path="references" element={<References />} />
         </Route>
 
       </Routes>
