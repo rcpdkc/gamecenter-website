@@ -1,6 +1,6 @@
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image,
+  LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone,
   ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
@@ -14,6 +14,7 @@ const NAV_ITEMS_ADMIN = [
   { to: '/superadmin/groups', icon: Layers, label: 'Gruplar' },
   { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
   { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
+  { to: '/superadmin/announcements', icon: Megaphone, label: 'Duyurular' },
   { to: '/superadmin/settings', icon: Settings, label: 'Ayarlar' },
 ];
 
@@ -28,6 +29,7 @@ const PAGE_TITLES = {
   '/superadmin/groups': { title: 'Gruplar', subtitle: 'Üyelik gruplarını oluşturun ve yönetin' },
   '/superadmin/covers': { title: 'Cover Yönetimi', subtitle: 'Oyun kapaklarını yönetin ve onaylayın' },
   '/superadmin/references': { title: 'Referans & Davet', subtitle: 'Kafe davet kodları ve kayıt yönetimi' },
+  '/superadmin/announcements': { title: 'Global Duyurular', subtitle: 'Tüm kafelere sistem bildirimleri gönderin' },
   '/superadmin/settings': { title: 'Ayarlar', subtitle: 'Sistem tercihleri ve yapılandırma' },
 };
 
