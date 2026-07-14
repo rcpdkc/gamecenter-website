@@ -4,6 +4,7 @@ import MainLayout from './components/MainLayout';
 import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import Wiki from './pages/Wiki';
+import Gallery from './pages/Gallery';
 import Download from './pages/Download';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -23,6 +24,7 @@ function TitleUpdater() {
     const titles = {
       '/': 'Ana Sayfa - Game Center Plus',
       '/wiki': 'Wiki - Game Center Plus',
+      '/gallery': 'Galeri - Game Center Plus',
       '/download': 'İndir - Game Center Plus',
       '/login': 'Giriş Yap - Game Center Plus',
       '/register': 'Kayıt Ol - Game Center Plus',
@@ -50,6 +52,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/wiki" element={<Wiki />} />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/download" element={<Download />} />
         </Route>
 
