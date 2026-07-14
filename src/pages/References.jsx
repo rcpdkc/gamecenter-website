@@ -1,33 +1,42 @@
 import { useState, useEffect } from 'react';
-import { Key, Mail, Send, Loader2, CheckCircle2, Copy } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Clock } from 'lucide-react';
 
 const References = () => {
+  const context = useOutletContext() || {};
+  const dark = context.dark !== undefined ? context.dark : true;
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [refs, setRefs] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [newCode, setNewCode] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const bg = dark ? 'bg-[#111827]' : 'bg-white';
+  const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
+  const txt = dark ? 'text-white' : 'text-gray-900';
+  const sub = dark ? 'text-gray-500' : 'text-gray-400';
+  const inputBg = dark ? 'bg-white/5 border-white/10 text-white placeholder:text-gray-600' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400';
+  const divider = dark ? 'divide-white/5' : 'divide-gray-100';
+  const tableHead = dark ? 'bg-white/3 text-gray-500' : 'bg-gray-50 text-gray-400';
 
   const fetchReferences = async () => {
+    setFetching(true);
     try {
       const res = await fetch('/api/get_references');
       const data = await res.json();
       if (data.success) setRefs(data.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setFetching(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setFetching(false); }
   };
 
-  useEffect(() => {
-    fetchReferences();
-  }, []);
+  useEffect(() => { fetchReferences(); }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
+    setNewCode(null);
     try {
       const res = await fetch('/api/create_reference', {
         method: 'POST',
@@ -35,122 +44,167 @@ const References = () => {
         body: JSON.stringify({ email })
       });
       const data = await res.json();
-      if (data.success) {
-        setNewCode(data.code);
-        setEmail('');
-        fetchReferences();
-      } else {
-        alert(data.error);
-      }
-    } catch (err) {
-      alert("Hata oluştu.");
-    } finally {
-      setLoading(false);
-    }
+      if (data.success) { setNewCode(data.code); setEmail(''); fetchReferences(); }
+      else alert(data.error);
+    } catch { alert("Hata oluştu."); }
+    finally { setLoading(false); }
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
-    alert("Kopyalandı: " + text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
+
+  const used = refs.filter(r => r.is_used).length;
+  const pending = refs.filter(r => !r.is_used).length;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
-          <Key className="text-orange-500" /> Referans ve Davet Sistemi
-        </h1>
-        <p className="text-muted">Kafelere özel referans kodları üreterek sisteme güvenle dahil olmalarını sağlayın.</p>
+    <div className="space-y-6">
+      {/* Top Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: 'Toplam Kod', value: refs.length, color: 'text-blue-400', bg: dark ? 'bg-blue-500/10' : 'bg-blue-50' },
+          { label: 'Bekliyor', value: pending, color: 'text-emerald-400', bg: dark ? 'bg-emerald-500/10' : 'bg-emerald-50' },
+          { label: 'Kullanıldı', value: used, color: 'text-gray-400', bg: dark ? 'bg-white/5' : 'bg-gray-100' },
+        ].map(s => (
+          <div key={s.label} className={`${bg} border ${panelBorder} rounded-2xl p-4 shadow-sm`}>
+            <p className={`text-xs font-medium ${sub} mb-1`}>{s.label}</p>
+            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Create Code Section */}
-        <div className="md:col-span-1">
-          <div className="glass-panel p-6 border-t-4 border-t-orange-500">
-            <h3 className="text-lg font-bold text-white mb-4">Yeni Referans Üret</h3>
-            <form onSubmit={handleCreate}>
-              <label className="block text-sm text-gray-400 mb-2">Kafenin E-Posta Adresi</label>
-              <div className="relative mb-4">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                <input 
-                  type="email" 
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Create Code Panel */}
+        <div className={`xl:col-span-1 ${bg} border ${panelBorder} rounded-2xl p-6 shadow-sm`}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.25)]">
+              <Key size={18} className="text-white" />
+            </div>
+            <div>
+              <h3 className={`text-base font-bold ${txt}`}>Yeni Referans Üret</h3>
+              <p className={`text-xs ${sub}`}>E-postaya özel davet kodu</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div>
+              <label className={`block text-xs font-semibold ${sub} mb-1.5 uppercase tracking-wide`}>Kafenin E-Posta Adresi</label>
+              <div className="relative">
+                <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${sub}`} size={15} />
+                <input
+                  type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="kafe@mail.com"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-orange-500/50"
+                  className={`w-full border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`}
                 />
               </div>
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex justify-center items-center gap-2 transition-colors"
-              >
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} Üret ve Kaydet
-              </button>
-            </form>
+            </div>
 
-            {newCode && (
-              <div className="mt-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-center">
-                <p className="text-sm text-emerald-400 mb-1 flex justify-center items-center gap-1"><CheckCircle2 size={16} /> Kod Başarıyla Üretildi!</p>
-                <p className="font-mono text-xl font-bold text-white">{newCode}</p>
-                <button onClick={() => copyToClipboard(newCode)} className="mt-2 text-xs text-emerald-400/80 hover:text-emerald-400 flex justify-center items-center gap-1 mx-auto">
-                  <Copy size={12} /> Kopyala
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold py-2.5 px-4 rounded-xl text-sm flex justify-center items-center gap-2 transition-all shadow-[0_4px_15px_rgba(249,115,22,0.3)] disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+              {loading ? 'Üretiliyor...' : 'Üret ve Kaydet'}
+            </button>
+          </form>
+
+          {/* Success card */}
+          {newCode && (
+            <div className={`mt-5 p-4 rounded-xl border ${dark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200'}`}>
+              <p className="text-xs font-semibold text-emerald-400 flex items-center gap-1 mb-2">
+                <CheckCircle2 size={13} /> Kod Üretildi!
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 font-mono text-lg font-bold text-emerald-400">{newCode}</code>
+                <button
+                  onClick={() => copyToClipboard(newCode, 'new')}
+                  className="p-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-colors"
+                >
+                  {copiedId === 'new' ? <CheckCircle2 size={16} /> : <Copy size={16} />}
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* List Section */}
-        <div className="md:col-span-2">
-          <div className="glass-panel overflow-hidden">
-            <div className="p-4 bg-white/5 border-b border-white/10">
-              <h3 className="text-lg font-bold text-white">Geçmiş Referans Kodları</h3>
+              <p className="text-xs text-emerald-400/60 mt-1">Bu kodu kopyalayıp kafenizle paylaşın.</p>
             </div>
-            
-            {fetching ? (
-              <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-orange-500" /></div>
-            ) : refs.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Henüz hiç referans kodu üretilmedi.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-400">
-                  <thead className="text-xs text-gray-500 uppercase bg-black/20">
-                    <tr>
-                      <th className="px-6 py-3">E-Posta Adresi</th>
-                      <th className="px-6 py-3">Referans Kodu</th>
-                      <th className="px-6 py-3">Durum</th>
-                      <th className="px-6 py-3 text-right">İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {refs.map(ref => (
-                      <tr key={ref.id} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="px-6 py-4 text-white font-medium">{ref.email}</td>
-                        <td className="px-6 py-4 font-mono">{ref.code}</td>
-                        <td className="px-6 py-4">
-                          {ref.is_used ? (
-                            <span className="px-2 py-1 bg-gray-500/20 text-gray-400 rounded-full text-xs">Kullanıldı</span>
-                          ) : (
-                            <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">Bekliyor</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button onClick={() => copyToClipboard(ref.code)} className="text-gray-500 hover:text-white" title="Kopyala">
-                            <Copy size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
+        {/* Codes Table */}
+        <div className={`xl:col-span-2 ${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm`}>
+          <div className={`px-6 py-4 border-b ${panelBorder} flex items-center justify-between`}>
+            <div>
+              <h3 className={`text-base font-bold ${txt}`}>Tüm Referans Kodları</h3>
+              <p className={`text-xs ${sub} mt-0.5`}>Geçmiş ve bekleyen davetler</p>
+            </div>
+            <button
+              onClick={fetchReferences}
+              disabled={fetching}
+              className={`p-2 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
+            >
+              <RefreshCw size={15} className={fetching ? 'animate-spin' : ''} />
+            </button>
+          </div>
+
+          {fetching ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="animate-spin text-orange-500" size={24} />
+            </div>
+          ) : refs.length === 0 ? (
+            <div className={`py-16 text-center ${sub} text-sm`}>
+              <Key size={32} className="mx-auto mb-3 opacity-30" />
+              Henüz hiç referans kodu üretilmedi.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className={tableHead}>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">E-Posta</th>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Referans Kodu</th>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Durum</th>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-right">Kopyala</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${divider}`}>
+                  {refs.map(ref => (
+                    <tr key={ref.id} className={`transition-colors ${dark ? 'hover:bg-white/3' : 'hover:bg-gray-50'}`}>
+                      <td className={`px-6 py-3.5 font-medium ${txt}`}>{ref.email}</td>
+                      <td className="px-6 py-3.5">
+                        <code className={`font-mono font-bold text-sm ${dark ? 'text-orange-400' : 'text-orange-500'}`}>{ref.code}</code>
+                      </td>
+                      <td className="px-6 py-3.5">
+                        {ref.is_used ? (
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${dark ? 'bg-gray-500/10 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Kullanıldı
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Bekliyor
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3.5 text-right">
+                        {!ref.is_used && (
+                          <button
+                            onClick={() => copyToClipboard(ref.code, ref.id)}
+                            className={`p-2 rounded-lg transition-colors ${dark ? 'text-gray-500 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
+                          >
+                            {copiedId === ref.id ? <CheckCircle2 size={15} className="text-emerald-400" /> : <Copy size={15} />}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
