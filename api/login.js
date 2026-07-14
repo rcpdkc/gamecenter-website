@@ -81,7 +81,7 @@ export default async function handler(request, response) {
     // Fetch user with group info
     const { rows } = await sql`
       SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role, 
-             u.group_id, u.group_expires_at, u.cafe_id, u.hwid,
+             u.group_id, u.group_expires_at, u.cafe_id, u.hwid, u.created_at,
              g.name AS group_name, g.color AS group_color, g.permissions AS group_permissions
       FROM users u
       LEFT JOIN groups g ON u.group_id = g.id
