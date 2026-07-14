@@ -119,12 +119,27 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
 
           {/* Sağ Kolon - İzinler */}
           <div className="flex flex-col h-full">
-            <label className={`block text-xs font-semibold uppercase tracking-wider ${sub} mb-2`}>
-              Yerel Modül İzinleri 
-              <span className="ml-2 text-[10px] bg-orange-500/20 text-orange-500 px-2 py-0.5 rounded-full lowercase normal-case">
-                {permissions.length} seçili
-              </span>
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className={`block text-xs font-semibold uppercase tracking-wider ${sub}`}>
+                Yerel Modül İzinleri 
+                <span className="ml-2 text-[10px] bg-orange-500/20 text-orange-500 px-2 py-0.5 rounded-full lowercase normal-case">
+                  {permissions.length} seçili
+                </span>
+              </label>
+              <button 
+                type="button"
+                onClick={() => {
+                  if (permissions.length === LOCAL_MODULES.length) {
+                    setPermissions([]);
+                  } else {
+                    setPermissions(LOCAL_MODULES.map(m => m.id));
+                  }
+                }}
+                className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-all border ${permissions.length === LOCAL_MODULES.length ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20'}`}
+              >
+                {permissions.length === LOCAL_MODULES.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
+              </button>
+            </div>
             <div className={`border rounded-2xl p-4 flex-1 ${inputBg} overflow-y-auto h-[380px] grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 shadow-inner`}>
               {LOCAL_MODULES.map(mod => {
                 const isChecked = permissions.includes(mod.id);
