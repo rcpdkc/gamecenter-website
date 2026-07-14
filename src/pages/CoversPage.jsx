@@ -21,7 +21,7 @@ const CoversPage = () => {
   const [filter, setFilter] = useState('all');
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadForm, setUploadForm] = useState({ game_name: '', file: null });
+  const [uploadForm, setUploadForm] = useState({ game_name: '', files: null });
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
 
@@ -55,25 +55,30 @@ const CoversPage = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!uploadForm.game_name || !uploadForm.file) return;
+    if (!uploadForm.files || uploadForm.files.length === 0) return;
     setUploading(true);
+    let uploadedCount = 0;
     try {
-      const fd = new FormData();
-      fd.append('game_name', uploadForm.game_name);
-      fd.append('file', uploadForm.file);
-      fd.append('uploaded_by_id', user.id || '');
-      fd.append('uploaded_by_role', user.role || 'cafe');
-      fd.append('cafe_id', user.cafe_id || '');
-      const res = await fetch('/api/upload_cover', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (data.success) { 
-        setUploadForm({ game_name: '', file: null }); 
-        if (fileRef.current) fileRef.current.value = ''; 
-        fetchCovers(); 
-        if (user.role !== 'admin') alert('Cover başarıyla yüklendi, admin onayından sonra görünecektir.');
+      const filesArray = Array.from(uploadForm.files);
+      for (const f of filesArray) {
+        // If game_name is typed, use it. Otherwise, use filename without extension.
+        const finalGameName = uploadForm.game_name || f.name.replace(/\.[^/.]+$/, "");
+        const fd = new FormData();
+        fd.append('game_name', finalGameName);
+        fd.append('file', f);
+        fd.append('uploaded_by_id', user.id || '');
+        fd.append('uploaded_by_role', user.role || 'cafe');
+        fd.append('cafe_id', user.cafe_id || '');
+        const res = await fetch('/api/upload_cover', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) uploadedCount++;
       }
-      else alert(data.error);
-    } catch { alert('Yükleme başarısız.'); }
+      setUploadForm({ game_name: '', files: null }); 
+      if (fileRef.current) fileRef.current.value = ''; 
+      fetchCovers(); 
+      if (user.role !== 'admin') alert(`${uploadedCount} cover başarıyla yüklendi, admin onayından sonra görünecektir.`);
+      else alert(`${uploadedCount} cover başarıyla yüklendi!`);
+    } catch { alert('Yükleme sırasında hata oluştu.'); }
     finally { setUploading(false); }
   };
 
@@ -125,13 +130,12 @@ const CoversPage = () => {
           
           <form onSubmit={handleUpload} className="flex flex-col lg:flex-row gap-5 items-start lg:items-end relative z-10">
             <div className="flex-1 w-full lg:min-w-[250px]">
-              <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Adı</label>
+              <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Adı (Opsiyonel)</label>
               <input 
                 type="text" 
                 value={uploadForm.game_name} 
                 onChange={e => setUploadForm({ ...uploadForm, game_name: e.target.value })}
-                placeholder="Örn: Counter-Strike 2" 
-                required
+                placeholder="Örn: Valorant (Boş bırakırsanız dosya adı kullanılır)" 
                 className={`w-full border rounded-xl py-3.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`} 
               />
             </div>
@@ -139,24 +143,25 @@ const CoversPage = () => {
             <div className="flex-1 w-full lg:min-w-[300px]">
               <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Görseli (JPG/PNG/WEBP)</label>
               <div className={`relative flex items-center w-full border border-dashed rounded-xl overflow-hidden transition-all group ${
-                uploadForm.file ? 'border-orange-500/50 bg-orange-500/5' : `hover:border-orange-500/40 ${inputBg}`
+                uploadForm.files?.length > 0 ? 'border-orange-500/50 bg-orange-500/5' : `hover:border-orange-500/40 ${inputBg}`
               }`}>
                 <input 
                   ref={fileRef} 
                   type="file" 
+                  multiple
                   accept="image/jpeg,image/png,image/webp" 
                   required
-                  onChange={e => setUploadForm({ ...uploadForm, file: e.target.files[0] })}
+                  onChange={e => setUploadForm({ ...uploadForm, files: e.target.files })}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                 />
                 <div className="flex items-center gap-3 px-4 py-3.5 w-full pointer-events-none">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                    uploadForm.file ? 'bg-orange-500 text-white' : 'bg-gray-500/10 text-gray-500 group-hover:text-orange-400 group-hover:bg-orange-500/10'
+                    uploadForm.files?.length > 0 ? 'bg-orange-500 text-white' : 'bg-gray-500/10 text-gray-500 group-hover:text-orange-400 group-hover:bg-orange-500/10'
                   }`}>
-                    {uploadForm.file ? <CheckCircle2 size={16} /> : <Image size={16} />}
+                    {uploadForm.files?.length > 0 ? <CheckCircle2 size={16} /> : <Image size={16} />}
                   </div>
-                  <span className={`text-sm truncate font-medium ${uploadForm.file ? 'text-orange-500' : sub}`}>
-                    {uploadForm.file ? uploadForm.file.name : 'Görsel seçmek için tıklayın veya sürükleyin...'}
+                  <span className={`text-sm truncate font-medium ${uploadForm.files?.length > 0 ? 'text-orange-500' : sub}`}>
+                    {uploadForm.files?.length > 0 ? `${uploadForm.files.length} dosya seçildi` : 'Çoklu görsel seçmek için tıklayın veya sürükleyin...'}
                   </span>
                 </div>
               </div>
