@@ -1,5 +1,6 @@
 import { put } from '@vercel/blob';
 import { sql } from '@vercel/postgres';
+import fs from 'fs';
 
 export const config = { api: { bodyParser: false } };
 
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
     const fileObj = Array.isArray(file) ? file[0] : file;
     if (!fileObj) return res.status(400).json({ error: 'Dosya seçilmedi.' });
 
-    const { createReadStream, originalFilename, mimetype } = fileObj;
+    const { originalFilename, mimetype, filepath } = fileObj;
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(mimetype)) {
       return res.status(400).json({ error: 'Sadece JPEG, PNG veya WebP formatları desteklenir.' });
     }
@@ -42,7 +43,7 @@ export default async function handler(req, res) {
     const ext = originalFilename.split('.').pop();
     const blobName = `covers/${Date.now()}_${game_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
 
-    const blob = await put(blobName, createReadStream(), {
+    const blob = await put(blobName, fs.createReadStream(filepath), {
       access: 'public',
       contentType: mimetype
     });
