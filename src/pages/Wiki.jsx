@@ -300,10 +300,10 @@ const Wiki = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex-1 w-full flex relative bg-bg-primary pt-[72px] md:pt-0">
+    <div className="flex-1 w-full flex relative bg-bg-primary pt-[80px] md:pt-0">
       
       {/* MOBILE HEADER */}
-      <div className="md:hidden fixed top-[72px] left-0 right-0 z-30 bg-[#12141d] border-b border-white/5 p-4 flex items-center justify-between">
+      <div className="md:hidden fixed top-[80px] left-0 right-0 z-30 bg-[#12141d] border-b border-white/5 p-4 flex items-center justify-between">
         <span className="text-white font-bold flex items-center gap-2">
           <BookOpen className="text-orange-500" size={18} /> Dokümantasyon Menüsü
         </span>
@@ -314,7 +314,7 @@ const Wiki = () => {
 
       {/* SIDEBAR */}
       <aside className={`
-        fixed md:sticky top-[72px] md:top-[72px] left-0 h-[calc(100vh-72px)] 
+        fixed md:sticky top-[80px] md:top-[80px] left-0 h-[calc(100vh-80px)] 
         w-72 bg-[#0a0b10] border-r border-white/5 p-6 overflow-y-auto
         transition-transform duration-300 z-40
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -369,7 +369,7 @@ const Wiki = () => {
       )}
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-x-hidden pt-20 md:pt-10 px-6 md:px-16 pb-20 relative">
+      <main className="flex-1 overflow-x-hidden pt-24 md:pt-28 px-6 md:px-16 pb-20 relative">
         <div className="w-full max-w-7xl mx-auto">
           {getArticle(activeArticle)}
           
