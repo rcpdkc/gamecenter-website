@@ -81,6 +81,15 @@ const CoversPage = () => {
       }
       
       const f = filesArray[i];
+
+      // Vercel Serverless Function Limit Check (4.5 MB)
+      if (f.size > 4.5 * 1024 * 1024) {
+        fCount++;
+        setUploadLogs(prev => [...prev, `❌ ${f.name} - Hata: Dosya boyutu 4.5 MB'dan büyük olamaz.`]);
+        setUploadProgress(prev => ({ ...prev, current: i + 1, success: sCount, fail: fCount }));
+        continue;
+      }
+
       const finalGameName = uploadForm.game_name || f.name.replace(/\.[^/.]+$/, "");
       const fd = new FormData();
       fd.append('game_name', finalGameName);
@@ -91,10 +100,20 @@ const CoversPage = () => {
       
       try {
         const res = await fetch('/api/upload_cover', { method: 'POST', body: fd });
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (parseError) {
+          throw new Error(res.status === 413 ? 'Dosya çok büyük (413)' : `Sunucu Hatası: ${res.statusText}`);
+        }
+        
         if (data.success) {
           sCount++;
-          setUploadLogs(prev => [...prev, `✅ ${f.name} başarıyla yüklendi.`]);
+          if (data.skipped) {
+            setUploadLogs(prev => [...prev, `⏩ ${f.name} (Zaten Yüklü)`]);
+          } else {
+            setUploadLogs(prev => [...prev, `✅ ${f.name} başarıyla yüklendi.`]);
+          }
         } else {
           fCount++;
           setUploadLogs(prev => [...prev, `❌ ${f.name} - Hata: ${data.error || 'Bilinmeyen Hata'}`]);
