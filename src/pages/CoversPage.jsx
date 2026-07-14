@@ -34,6 +34,7 @@ const CoversPage = () => {
   // Duplicate Detection State
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCovers, setSelectedCovers] = useState([]);
 
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
@@ -64,6 +65,16 @@ const CoversPage = () => {
     if (!confirm('Bu cover\'ı silmek istediğinize emin misiniz?')) return;
     setCovers(prev => prev.filter(c => c.id !== id));
     await fetch('/api/covers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`${selectedCovers.length} adet görseli silmek istediğinize emin misiniz?`)) return;
+    const idsToDelete = [...selectedCovers];
+    setSelectedCovers([]);
+    setCovers(prev => prev.filter(c => !idsToDelete.includes(c.id)));
+    await Promise.all(idsToDelete.map(id => 
+      fetch('/api/covers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    ));
   };
 
   const handleUpload = async (e) => {
@@ -191,6 +202,19 @@ const CoversPage = () => {
             <img src={preview.file_url} alt={preview.game_name} className="w-full rounded-2xl object-cover shadow-2xl" />
             <p className="text-white text-center mt-3 font-semibold">{preview.game_name}</p>
           </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Bar */}
+      {selectedCovers.length > 0 && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[55] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-top-4">
+          <span className="font-bold text-sm">{selectedCovers.length} kapak seçildi</span>
+          <button onClick={handleBulkDelete} className="bg-white/20 hover:bg-white/30 px-4 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
+            <Trash2 size={16} /> Sil
+          </button>
+          <button onClick={() => setSelectedCovers([])} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
+            <XCircle size={18} />
+          </button>
         </div>
       )}
 
@@ -408,7 +432,17 @@ const CoversPage = () => {
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-4">
             {filtered.map(cover => (
-              <div key={cover.id} className={`${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm group`}>
+              <div key={cover.id} className={`${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm group relative`}>
+                <div className="absolute top-2 right-2 z-10">
+                  <input type="checkbox" 
+                    checked={selectedCovers.includes(cover.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedCovers(prev => [...prev, cover.id]);
+                      else setSelectedCovers(prev => prev.filter(id => id !== cover.id));
+                    }}
+                    className="w-5 h-5 cursor-pointer accent-rose-500 bg-black/50 border-white/20 rounded shadow-sm"
+                  />
+                </div>
                 <div className="relative aspect-[3/4] bg-black overflow-hidden cursor-pointer" onClick={() => setPreview(cover)}>
                   <img src={cover.file_url} alt={cover.game_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -442,25 +476,15 @@ const CoversPage = () => {
                       <Clock size={11} />{new Date(cover.created_at).toLocaleDateString('tr-TR')}
                     </span>
                   </div>
-                  <p className={`text-xs ${sub} mb-2`}>
-                    {cover.uploaded_by_role === 'admin' ? '🔑 Admin' : `📍 Kafe`}
-                  </p>
                   {/* Action buttons */}
-                  <div className="flex gap-1">
-                    {user.role === 'admin' && cover.status !== 'approved' && (
+                  {user.role === 'admin' && cover.status !== 'approved' && (
+                    <div className="flex gap-1 mt-2">
                       <button onClick={() => handleStatus(cover.id, 'approved')}
                         className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-1">
                         <CheckCircle2 size={11} /> Onayla
                       </button>
-                    )}
-
-                    {user.role === 'admin' && (
-                      <button onClick={() => handleDelete(cover.id)}
-                        className={`p-1.5 rounded-lg text-xs transition-colors ${dark ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}>
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
