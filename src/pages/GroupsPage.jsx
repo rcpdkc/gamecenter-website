@@ -59,68 +59,87 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className={`w-full max-w-md rounded-2xl border shadow-2xl p-6 ${modalBg}`}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-lg font-bold ${txt}`}>{group ? 'Grubu Düzenle' : 'Yeni Grup Oluştur'}</h3>
-          <button onClick={onClose} className={`p-2 rounded-xl ${dark ? 'hover:bg-white/5 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}><X size={18} /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className={`w-full max-w-4xl rounded-2xl border shadow-2xl p-8 ${modalBg} animate-in zoom-in-95 duration-200`}>
+        <div className="flex items-center justify-between mb-8 border-b pb-4 border-white/5">
+          <div>
+            <h3 className={`text-xl font-bold ${txt}`}>{group ? 'Grubu Düzenle' : 'Yeni Grup Oluştur'}</h3>
+            <p className={`text-xs ${sub} mt-1`}>Kullanıcıları sınıflandırmak ve yetkilerini yönetmek için bir grup tanımlayın.</p>
+          </div>
+          <button onClick={onClose} className={`p-2 rounded-xl transition-all ${dark ? 'hover:bg-white/5 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`}><X size={20} /></button>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-1.5`}>Grup Adı *</label>
-            <input
-              type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder="örn: Altın Üye, VIP Kafe..."
-              className={`w-full border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 ${inputBg}`}
-            />
-          </div>
-          <div>
-            <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-1.5`}>Açıklama</label>
-            <textarea
-              value={description} onChange={e => setDescription(e.target.value)} rows={2}
-              placeholder="Bu grubun kısa açıklaması..."
-              className={`w-full border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 resize-none ${inputBg}`}
-            />
-          </div>
-          <div>
-            <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>Rozet Rengi</label>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_COLORS.map(c => (
-                <button
-                  key={c} onClick={() => setColor(c)}
-                  className={`w-8 h-8 rounded-lg transition-all ${color === c ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110' : ''}`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-            <div className="mt-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg shrink-0" style={{ backgroundColor: color }} />
-              <input type="text" value={color} onChange={e => setColor(e.target.value)}
-                className={`flex-1 border rounded-lg py-1.5 px-3 text-xs font-mono focus:outline-none ${inputBg}`}
-                placeholder="#f97316"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {/* Sol Kolon - Temel Bilgiler */}
+          <div className="space-y-5">
+            <div>
+              <label className={`block text-xs font-semibold uppercase tracking-wider ${sub} mb-2`}>Grup Adı *</label>
+              <input
+                type="text" value={name} onChange={e => setName(e.target.value)}
+                placeholder="örn: Altın Üye, VIP Kafe..."
+                className={`w-full border rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`}
               />
+            </div>
+            <div>
+              <label className={`block text-xs font-semibold uppercase tracking-wider ${sub} mb-2`}>Açıklama</label>
+              <textarea
+                value={description} onChange={e => setDescription(e.target.value)} rows={3}
+                placeholder="Bu grubun kısa açıklaması..."
+                className={`w-full border rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 resize-none transition-all ${inputBg}`}
+              />
+            </div>
+            <div>
+              <label className={`block text-xs font-semibold uppercase tracking-wider ${sub} mb-3`}>Rozet Rengi</label>
+              <div className="flex flex-wrap gap-2.5">
+                {PRESET_COLORS.map(c => (
+                  <button
+                    key={c} onClick={() => setColor(c)}
+                    className={`w-9 h-9 rounded-xl transition-all shadow-sm ${color === c ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110' : 'hover:scale-105'}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              <div className="mt-4 flex items-center gap-3 bg-black/20 p-2 rounded-xl border border-white/5">
+                <div className="w-8 h-8 rounded-lg shrink-0 shadow-inner" style={{ backgroundColor: color }} />
+                <input type="text" value={color} onChange={e => setColor(e.target.value)}
+                  className={`flex-1 bg-transparent py-1 px-2 text-sm font-mono focus:outline-none ${txt}`}
+                  placeholder="#f97316"
+                />
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className={`p-4 rounded-xl mt-2 ${dark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-200'} flex items-center gap-4`}>
+              <span className={`text-xs font-semibold uppercase ${sub}`}>Canlı Önizleme:</span>
+              <span className="px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-sm" style={{ backgroundColor: color }}>
+                {name || 'Grup Adı'}
+              </span>
             </div>
           </div>
 
-          {/* Permissions Selector */}
-          <div>
-            <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>Yerel Modül İzinleri</label>
-            <div className={`border rounded-xl p-3 ${inputBg} max-h-[160px] overflow-y-auto grid grid-cols-2 gap-2`}>
+          {/* Sağ Kolon - İzinler */}
+          <div className="flex flex-col h-full">
+            <label className={`block text-xs font-semibold uppercase tracking-wider ${sub} mb-2`}>
+              Yerel Modül İzinleri 
+              <span className="ml-2 text-[10px] bg-orange-500/20 text-orange-500 px-2 py-0.5 rounded-full lowercase normal-case">
+                {permissions.length} seçili
+              </span>
+            </label>
+            <div className={`border rounded-2xl p-4 flex-1 ${inputBg} overflow-y-auto h-[380px] grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 shadow-inner`}>
               {LOCAL_MODULES.map(mod => {
                 const isChecked = permissions.includes(mod.id);
                 return (
-                  <label key={mod.id} className="flex items-center gap-2 cursor-pointer group">
+                  <label key={mod.id} className={`flex items-center gap-3 cursor-pointer p-2 rounded-xl transition-all ${isChecked ? (dark ? 'bg-white/10' : 'bg-gray-200') : 'hover:bg-white/5'}`}>
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={(e) => {
-                        if (e.target.checked) setPermissions([...permissions, mod.id]);
-                        else setPermissions(permissions.filter(p => p !== mod.id));
+                         if (e.target.checked) setPermissions([...permissions, mod.id]);
+                         else setPermissions(permissions.filter(p => p !== mod.id));
                       }}
-                      className="rounded border-gray-400 focus:ring-orange-500 text-orange-500 w-4 h-4 cursor-pointer"
+                      className="rounded border-gray-500 focus:ring-orange-500 text-orange-500 w-4 h-4 cursor-pointer"
                     />
-                    <span className={`text-xs ${isChecked ? txt : sub} group-hover:${txt} transition-colors select-none`}>
+                    <span className={`text-sm font-medium ${isChecked ? txt : sub} transition-colors select-none`}>
                       {mod.label}
                     </span>
                   </label>
@@ -128,22 +147,13 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
               })}
             </div>
           </div>
-
-
-          {/* Preview */}
-          <div className={`p-3 rounded-xl ${dark ? 'bg-white/5' : 'bg-gray-50'} flex items-center gap-3`}>
-            <span className={`text-xs ${sub}`}>Önizleme:</span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: color }}>
-              {name || 'Grup Adı'}
-            </span>
-          </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${dark ? 'border-white/10 text-gray-400 hover:bg-white/5' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>İptal</button>
+        <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-white/5">
+          <button onClick={onClose} className={`px-6 py-2.5 rounded-xl text-sm font-bold border transition-colors ${dark ? 'border-white/10 text-gray-400 hover:bg-white/10 hover:text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-100'}`}>İptal</button>
           <button onClick={handleSave} disabled={saving || !name.trim()}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-orange-500 to-orange-600 text-white flex items-center justify-center gap-2 disabled:opacity-60 shadow-[0_4px_15px_rgba(249,115,22,0.3)]">
-            {saving ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
+            className="px-8 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-lg shadow-orange-500/20">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
         </div>
