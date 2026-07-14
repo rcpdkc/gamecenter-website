@@ -153,8 +153,6 @@ const WIKI_ARTICLES = {
         Dashboard, tüm sistemin kalbinin attığı yerdir. Kafedeki toplam işleyişi, açık olan masaları, oyuncu sayılarını ve sistemdeki donanımsal alarmları tek bir bakışta görebileceğiniz merkezi operasyon üssüdür. Python API üzerinden `/api/stats` endpoint'ine saniyede bir milisaniyelik pingler atarak (Polling) ekranı canlı tutar.
       </p>
       
-      <img src="/images/mod_dashboard.png" alt="Dashboard" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
-      
       <h3 className="text-2xl font-bold text-white mb-3">Teknik Özellikler ve Mimari</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
         Üst kısımda yer alan widget'lar doğrudan SQLite veritabanındaki <code>clients</code> tablosundan anlık olarak hesaplanır. <code>status="online"</code> olan bilgisayarlar toplanıp aktif bilgisayarlar grafiğini oluştururken, içerisinde açık bir oyun prosesi tespit edilen masalar "Oyunda" grafiğine dahil olur. Sağ taraftaki "Sistem Uyarıları" paneli ise WebSocket üzerinden gelen CPU ısınma veya Ping düşmesi gibi telemetri hatalarını anında ekrana basar.
@@ -341,8 +339,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         Müşteri (Oyuncu) bilgisayara oturduğunda Game Center arayüzünü açtığı an karşısına çıkan "Popüler / Önerilenler" vitrinini yönettiğiniz ekrandır.
       </p>
-
-      <img src="/images/mod_favorites.png" alt="Favori Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Dinamik Sıralama Mekanizması (Drag & Drop)</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -366,8 +362,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         Büyük ölçekli internet kafelerde (veya E-spor arenalarında) sadece bir patron (Admin) yoktur. Kasada duran elemanların (Personel), sadece belli modüllere girmesini sağlamak için tasarlanmış Çoklu-Kullanıcı (Multi-User) güvenlik sistemidir.
       </p>
-
-      <img src="/images/mod_users.png" alt="Kullanıcılar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Kriptolojik Şifreleme ve Roller</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -392,8 +386,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         Game Center'ın en devrimsel özelliklerinden birinin kumanda merkezi! Oyuncular "Cyberpunk 2077" oynayıp kalktıktan sonra ertesi gün farklı bir masaya oturduklarında Save dosyaları otomatik olarak gelir. Yöneticiler bu paneli kullanarak sunucuya biriken save dosyalarını denetler.
       </p>
-
-      <img src="/images/mod_saves.png" alt="Oyun Kayıt" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Teknik Altyapı ve Sıkıştırma</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -421,8 +413,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         Sistemin kategorik altyapısının ayarlandığı temel modül. Oyun türlerini (FPS, RPG, Spor) ve genel tanımları burada oluşturup Oyunlar sekmesinde kullanmak üzere hazır edersiniz.
       </p>
-
-      <img src="/images/mod_definitions.png" alt="Tanimlamalar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">İlişkisel Veritabanı Modeli</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -440,8 +430,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         Game Center'ı kapalı kutu bir sistem olmaktan çıkarıp, harici geliştiricilerin kendi kodlarını entegre etmesini sağlayan (Modülerlik) bölüm. Dışarıdan yazdığınız Python Scriptlerini veya Node.js botlarını Game Center'a bağlayabilirsiniz.
       </p>
-
-      <img src="/images/mod_plugins.png" alt="Plugins" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Örnek Senaryo: Discord Rich Presence</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -486,8 +474,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         Devasa ağlarda 150 bilgisayarı tek tek güncelleyemezsiniz. Bu modül, sunucu makineye (Server) yeni bir Client (İstemci) sürümü çıktığında (Örn: v2.1'den v2.2'ye) kafedeki tüm makinelere bir tuşla yayılmasını sağlar.
       </p>
-
-      <img src="/images/mod_updates.png" alt="Updates" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Push & Replace Mekanizması</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -505,8 +491,6 @@ const WIKI_ARTICLES = {
       <p className="text-gray-300 mb-6 leading-relaxed">
         İnternet kafenizde çocukların oturduğu bölümler için veya denetimler/baskınlar sırasında anında "Şiddet içerikli" veya "Kumar" bazlı oyunların ekrandan tamamen silinmesini sağlayan panik butonudur.
       </p>
-
-      <img src="/images/mod_filters.png" alt="Filtreli Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Live Rerender Altyapısı</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
