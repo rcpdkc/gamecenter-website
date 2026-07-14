@@ -179,7 +179,7 @@ const WIKI_ARTICLES = {
         Kafe içerisindeki tüm bilgisayarların (İstemciler) IP, MAC Adresi, Anakart kimliği ve donanım limitleri gibi devasa bir envanterinin tutulduğu merkez üssüdür. Yeni bir bilgisayar Game Center uygulamasını açtığı an, UDP Broadcast ile sunucuyu bulur ve bu listeye adeta bir ajan gibi sızarak kendini kaydeder.
       </p>
 
-      <img src="/images/mod_clients.png" alt="Clients" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      <img src="/images/bilgisayarlar.png" alt="Clients" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Donanım Hükmü ve Uzaktan Kontrol</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -238,7 +238,7 @@ const WIKI_ARTICLES = {
         Bu ekran, internet kafenin donanımsal olarak adeta EKG çekildiği yerdir. `LibreHardwareMonitorLib` kütüphanesi ile her saniye masaların Anakartlarına (WMI) bağlanılıp donanım sensörleri okunur. Bu veriler (Isı, RAM Tüketimi, CPU Yükü) Python WebSocket sunucusuna pompalanır.
       </p>
 
-      <img src="/images/mod_monitor_live.png" alt="Canli Monitor" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      <img src="/images/canlimonitör.png" alt="Canli Monitor" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Matrix Benzeri Veri Akışı</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -264,7 +264,7 @@ const WIKI_ARTICLES = {
         Canlı Monitör saniyelik değerleri gösterirken, OSD (On-Screen-Display) Grafikleri geçmişe dönük analiz yapar. Bir müşteri "Abi bilgisayar donuyor!" dediğinde, yöneticinin sadece bu ekrana girip geçmiş yarım saatlik CPU/RAM grafiğine bakması teşhis için yeterlidir.
       </p>
 
-      <img src="/images/mod_monitor_osd.png" alt="Monitor OSD" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      <img src="/images/monitorgrafik.png" alt="Monitor OSD" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Recharts Entegrasyonu</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -290,7 +290,7 @@ const WIKI_ARTICLES = {
         Tüm kafenin internet hattını (Download/Upload) kimin ne kadar sömürdüğünü gösteren saniyelik bir radar ekranıdır. Oyun indiren veya arkada güncelleme yapan bir müşteriyi eliyle koymuş gibi bulmak için mükemmel bir araçtır.
       </p>
 
-      <img src="/images/mod_network.png" alt="Ağ İzleme" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      <img src="/images/agizleme.png" alt="Ağ İzleme" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">WMI İnterface Okuması</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -316,7 +316,7 @@ const WIKI_ARTICLES = {
         Sistemin ana omurgası! Kafede bulunan binlerce oyunun (Steam, Epic, Valorant, GTA) yerel ağa tanıtıldığı, kapak fotoğraflarının işlendiği ve Exe dosya yollarının (Path) atandığı devasa bir CRUD (Create, Read, Update, Delete) ekranıdır.
       </p>
 
-      <img src="/images/mod_games.png" alt="Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      <img src="/images/oyunlar.png" alt="Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Parametrik Başlatıcı (Launcher) Mantığı</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
@@ -460,7 +460,7 @@ const WIKI_ARTICLES = {
         C: diskini patlamaktan kurtaran efsanevi Windows NT altyapısı! Bazı inatçı oyunlar dosyalarını zorla <code>%APPDATA%</code> veya <code>Belgelerim</code> klasörüne yazar. Eğer kafenin C: diski (SSD) dolarsa, tüm sistem çöker. Bu modül tam olarak bu belayı kökünden çözmek için var.
       </p>
 
-      <img src="/images/mod_mklinks.png" alt="MkLinks" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      <img src="/images/mklink.png" alt="MkLinks" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
       
       <h3 className="text-2xl font-bold text-white mb-3">Sembolik Bağ (Junction Point) İşleyişi</h3>
       <p className="text-gray-300 mb-6 leading-relaxed">
