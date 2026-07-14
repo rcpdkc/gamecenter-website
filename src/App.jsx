@@ -11,7 +11,7 @@ import './index.css';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-bg-primary text-text-main font-sans relative overflow-x-hidden">
+      <div className="min-h-screen bg-bg-primary text-text-main font-sans relative">
         
         {/* Global Background Orbs */}
         <div className="bg-glow-orb orb-1"></div>
