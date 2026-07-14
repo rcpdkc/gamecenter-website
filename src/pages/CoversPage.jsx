@@ -406,7 +406,7 @@ const CoversPage = () => {
             <p className={`text-sm ${sub}`}>Bu kategoride cover bulunamadı.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-4">
             {filtered.map(cover => (
               <div key={cover.id} className={`${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm group`}>
                 <div className="relative aspect-[3/4] bg-black overflow-hidden cursor-pointer" onClick={() => setPreview(cover)}>
@@ -453,18 +453,7 @@ const CoversPage = () => {
                         <CheckCircle2 size={11} /> Onayla
                       </button>
                     )}
-                    {user.role === 'admin' && cover.status !== 'rejected' && (
-                      <button onClick={() => handleStatus(cover.id, 'rejected')}
-                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex items-center justify-center gap-1">
-                        <XCircle size={11} /> Reddet
-                      </button>
-                    )}
-                    {cover.status === 'approved' && (
-                      <button onClick={() => handleDownload(cover.file_url)}
-                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors flex items-center justify-center gap-1">
-                        <Download size={11} /> İndir
-                      </button>
-                    )}
+
                     {user.role === 'admin' && (
                       <button onClick={() => handleDelete(cover.id)}
                         className={`p-1.5 rounded-lg text-xs transition-colors ${dark ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}>
