@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss } from 'lucide-react';
+import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss } from 'lucide-react';
 
 const WIKI_STRUCTURE = [
   {
@@ -118,34 +118,42 @@ const WIKI_ARTICLES = {
           <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">1</span></div>
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">1</span> Kurulumu Başlatın</h2>
           <p className="text-muted mb-6">İndirdiğiniz GameCenter Setup dosyasına çift tıklayarak kurulumu başlatın.</p>
-          <img src="/images/setup_1.png" alt="Setup" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_1.png" alt="Setup" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
         </div>
+        
+        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
         
         <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">2</span></div>
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">2</span> Yenilikleri (Changelog) İnceleyin</h2>
-          <img src="/images/setup_2_changelog.png" alt="Changelog" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_2_changelog.png" alt="Changelog" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
         </div>
+        
+        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
         
         <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">3</span></div>
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">3</span> Bileşen Seçimi</h2>
           <p className="text-muted mb-6">GameCenter ana sistemi otomatik seçilidir, isteğinize göre Client paketlerini de ekleyebilirsiniz.</p>
-          <img src="/images/setup_3_bilesen.png" alt="Bilesen" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_3_bilesen.png" alt="Bilesen" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
         </div>
+        
+        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
         
         <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">4</span></div>
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">4</span> Ağ ve IP Yapılandırması</h2>
           <p className="text-muted mb-6">Sunucu makinenizin sabit IP adresini girmelisiniz (Örn: 192.168.1.100). İstemciler bu IP'yi arayacaktır.</p>
-          <img src="/images/setup_4_ip.png" alt="IP Ayar" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_4_ip.png" alt="IP Ayar" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
         </div>
+        
+        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
         
         <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">5</span></div>
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">5</span> Kurulum Dizinini Seçin</h2>
           <p className="text-muted mb-6">D: veya E: sürücüsüne kurmanız tavsiye edilir.</p>
-          <img src="/images/setup_5_folder.png" alt="Folder" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_5_folder.png" alt="Folder" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
         </div>
       </div>
     </div>
