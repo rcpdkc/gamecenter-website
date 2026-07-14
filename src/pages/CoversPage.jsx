@@ -470,12 +470,7 @@ const CoversPage = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <StatusBadge status={cover.status} />
-                    <span className={`text-xs ${sub} flex items-center gap-1`}>
-                      <Clock size={11} />{new Date(cover.created_at).toLocaleDateString('tr-TR')}
-                    </span>
-                  </div>
+
                   {/* Action buttons */}
                   {user.role === 'admin' && cover.status !== 'approved' && (
                     <div className="flex gap-1 mt-2">
