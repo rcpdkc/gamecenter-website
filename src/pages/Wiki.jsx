@@ -102,7 +102,7 @@ const WIKI_ARTICLES = {
             Kurulumu Başlatın
           </h2>
           <p className="text-muted mb-6">İndirdiğiniz GameCenter Setup dosyasına (örn: GameCenter_Setup.exe) çift tıklayarak kurulumu başlatın. Yönetici onayı (UAC) isterse onaylayın.</p>
-          <img src="/images/setup_1.png" alt="Setup Ekranı 1" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_1.png" alt="Setup Ekranı 1" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
 
         {/* Adım 2 */}
@@ -115,7 +115,7 @@ const WIKI_ARTICLES = {
             Değişiklikleri İnceleyin
           </h2>
           <p className="text-muted mb-6">Yenilikler (Changelog) ekranını okuyabilir ve kurulacak sürüme ait en son eklenen yeni özellikleri ve notları görebilirsiniz.</p>
-          <img src="/images/setup_2_changelog.png" alt="Changelog" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_2_changelog.png" alt="Changelog" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
 
         {/* Adım 3 */}
@@ -128,7 +128,7 @@ const WIKI_ARTICLES = {
             Bileşen Seçimi
           </h2>
           <p className="text-muted mb-6">GameCenter ana sistemi otomatik olarak seçilidir. Gereksiniminize göre diğer modülleri seçebilirsiniz.</p>
-          <img src="/images/setup_3_bilesen.png" alt="Bileşen Seçimi" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_3_bilesen.png" alt="Bileşen Seçimi" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
 
         {/* Adım 4 */}
@@ -141,7 +141,7 @@ const WIKI_ARTICLES = {
             Ağ & IP Ayarları
           </h2>
           <p className="text-muted mb-6">Sistemin kafedeki ağınızla sorunsuz iletişim kurabilmesi için sunucu makinenizin sabit IP adresini girmelisiniz. (Örn: 192.168.1.100)</p>
-          <img src="/images/setup_4_ip.png" alt="IP Ayarları" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_4_ip.png" alt="IP Ayarları" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
 
         {/* Adım 5 */}
@@ -154,7 +154,7 @@ const WIKI_ARTICLES = {
             Kurulum Konumu
           </h2>
           <p className="text-muted mb-6">Kurulum yapılacak disk ve dizini seçin. Genellikle oyunlarınızı barındırdığınız veya geniş alana sahip ikincil bir disk olan D: veya E: sürücüsü tavsiye edilir.</p>
-          <img src="/images/setup_5_folder.png" alt="Kurulum Klasörü" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_5_folder.png" alt="Kurulum Klasörü" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
 
         {/* Adım 6 */}
@@ -167,7 +167,7 @@ const WIKI_ARTICLES = {
             Tamamlanıyor
           </h2>
           <p className="text-muted mb-6">Gerekli kısayolları eklemek isteyip istemediğinizi seçtikten sonra kurulumu hızlıca tamamlayabilirsiniz.</p>
-          <img src="/images/setup_6_kısayol.png" alt="Kısayol ve Son Adımlar" className="w-full rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
+          <img src="/images/setup_6_kısayol.png" alt="Kısayol ve Son Adımlar" className="w-full md:w-3/4 lg:w-2/3 max-w-3xl mx-auto block rounded-xl shadow-2xl border border-white/10 group-hover:scale-[1.01] transition-transform duration-500" />
         </div>
       </div>
 
@@ -288,7 +288,7 @@ const Wiki = () => {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-x-hidden pt-20 md:pt-10 px-6 md:px-16 pb-20 relative">
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
           {getArticle(activeArticle)}
           
           {/* Bottom Navigation (Next/Prev placeholders) */}
