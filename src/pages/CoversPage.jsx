@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download, Edit2, Check, Copy } from 'lucide-react';
+import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download, Edit2, Check, Copy, Search } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending:  { label: 'Bekliyor',    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
@@ -33,6 +33,7 @@ const CoversPage = () => {
   
   // Duplicate Detection State
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
@@ -154,9 +155,13 @@ const CoversPage = () => {
 
   const isMessy = (name) => /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(name) || name.length < 3;
   
-  const filtered = filter === 'all' ? covers 
+  const baseFiltered = filter === 'all' ? covers 
                  : filter === 'isimsizler' ? covers.filter(c => isMessy(c.game_name)) 
                  : covers.filter(c => c.status === filter);
+                 
+  const filtered = searchQuery.trim() 
+                 ? baseFiltered.filter(c => c.game_name.toLowerCase().includes(searchQuery.toLowerCase()))
+                 : baseFiltered;
                  
   const counts = { 
     all: covers.length, 
@@ -234,15 +239,28 @@ const CoversPage = () => {
 
       <div className="space-y-6">
         {/* Stats + Filter tabs */}
-        <div className="flex flex-wrap items-center gap-2">
-          {Object.entries(counts).map(([key, count]) => (
-            <button key={key} onClick={() => setFilter(key)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${filter === key
-                ? 'bg-orange-500 text-white border-orange-500 shadow-[0_4px_15px_rgba(249,115,22,0.3)]'
-                : dark ? 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:border-gray-300'}`}>
-              {key === 'all' ? 'Tümü' : STATUS_CONFIG[key]?.label || key} ({count})
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {Object.entries(counts).map(([key, count]) => (
+              <button key={key} onClick={() => setFilter(key)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${filter === key
+                  ? 'bg-orange-500 text-white border-orange-500 shadow-[0_4px_15px_rgba(249,115,22,0.3)]'
+                  : dark ? 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:border-gray-300'}`}>
+                {key === 'all' ? 'Tümü' : STATUS_CONFIG[key]?.label || key} ({count})
+              </button>
+            ))}
+          </div>
+
+          <div className={`flex items-center gap-2 flex-1 min-w-[250px] sm:max-w-xs px-3 py-2 rounded-xl border ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} transition-all focus-within:ring-2 focus-within:ring-orange-500/40`}>
+            <Search size={16} className="text-gray-500" />
+            <input 
+              type="text" 
+              placeholder="Oyun adı ile ara..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none outline-none w-full text-sm placeholder:text-gray-500"
+            />
+          </div>
           
           <div className="ml-auto flex items-center gap-2">
             {user.role === 'admin' && duplicates.length > 0 && (
