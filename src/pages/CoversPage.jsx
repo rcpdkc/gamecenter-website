@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download, Edit2, Check } from 'lucide-react';
+import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download, Edit2, Check, Copy } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending:  { label: 'Bekliyor',    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
   approved: { label: 'Onaylandı',   color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
   rejected: { label: 'Reddedildi',  color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+  isimsizler: { label: 'İsimsiz/Karışık', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
 };
 
 const StatusBadge = ({ status }) => {
@@ -29,6 +30,9 @@ const CoversPage = () => {
   // Editing State
   const [editingCoverId, setEditingCoverId] = useState(null);
   const [editGameName, setEditGameName] = useState('');
+  
+  // Duplicate Detection State
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
 
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
@@ -148,17 +152,82 @@ const CoversPage = () => {
     fetchCovers();
   };
 
-  const filtered = filter === 'all' ? covers : covers.filter(c => c.status === filter);
-  const counts = { all: covers.length, pending: covers.filter(c => c.status === 'pending').length, approved: covers.filter(c => c.status === 'approved').length, rejected: covers.filter(c => c.status === 'rejected').length };
+  const isMessy = (name) => /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(name) || name.length < 3;
+  
+  const filtered = filter === 'all' ? covers 
+                 : filter === 'isimsizler' ? covers.filter(c => isMessy(c.game_name)) 
+                 : covers.filter(c => c.status === filter);
+                 
+  const counts = { 
+    all: covers.length, 
+    pending: covers.filter(c => c.status === 'pending').length, 
+    approved: covers.filter(c => c.status === 'approved').length, 
+    rejected: covers.filter(c => c.status === 'rejected').length,
+    isimsizler: covers.filter(c => isMessy(c.game_name)).length
+  };
+
+  const duplicates = useMemo(() => {
+    const groups = {};
+    covers.forEach(c => {
+      const name = c.game_name.toLowerCase().trim();
+      if (!groups[name]) groups[name] = [];
+      groups[name].push(c);
+    });
+    return Object.entries(groups).filter(([_, group]) => group.length > 1).sort((a, b) => b[1].length - a[1].length);
+  }, [covers]);
 
   return (
     <>
       {/* Preview Modal */}
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreview(null)}>
-          <div className="max-w-2xl w-full">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreview(null)}>
+          <div className="max-w-2xl w-full" onClick={e => e.stopPropagation()}>
             <img src={preview.file_url} alt={preview.game_name} className="w-full rounded-2xl object-cover shadow-2xl" />
             <p className="text-white text-center mt-3 font-semibold">{preview.game_name}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Duplicate Detection Modal */}
+      {duplicateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setDuplicateModalOpen(false)}>
+          <div className={`${bg} border ${panelBorder} rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden`} onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-white/5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                  <Copy size={18} />
+                </div>
+                Kopya Tespiti Merkezi
+              </h2>
+              <button onClick={() => setDuplicateModalOpen(false)} className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5">
+                <XCircle size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 space-y-8 bg-black/20">
+              {duplicates.map(([name, group]) => (
+                <div key={name} className="bg-white/5 border border-white/5 rounded-xl p-4">
+                  <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                    <span className="text-rose-400">"{name}"</span>
+                    <span className="text-xs font-normal text-gray-400 bg-white/5 px-2 py-1 rounded-md">{group.length} kopya bulundu</span>
+                  </h3>
+                  
+                  <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
+                    {group.map(cover => (
+                      <div key={cover.id} className="min-w-[140px] max-w-[140px] flex-shrink-0 snap-start bg-black/40 rounded-lg overflow-hidden border border-white/5 flex flex-col relative">
+                        <img src={cover.file_url} alt={name} className="w-full aspect-[3/4] object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreview(cover)} />
+                        <div className="absolute top-2 left-2"><StatusBadge status={cover.status} /></div>
+                        <div className="p-2 flex flex-col items-center justify-center gap-2 mt-auto">
+                          <button onClick={() => handleDelete(cover.id)} className="w-full py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center gap-1">
+                            <Trash2 size={12} /> Çöpe At
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -176,6 +245,11 @@ const CoversPage = () => {
           ))}
           
           <div className="ml-auto flex items-center gap-2">
+            {user.role === 'admin' && duplicates.length > 0 && (
+              <button onClick={() => setDuplicateModalOpen(true)} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white shadow-[0_4px_15px_rgba(244,63,94,0.3)]`}>
+                <Copy size={16} /> Kopya Tespiti ({duplicates.length})
+              </button>
+            )}
             <button onClick={fetchCovers} disabled={fetching} className={`p-2.5 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
               <RefreshCw size={16} className={fetching ? 'animate-spin' : ''} />
             </button>
