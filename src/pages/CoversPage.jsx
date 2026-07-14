@@ -183,10 +183,20 @@ const CoversPage = () => {
     isimsizler: covers.filter(c => isMessy(c.game_name)).length
   };
 
+  const normalizeForDuplicate = (name) => {
+    let n = name.toLowerCase();
+    n = n.replace(/\.(jpg|jpeg|png|webp)$/i, ''); 
+    n = n.replace(/_tgdb_[a-f0-9]+$/i, ''); 
+    n = n.replace(/_[0-9]{10,}$/i, ''); 
+    n = n.replace(/[^a-z0-9]/g, ' '); 
+    return n.replace(/\s+/g, ' ').trim(); 
+  };
+
   const duplicates = useMemo(() => {
     const groups = {};
     covers.forEach(c => {
-      const name = c.game_name.toLowerCase().trim();
+      const name = normalizeForDuplicate(c.game_name);
+      if (name.length < 3) return; // ignore very short or noisy names
       if (!groups[name]) groups[name] = [];
       groups[name].push(c);
     });
@@ -234,15 +244,15 @@ const CoversPage = () => {
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto flex-1 space-y-8 bg-black/20">
+            <div className="p-6 overflow-y-auto flex-1 space-y-8 bg-black/20 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:bg-rose-500/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-rose-500/80">
               {duplicates.map(([name, group]) => (
                 <div key={name} className="bg-white/5 border border-white/5 rounded-xl p-4">
                   <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                    <span className="text-rose-400">"{name}"</span>
+                    <span className="text-rose-400 capitalize">"{name}"</span>
                     <span className="text-xs font-normal text-gray-400 bg-white/5 px-2 py-1 rounded-md">{group.length} kopya bulundu</span>
                   </h3>
                   
-                  <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
+                  <div className="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-black/20 [&::-webkit-scrollbar-thumb]:bg-rose-500/50 [&::-webkit-scrollbar-thumb]:rounded-full">
                     {group.map(cover => (
                       <div key={cover.id} className="min-w-[140px] max-w-[140px] flex-shrink-0 snap-start bg-black/40 rounded-lg overflow-hidden border border-white/5 flex flex-col relative">
                         <img src={cover.file_url} alt={name} className="w-full aspect-[3/4] object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreview(cover)} />
