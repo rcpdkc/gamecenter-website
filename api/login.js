@@ -2,6 +2,11 @@ import { sql } from '@vercel/postgres';
 import crypto from 'crypto';
 
 export default async function handler(request, response) {
+  // CORS Preflight
+  if (request.method === 'OPTIONS') {
+    return response.status(200).end();
+  }
+
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method Not Allowed' });
   try {
     const { username, password } = request.body;
