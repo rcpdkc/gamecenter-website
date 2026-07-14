@@ -222,7 +222,7 @@ const GroupsPage = () => {
         />
       )}
 
-      <div className="space-y-6 w-full max-w-7xl">
+      <div className="space-y-6">
         {/* Header action */}
         <div className="flex items-center justify-end">
           <button
