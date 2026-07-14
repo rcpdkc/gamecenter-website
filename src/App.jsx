@@ -12,6 +12,7 @@ import References from './pages/References';
 import UsersPage from './pages/UsersPage';
 import GroupsPage from './pages/GroupsPage';
 import CoversPage from './pages/CoversPage';
+import SettingsPage from './pages/SettingsPage';
 import './index.css';
 
 function TitleUpdater() {
@@ -58,6 +59,7 @@ function App() {
           <Route path="users" element={<UsersPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="covers" element={<CoversPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
       </Routes>
