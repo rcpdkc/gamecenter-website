@@ -9,6 +9,8 @@ import Register from './pages/Register';
 import SuperAdmin from './pages/SuperAdmin';
 import References from './pages/References';
 import UsersPage from './pages/UsersPage';
+import GroupsPage from './pages/GroupsPage';
+import CoversPage from './pages/CoversPage';
 import './index.css';
 
 function App() {
@@ -32,6 +34,8 @@ function App() {
           <Route index element={<SuperAdmin />} />
           <Route path="references" element={<References />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="groups" element={<GroupsPage />} />
+          <Route path="covers" element={<CoversPage />} />
         </Route>
 
       </Routes>

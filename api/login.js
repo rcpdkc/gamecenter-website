@@ -2,18 +2,23 @@ import { sql } from '@vercel/postgres';
 import crypto from 'crypto';
 
 export default async function handler(request, response) {
-  if (request.method !== 'POST') {
-    return response.status(405).json({ error: 'Method Not Allowed' });
-  }
-  
+  if (request.method !== 'POST') return response.status(405).json({ error: 'Method Not Allowed' });
   try {
     const { username, password } = request.body;
-    
-    if (!username || !password) {
-       return response.status(400).json({ error: 'E-posta ve şifre zorunludur.' });
-    }
-    
-    // Create users table with full schema if not exists
+    if (!username || !password) return response.status(400).json({ error: 'E-posta ve şifre zorunludur.' });
+
+    // Ensure groups table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS groups (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        description TEXT,
+        color VARCHAR(30) DEFAULT '#f97316',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    // Ensure users table has full schema
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -24,72 +29,54 @@ export default async function handler(request, response) {
         phone VARCHAR(50),
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'cafe',
-        plan VARCHAR(50) DEFAULT 'free',
-        plan_expires_at TIMESTAMP,
+        group_id INTEGER REFERENCES groups(id) ON DELETE SET NULL,
+        group_expires_at TIMESTAMP,
         cafe_id VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
 
-    // Add missing columns if table exists from before (migration)
-    try {
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR(50) DEFAULT 'free'`;
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMP`;
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS cafe_id VARCHAR(100)`;
-    } catch (_) {}
-    
-    // Seed default admin if none exists
+    // Migrations - add missing columns safely
+    const migrations = [
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_id INTEGER`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_expires_at TIMESTAMP`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS cafe_id VARCHAR(100)`,
+    ];
+    for (const m of migrations) {
+      try { await sql.query(m); } catch (_) {}
+    }
+
+    // Seed default admin
     const { rowCount } = await sql`SELECT id FROM users WHERE role = 'admin' LIMIT 1`;
     if (rowCount === 0) {
-      const adminCafeId = crypto.randomUUID();
-      await sql`
-        INSERT INTO users (first_name, last_name, email, password, role, plan, cafe_id)
-        VALUES ('Super', 'Admin', 'admin', 'admin123', 'admin', 'enterprise', ${adminCafeId})
-      `;
+      await sql`INSERT INTO users (first_name, last_name, email, password, role, cafe_id)
+        VALUES ('Super', 'Admin', 'admin', 'admin123', 'admin', ${crypto.randomUUID()})`;
     }
-    
-    // Verify credentials
+
+    // Fetch user with group info
     const { rows } = await sql`
-      SELECT id, email, first_name, last_name, cafe_name, role, plan, plan_expires_at, cafe_id
-      FROM users 
-      WHERE email = ${username} AND password = ${password}
+      SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role, 
+             u.group_id, u.group_expires_at, u.cafe_id,
+             g.name AS group_name, g.color AS group_color
+      FROM users u
+      LEFT JOIN groups g ON u.group_id = g.id
+      WHERE u.email = ${username} AND u.password = ${password}
     `;
-    
-    if (rows.length === 0) {
-      return response.status(401).json({ error: 'Geçersiz e-posta veya şifre.' });
-    }
+
+    if (rows.length === 0) return response.status(401).json({ error: 'Geçersiz e-posta veya şifre.' });
 
     const user = rows[0];
-
-    // Check license expiry (non-admin, non-free)
-    let licenseExpired = false;
-    if (user.role !== 'admin' && user.plan !== 'free' && user.plan_expires_at) {
-      if (new Date(user.plan_expires_at) < new Date()) {
-        licenseExpired = true;
-      }
-    }
+    const licenseExpired = user.role !== 'admin' && user.group_id && user.group_expires_at
+      ? new Date(user.group_expires_at) < new Date()
+      : false;
 
     const token = Buffer.from(user.email + ':' + Date.now()).toString('base64');
-    
     return response.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        cafe_name: user.cafe_name,
-        role: user.role,
-        plan: user.plan,
-        plan_expires_at: user.plan_expires_at,
-        cafe_id: user.cafe_id,
-        license_expired: licenseExpired
-      }
+      success: true, token,
+      user: { ...user, license_expired: licenseExpired }
     });
-
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error('Login Error:', error);
     return response.status(500).json({ error: error.message });
   }
 }

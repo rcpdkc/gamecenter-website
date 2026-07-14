@@ -1,6 +1,6 @@
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users,
+  LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image,
   ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
@@ -11,13 +11,17 @@ export const ThemeContext = createContext({ dark: true, toggleTheme: () => {} })
 const NAV_ITEMS = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { to: '/superadmin/users', icon: Users, label: 'Kullanıcılar' },
+  { to: '/superadmin/groups', icon: Layers, label: 'Gruplar' },
+  { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
   { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
   { to: '/superadmin/settings', icon: Settings, label: 'Ayarlar' },
 ];
 
 const PAGE_TITLES = {
   '/superadmin': { title: 'Dashboard', subtitle: 'Tüm Game Center şubelerinin genel görünümü' },
-  '/superadmin/users': { title: 'Kullanıcı Yönetimi', subtitle: 'Kafe üyeleri ve lisans yönetimi' },
+  '/superadmin/users': { title: 'Kullanıcı Yönetimi', subtitle: 'Kafe üyeleri ve grup yönetimi' },
+  '/superadmin/groups': { title: 'Gruplar', subtitle: 'Üyelik gruplarını oluşturun ve yönetin' },
+  '/superadmin/covers': { title: 'Cover Yönetimi', subtitle: 'Oyun kapaklarını yönetin ve onaylayın' },
   '/superadmin/references': { title: 'Referans & Davet', subtitle: 'Kafe davet kodları ve kayıt yönetimi' },
   '/superadmin/settings': { title: 'Ayarlar', subtitle: 'Sistem tercihleri ve yapılandırma' },
 };
