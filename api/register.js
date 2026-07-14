@@ -1,55 +1,67 @@
 import { sql } from '@vercel/postgres';
+import bcrypt from 'bcryptjs';
 
-export default async function handler(request, response) {
-  if (request.method !== 'POST') {
-    return response.status(405).json({ error: 'Method Not Allowed' });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-  
+
+  const { firstName, lastName, cafeName, phone, email, password, referenceCode } = req.body;
+
+  if (!firstName || !lastName || !cafeName || !phone || !email || !password || !referenceCode) {
+    return res.status(400).json({ error: 'Lütfen tüm alanları doldurun.' });
+  }
+
   try {
-    const { first_name, last_name, email, cafe_name, phone, password, reference_code } = request.body;
-    
-    if (!first_name || !last_name || !email || !cafe_name || !phone || !password || !reference_code) {
-       return response.status(400).json({ error: 'Lütfen tüm alanları doldurun.' });
-    }
-    
     // 1. Verify Reference Code
-    const { rows: refRows } = await sql`
-      SELECT id, is_used FROM reference_codes 
-      WHERE email = ${email} AND code = ${reference_code}
+    const { rows: codes } = await sql`
+      SELECT * FROM reference_codes 
+      WHERE code = ${referenceCode} 
+      AND email = ${email} 
+      AND is_used = false
     `;
-    
-    if (refRows.length === 0) {
-      return response.status(400).json({ error: 'Geçersiz referans kodu veya eşleşmeyen e-posta adresi.' });
-    }
-    
-    if (refRows[0].is_used) {
-      return response.status(400).json({ error: 'Bu referans kodu daha önce kullanılmış.' });
-    }
-    
-    // 2. Check if email already registered
-    const { rows: userRows } = await sql`
-      SELECT id FROM users WHERE email = ${email}
-    `;
-    
-    if (userRows.length > 0) {
-      return response.status(400).json({ error: 'Bu e-posta adresi zaten kayıtlı.' });
+
+    if (codes.length === 0) {
+      return res.status(400).json({ error: 'Geçersiz, kullanılmış veya e-postanızla eşleşmeyen referans kodu.' });
     }
 
-    // 3. Register User
-    await sql`
-      INSERT INTO users (first_name, last_name, email, cafe_name, phone, password, role)
-      VALUES (${first_name}, ${last_name}, ${email}, ${cafe_name}, ${phone}, ${password}, 'cafe')
+    // 2. Check if user email already exists
+    const { rows: existingUsers } = await sql`
+      SELECT * FROM users WHERE email = ${email}
     `;
+
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ error: 'Bu e-posta adresi zaten kayıtlı.' });
+    }
+
+    // 3. Find the free group (assume Free/Normal is id=1, or find by name if needed. Let's just set group_id=null or create a default group)
+    // Actually, usually they get assigned a default group or null, and admin can change it later.
+    // Let's set group_id to NULL initially.
     
-    // 4. Mark Reference Code as used
-    await sql`
-      UPDATE reference_codes SET is_used = TRUE WHERE id = ${refRows[0].id}
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 4. Create User
+    const { rows: newUsers } = await sql`
+      INSERT INTO users (first_name, last_name, cafe_name, phone, email, password, group_id)
+      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${hashedPassword}, NULL)
+      RETURNING id, email, first_name, last_name, cafe_name
     `;
-    
-    return response.status(200).json({ success: true, message: 'Kayıt başarıyla tamamlandı. Artık giriş yapabilirsiniz.' });
+
+    // 5. Mark Reference Code as Used
+    await sql`
+      UPDATE reference_codes SET is_used = true WHERE id = ${codes[0].id}
+    `;
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Kayıt başarıyla tamamlandı. Artık giriş yapabilirsiniz.',
+      user: newUsers[0]
+    });
 
   } catch (error) {
-    console.error("Register Error:", error);
-    return response.status(500).json({ error: error.message });
+    console.error('Register API Error:', error);
+    return res.status(500).json({ error: 'Sunucu hatası oluştu.' });
   }
 }

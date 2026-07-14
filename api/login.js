@@ -19,6 +19,17 @@ export default async function handler(request, response) {
       );
     `;
 
+    // Ensure reference_codes table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS reference_codes (
+        id SERIAL PRIMARY KEY,
+        code VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        is_used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     // Ensure users table has full schema
     await sql`
       CREATE TABLE IF NOT EXISTS users (
