@@ -425,7 +425,7 @@ const Wiki = () => {
   );
 
   return (
-    <div className="flex-1 w-full flex relative bg-bg-primary pt-[80px] md:pt-0">
+    <div className="flex-1 w-full flex relative bg-bg-primary pt-[80px]">
       
       {/* MOBILE HEADER */}
       <div className="md:hidden fixed top-[80px] left-0 right-0 z-30 bg-[#12141d] border-b border-white/5 p-4 flex items-center justify-between">
@@ -494,7 +494,7 @@ const Wiki = () => {
       )}
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-x-hidden pt-24 md:pt-28 px-6 md:px-16 pb-20 relative">
+      <main className="flex-1 overflow-x-hidden pt-8 md:pt-12 px-6 md:px-16 pb-20 relative">
         <div className="w-full max-w-7xl mx-auto">
           {getArticle(activeArticle)}
           
