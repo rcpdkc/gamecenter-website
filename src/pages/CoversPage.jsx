@@ -294,13 +294,13 @@ const CoversPage = () => {
                 value={uploadForm.game_name} 
                 onChange={e => setUploadForm({ ...uploadForm, game_name: e.target.value })}
                 placeholder="Örn: Valorant (Boş bırakırsanız dosya adı kullanılır)" 
-                className={`w-full border rounded-xl py-3.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`} 
+                className={`w-full border rounded-xl h-[52px] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`} 
               />
             </div>
             
             <div className="flex-1 w-full lg:min-w-[300px]">
               <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Görseli (JPG/PNG/WEBP)</label>
-              <div className={`relative flex items-center w-full border border-dashed rounded-xl overflow-hidden transition-all group ${
+              <div className={`relative flex items-center w-full h-[52px] border border-dashed rounded-xl overflow-hidden transition-all group ${
                 uploadForm.files?.length > 0 ? 'border-orange-500/50 bg-orange-500/5' : `hover:border-orange-500/40 ${inputBg}`
               }`}>
                 <input 
@@ -312,7 +312,7 @@ const CoversPage = () => {
                   onChange={e => setUploadForm({ ...uploadForm, files: e.target.files })}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                 />
-                <div className="flex items-center gap-3 px-4 py-3.5 w-full pointer-events-none">
+                <div className="flex items-center gap-3 px-4 h-full w-full pointer-events-none">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                     uploadForm.files?.length > 0 ? 'bg-orange-500 text-white' : 'bg-gray-500/10 text-gray-500 group-hover:text-orange-400 group-hover:bg-orange-500/10'
                   }`}>
