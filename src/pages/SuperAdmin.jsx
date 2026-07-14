@@ -58,13 +58,13 @@ const SuperAdmin = () => {
   }
 
   return (
-    <div className="pt-24 pb-20 min-h-screen relative z-10">
-      <div className="container max-w-7xl">
+    <div className="relative z-10">
+      <div className="max-w-7xl mx-auto">
         
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Server className="text-orange-500" /> Bulut (Cloud) Yönetim Merkezi
+              Genel Bakış
             </h1>
             <p className="text-muted mt-1">Dünya çapındaki tüm Game Center sunucularının canlı verileri.</p>
           </div>

@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import MainLayout from './components/MainLayout';
+import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
 import Wiki from './pages/Wiki';
 import Download from './pages/Download';
@@ -11,26 +11,24 @@ import './index.css';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-bg-primary text-text-main font-sans relative">
+      <Routes>
         
-        {/* Global Background Orbs */}
-        <div className="bg-glow-orb orb-1"></div>
-        <div className="bg-glow-orb orb-2"></div>
+        {/* Public Pages with Navbar & Footer */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/wiki" element={<Wiki />} />
+          <Route path="/download" element={<Download />} />
+        </Route>
 
-        <Navbar />
-        
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/wiki" element={<Wiki />} />
-            <Route path="/download" element={<Download />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/superadmin" element={<SuperAdmin />} />
-          </Routes>
-        </main>
+        {/* Standalone Login Page */}
+        <Route path="/login" element={<Login />} />
 
-        <Footer />
-      </div>
+        {/* Protected Admin Pages with Sidebar */}
+        <Route element={<AdminLayout />}>
+          <Route path="/superadmin" element={<SuperAdmin />} />
+        </Route>
+
+      </Routes>
     </Router>
   );
 }
