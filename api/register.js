@@ -14,7 +14,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { firstName, lastName, cafeName, phone, email, password, referenceCode } = req.body;
+  // Support both camelCase (web_admin) and snake_case (website) payloads
+  const firstName = req.body.firstName || req.body.first_name;
+  const lastName = req.body.lastName || req.body.last_name;
+  const cafeName = req.body.cafeName || req.body.cafe_name;
+  const phone = req.body.phone;
+  const email = req.body.email;
+  const password = req.body.password;
+  const referenceCode = req.body.referenceCode || req.body.reference_code;
 
   if (!firstName || !lastName || !cafeName || !phone || !email || !password || !referenceCode) {
     return res.status(400).json({ error: 'Lütfen tüm alanları doldurun.' });
