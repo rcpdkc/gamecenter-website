@@ -22,6 +22,7 @@ const CoversPage = () => {
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadForm, setUploadForm] = useState({ game_name: '', files: null });
+  const [uploadProgress, setUploadProgress] = useState({ active: false, total: 0, current: 0, success: 0, fail: 0 });
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
 
@@ -56,30 +57,48 @@ const CoversPage = () => {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!uploadForm.files || uploadForm.files.length === 0) return;
+    
+    const filesArray = Array.from(uploadForm.files);
     setUploading(true);
-    let uploadedCount = 0;
-    try {
-      const filesArray = Array.from(uploadForm.files);
-      for (const f of filesArray) {
-        // If game_name is typed, use it. Otherwise, use filename without extension.
-        const finalGameName = uploadForm.game_name || f.name.replace(/\.[^/.]+$/, "");
-        const fd = new FormData();
-        fd.append('game_name', finalGameName);
-        fd.append('file', f);
-        fd.append('uploaded_by_id', user.id || '');
-        fd.append('uploaded_by_role', user.role || 'cafe');
-        fd.append('cafe_id', user.cafe_id || '');
+    setUploadProgress({ active: true, total: filesArray.length, current: 0, success: 0, fail: 0 });
+    
+    let sCount = 0;
+    let fCount = 0;
+    
+    for (let i = 0; i < filesArray.length; i++) {
+      const f = filesArray[i];
+      const finalGameName = uploadForm.game_name || f.name.replace(/\.[^/.]+$/, "");
+      const fd = new FormData();
+      fd.append('game_name', finalGameName);
+      fd.append('file', f);
+      fd.append('uploaded_by_id', user.id || '');
+      fd.append('uploaded_by_role', user.role || 'cafe');
+      fd.append('cafe_id', user.cafe_id || '');
+      
+      try {
         const res = await fetch('/api/upload_cover', { method: 'POST', body: fd });
         const data = await res.json();
-        if (data.success) uploadedCount++;
+        if (data.success) {
+          sCount++;
+        } else {
+          fCount++;
+        }
+      } catch (err) {
+        fCount++;
       }
-      setUploadForm({ game_name: '', files: null }); 
-      if (fileRef.current) fileRef.current.value = ''; 
-      fetchCovers(); 
-      if (user.role !== 'admin') alert(`${uploadedCount} cover başarıyla yüklendi, admin onayından sonra görünecektir.`);
-      else alert(`${uploadedCount} cover başarıyla yüklendi!`);
-    } catch { alert('Yükleme sırasında hata oluştu.'); }
-    finally { setUploading(false); }
+      
+      setUploadProgress(prev => ({ ...prev, current: i + 1, success: sCount, fail: fCount }));
+    }
+    
+    setUploadForm({ game_name: '', files: null }); 
+    if (fileRef.current) fileRef.current.value = ''; 
+    fetchCovers(); 
+    
+    setTimeout(() => {
+      setUploadProgress({ active: false, total: 0, current: 0, success: 0, fail: 0 });
+      setUploading(false);
+      alert(`Toplu yükleme tamamlandı!\nBaşarılı: ${sCount}\nHatalı: ${fCount}${user.role !== 'admin' ? '\n(Onay bekleyenler panele eklendi)' : ''}`);
+    }, 500);
   };
 
   const handleDownload = (cover_url) => {
@@ -173,9 +192,29 @@ const CoversPage = () => {
               className="w-full lg:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 shadow-[0_4px_20px_rgba(249,115,22,0.3)] transition-all whitespace-nowrap mt-2 lg:mt-0"
             >
               {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-              {uploading ? 'Yükleniyor...' : 'Yükle'}
+              Yükle
             </button>
           </form>
+
+          {/* Progress Bar Display */}
+          {uploadProgress.active && (
+            <div className="mt-6 pt-6 border-t border-white/5 relative z-10">
+              <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                <span className="text-orange-400">Yükleniyor... ({uploadProgress.current} / {uploadProgress.total})</span>
+                <span className="text-white">{Math.round((uploadProgress.current / uploadProgress.total) * 100)}%</span>
+              </div>
+              <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-300"
+                  style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                ></div>
+              </div>
+              <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
+                <span className="text-emerald-500">Başarılı: {uploadProgress.success}</span>
+                {uploadProgress.fail > 0 && <span className="text-red-500">Hatalı: {uploadProgress.fail}</span>}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Covers Grid */}
