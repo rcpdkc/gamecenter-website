@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import MainLayout from './components/MainLayout';
 import AdminLayout from './components/AdminLayout';
 import Home from './pages/Home';
@@ -13,9 +14,30 @@ import GroupsPage from './pages/GroupsPage';
 import CoversPage from './pages/CoversPage';
 import './index.css';
 
+function TitleUpdater() {
+  const location = useLocation();
+  useEffect(() => {
+    const titles = {
+      '/': 'Ana Sayfa - Game Center Plus',
+      '/wiki': 'Wiki - Game Center Plus',
+      '/download': 'İndir - Game Center Plus',
+      '/login': 'Giriş Yap - Game Center Plus',
+      '/register': 'Kayıt Ol - Game Center Plus',
+      '/superadmin': 'Sistem Yönetimi - Game Center Plus',
+      '/superadmin/references': 'Referans Kodları - Game Center Plus',
+      '/superadmin/users': 'Kullanıcılar - Game Center Plus',
+      '/superadmin/groups': 'Lisans Grupları - Game Center Plus',
+      '/superadmin/covers': 'Oyun Kapakları - Game Center Plus'
+    };
+    document.title = titles[location.pathname] || 'Game Center Plus';
+  }, [location]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <TitleUpdater />
       <Routes>
         
         {/* Public Pages with Navbar & Footer */}

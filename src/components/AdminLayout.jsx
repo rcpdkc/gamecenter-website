@@ -19,7 +19,7 @@ const NAV_ITEMS_ADMIN = [
 
 const NAV_ITEMS_CAFE = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { to: '/superadmin/covers', icon: Image, label: 'İkon İndir' },
+  { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
 ];
 
 const PAGE_TITLES = {

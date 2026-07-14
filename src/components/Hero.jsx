@@ -23,9 +23,6 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-wrap gap-4">
-              <a href="https://wa.me/905300000000" target="_blank" rel="noreferrer" className="btn btn-primary">
-                Hemen Satın Al <ChevronRight size={18} />
-              </a>
               <a href="#features" className="btn btn-outline">
                 <Play size={18} /> Özellikleri Keşfet
               </a>

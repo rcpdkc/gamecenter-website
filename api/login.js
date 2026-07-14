@@ -14,7 +14,7 @@ export default async function handler(request, response) {
 
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method Not Allowed' });
   try {
-    const { username, password } = request.body;
+    const { username, password, hwid } = request.body;
     if (!username || !password) return response.status(400).json({ error: 'E-posta ve şifre zorunludur.' });
 
     // Ensure groups table exists
@@ -54,6 +54,7 @@ export default async function handler(request, response) {
         group_id INTEGER REFERENCES groups(id) ON DELETE SET NULL,
         group_expires_at TIMESTAMP,
         cafe_id VARCHAR(100),
+        hwid VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -63,6 +64,7 @@ export default async function handler(request, response) {
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_id INTEGER`,
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_expires_at TIMESTAMP`,
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS cafe_id VARCHAR(100)`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS hwid VARCHAR(255)`,
       `ALTER TABLE groups ADD COLUMN IF NOT EXISTS permissions JSON DEFAULT '[]'`,
     ];
     for (const m of migrations) {
@@ -79,7 +81,7 @@ export default async function handler(request, response) {
     // Fetch user with group info
     const { rows } = await sql`
       SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role, 
-             u.group_id, u.group_expires_at, u.cafe_id,
+             u.group_id, u.group_expires_at, u.cafe_id, u.hwid,
              g.name AS group_name, g.color AS group_color, g.permissions AS group_permissions
       FROM users u
       LEFT JOIN groups g ON u.group_id = g.id
@@ -89,6 +91,18 @@ export default async function handler(request, response) {
     if (rows.length === 0) return response.status(401).json({ error: 'Geçersiz e-posta veya şifre.' });
 
     const user = rows[0];
+    
+    // HWID Binding Check
+    if (user.role !== 'admin' && hwid) {
+      if (!user.hwid) {
+        // First login, bind HWID
+        await sql`UPDATE users SET hwid = ${hwid} WHERE id = ${user.id}`;
+        user.hwid = hwid;
+      } else if (user.hwid !== hwid) {
+        // HWID mismatch
+        return response.status(403).json({ error: 'Bu hesap başka bir sunucuya (bilgisayara) kayıtlıdır. Lütfen lisansınızı sıfırlamak için yönetici ile iletişime geçin.' });
+      }
+    }
     const licenseExpired = user.role !== 'admin' && user.group_id && user.group_expires_at
       ? new Date(user.group_expires_at) < new Date()
       : false;

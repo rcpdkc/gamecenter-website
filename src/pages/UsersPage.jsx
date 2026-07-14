@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Users, RefreshCw, Loader2, Edit2, CheckCircle2, X, Shield, AlertTriangle } from 'lucide-react';
+import { Users, RefreshCw, Loader2, Edit2, CheckCircle2, X, Shield, AlertTriangle, Unlock } from 'lucide-react';
 
 const EditModal = ({ user, groups, dark, onClose, onSave }) => {
   const [groupId, setGroupId] = useState(user.group_id ? String(user.group_id) : '');
@@ -123,6 +123,20 @@ const UsersPage = () => {
 
   useEffect(() => { fetchAll(); }, []);
 
+  const handleResetHwid = async (userId) => {
+    if (!confirm('Bu kullanıcının HWID (Donanım) kilidini kaldırmak istediğinize emin misiniz?')) return;
+    try {
+      const res = await fetch('/api/update_user_hwid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, hwid: null })
+      });
+      const data = await res.json();
+      if (data.success) fetchAll();
+      else alert(data.error);
+    } catch { alert('İşlem başarısız.'); }
+  };
+
   const isExpired = u => u.group_id && u.group_expires_at && new Date(u.group_expires_at) < new Date();
   const expiredCnt = users.filter(u => isExpired(u)).length;
   const assignedCnt = users.filter(u => u.group_id).length;
@@ -174,7 +188,7 @@ const UsersPage = () => {
               <table className="w-full text-sm text-left">
                 <thead>
                   <tr className={dark ? 'bg-white/3' : 'bg-gray-50'}>
-                    {['Kafe', 'İletişim', 'Grup', 'Bitiş', 'Kayıt', 'İşlem'].map(h => (
+                    {['Kafe', 'İletişim', 'Grup', 'Bitiş', 'Kayıt', 'HWID', 'İşlem'].map(h => (
                       <th key={h} className={`px-5 py-3 text-xs font-semibold uppercase tracking-wider ${sub}`}>{h}</th>
                     ))}
                   </tr>
@@ -196,11 +210,25 @@ const UsersPage = () => {
                           : <span className="text-gray-500">Süresiz</span>}
                       </td>
                       <td className={`px-5 py-3.5 text-xs ${sub}`}>{new Date(user.created_at).toLocaleDateString('tr-TR')}</td>
-                      <td className="px-5 py-3.5">
+                      <td className={`px-5 py-3.5 text-xs`}>
+                        {user.hwid ? (
+                          <span className="text-emerald-400 font-mono" title={user.hwid}>Kilitli</span>
+                        ) : (
+                          <span className={sub}>Yok</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 flex gap-2">
                         <button onClick={() => setEditingUser(user)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${dark ? 'bg-white/5 text-gray-300 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                           <Edit2 size={12} /> Düzenle
                         </button>
+                        {user.hwid && (
+                          <button onClick={() => handleResetHwid(user.id)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${dark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}
+                            title="HWID Kilidini Kaldır">
+                            <Unlock size={12} /> Kilidi Aç
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

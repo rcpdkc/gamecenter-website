@@ -113,24 +113,61 @@ const CoversPage = () => {
         </div>
 
         {/* Upload form (All users can upload now) */}
-        <div className={`${bg} border ${panelBorder} rounded-2xl p-6 shadow-sm`}>
-          <h3 className={`text-base font-bold ${txt} mb-4 flex items-center gap-2`}><Upload size={18} className="text-orange-500" /> {user.role === 'admin' ? 'Admin Cover Yükle' : 'Cover Yükle'}</h3>
-          <form onSubmit={handleUpload} className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[200px]">
-              <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-1.5`}>Oyun Adı</label>
-              <input type="text" value={uploadForm.game_name} onChange={e => setUploadForm({ ...uploadForm, game_name: e.target.value })}
-                placeholder="örn: Counter-Strike 2" required
-                className={`w-full border rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 ${inputBg}`} />
+        <div className={`${bg} border ${panelBorder} rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden`}>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+          
+          <h3 className={`text-lg font-bold ${txt} mb-6 flex items-center gap-3`}>
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+              <Upload size={20} className="text-orange-500" />
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-1.5`}>Görsel (JPG/PNG/WebP, max 10MB)</label>
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" required
-                onChange={e => setUploadForm({ ...uploadForm, file: e.target.files[0] })}
-                className={`w-full border rounded-xl py-2 px-4 text-sm focus:outline-none ${inputBg}`} />
+            {user.role === 'admin' ? 'Admin Cover Yükle' : 'Yeni Cover Yükle'}
+          </h3>
+          
+          <form onSubmit={handleUpload} className="flex flex-col lg:flex-row gap-5 items-start lg:items-end relative z-10">
+            <div className="flex-1 w-full lg:min-w-[250px]">
+              <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Adı</label>
+              <input 
+                type="text" 
+                value={uploadForm.game_name} 
+                onChange={e => setUploadForm({ ...uploadForm, game_name: e.target.value })}
+                placeholder="Örn: Counter-Strike 2" 
+                required
+                className={`w-full border rounded-xl py-3.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`} 
+              />
             </div>
-            <button type="submit" disabled={uploading}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold flex items-center gap-2 disabled:opacity-60 shadow-[0_4px_15px_rgba(249,115,22,0.3)] whitespace-nowrap">
-              {uploading ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+            
+            <div className="flex-1 w-full lg:min-w-[300px]">
+              <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Görseli (JPG/PNG/WEBP)</label>
+              <div className={`relative flex items-center w-full border border-dashed rounded-xl overflow-hidden transition-all group ${
+                uploadForm.file ? 'border-orange-500/50 bg-orange-500/5' : `hover:border-orange-500/40 ${inputBg}`
+              }`}>
+                <input 
+                  ref={fileRef} 
+                  type="file" 
+                  accept="image/jpeg,image/png,image/webp" 
+                  required
+                  onChange={e => setUploadForm({ ...uploadForm, file: e.target.files[0] })}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                />
+                <div className="flex items-center gap-3 px-4 py-3.5 w-full pointer-events-none">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                    uploadForm.file ? 'bg-orange-500 text-white' : 'bg-gray-500/10 text-gray-500 group-hover:text-orange-400 group-hover:bg-orange-500/10'
+                  }`}>
+                    {uploadForm.file ? <CheckCircle2 size={16} /> : <Image size={16} />}
+                  </div>
+                  <span className={`text-sm truncate font-medium ${uploadForm.file ? 'text-orange-500' : sub}`}>
+                    {uploadForm.file ? uploadForm.file.name : 'Görsel seçmek için tıklayın veya sürükleyin...'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={uploading}
+              className="w-full lg:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 shadow-[0_4px_20px_rgba(249,115,22,0.3)] transition-all whitespace-nowrap mt-2 lg:mt-0"
+            >
+              {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
               {uploading ? 'Yükleniyor...' : 'Yükle'}
             </button>
           </form>

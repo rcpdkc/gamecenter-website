@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Clock } from 'lucide-react';
+import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Clock, Trash2 } from 'lucide-react';
 
 const References = () => {
   const context = useOutletContext() || {};
@@ -54,6 +54,20 @@ const References = () => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Bu referans kodunu silmek istediğinize emin misiniz?')) return;
+    try {
+      const res = await fetch('/api/delete_reference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (data.success) fetchReferences();
+      else alert(data.error);
+    } catch { alert('Silme işlemi başarısız.'); }
   };
 
   const used = refs.filter(r => r.is_used).length;
@@ -167,7 +181,7 @@ const References = () => {
                     <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">E-Posta</th>
                     <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Referans Kodu</th>
                     <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Durum</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-right">Kopyala</th>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-right">İşlem</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${divider}`}>
@@ -188,15 +202,23 @@ const References = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-3.5 text-right">
+                      <td className="px-6 py-3.5 text-right flex items-center justify-end gap-2">
                         {!ref.is_used && (
                           <button
                             onClick={() => copyToClipboard(ref.code, ref.id)}
                             className={`p-2 rounded-lg transition-colors ${dark ? 'text-gray-500 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
+                            title="Kopyala"
                           >
                             {copiedId === ref.id ? <CheckCircle2 size={15} className="text-emerald-400" /> : <Copy size={15} />}
                           </button>
                         )}
+                        <button
+                          onClick={() => handleDelete(ref.id)}
+                          className={`p-2 rounded-lg transition-colors ${dark ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
+                          title="Sil"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </td>
                     </tr>
                   ))}

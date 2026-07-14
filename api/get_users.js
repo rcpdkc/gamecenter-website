@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   try {
     const { rows } = await sql`
       SELECT u.id, u.first_name, u.last_name, u.email, u.cafe_name, u.phone,
-             u.role, u.group_id, u.group_expires_at, u.cafe_id, u.created_at,
+             u.role, u.group_id, u.group_expires_at, u.cafe_id, u.created_at, u.hwid,
              g.name AS group_name, g.color AS group_color
       FROM users u
       LEFT JOIN groups g ON u.group_id = g.id
