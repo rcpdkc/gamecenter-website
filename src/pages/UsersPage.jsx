@@ -16,10 +16,10 @@ const EditModal = ({ user, groups, dark, onClose, onSave }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/update_user_group', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, group_id: groupId || null, group_expires_at: expiresAt || null })
+        body: JSON.stringify({ action: 'update_group', user_id: user.id, group_id: groupId || null, group_expires_at: expiresAt || null })
       });
       const data = await res.json();
       if (data.success) { onSave(); onClose(); }
@@ -113,7 +113,7 @@ const UsersPage = () => {
   const fetchAll = async () => {
     setFetching(true);
     try {
-      const [uRes, gRes] = await Promise.all([fetch('/api/get_users'), fetch('/api/groups')]);
+      const [uRes, gRes] = await Promise.all([fetch('/api/users'), fetch('/api/groups')]);
       const [uData, gData] = await Promise.all([uRes.json(), gRes.json()]);
       if (uData.success) setUsers(uData.data);
       if (gData.success) setGroups(gData.data);
@@ -126,10 +126,10 @@ const UsersPage = () => {
   const handleResetHwid = async (userId) => {
     if (!confirm('Bu kullanıcının HWID (Donanım) kilidini kaldırmak istediğinize emin misiniz?')) return;
     try {
-      const res = await fetch('/api/update_user_hwid', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, hwid: null })
+        body: JSON.stringify({ action: 'update_hwid', user_id: userId, hwid: null })
       });
       const data = await res.json();
       if (data.success) fetchAll();

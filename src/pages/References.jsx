@@ -23,7 +23,7 @@ const References = () => {
   const fetchReferences = async () => {
     setFetching(true);
     try {
-      const res = await fetch('/api/get_references');
+      const res = await fetch('/api/references');
       const data = await res.json();
       if (data.success) setRefs(data.data);
     } catch (err) { console.error(err); }
@@ -38,7 +38,7 @@ const References = () => {
     setLoading(true);
     setNewCode(null);
     try {
-      const res = await fetch('/api/create_reference', {
+      const res = await fetch('/api/references', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -59,8 +59,8 @@ const References = () => {
   const handleDelete = async (id) => {
     if (!confirm('Bu referans kodunu silmek istediğinize emin misiniz?')) return;
     try {
-      const res = await fetch('/api/delete_reference', {
-        method: 'POST',
+      const res = await fetch('/api/references', {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
       });
