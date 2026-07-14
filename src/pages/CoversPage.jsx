@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download } from 'lucide-react';
+import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download, Edit2, Check } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending:  { label: 'Bekliyor',    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
@@ -26,11 +26,9 @@ const CoversPage = () => {
   const [uploadLogs, setUploadLogs] = useState([]);
   const cancelUploadRef = useRef(false);
 
-  // AI State
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analyzeProgress, setAnalyzeProgress] = useState({ active: false, total: 0, current: 0, success: 0, fail: 0 });
-  const [analyzeLogs, setAnalyzeLogs] = useState([]);
-  const cancelAnalyzeRef = useRef(false);
+  // Editing State
+  const [editingCoverId, setEditingCoverId] = useState(null);
+  const [editGameName, setEditGameName] = useState('');
 
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
@@ -124,60 +122,11 @@ const CoversPage = () => {
     window.open(cover_url, '_blank');
   };
 
-  const handleBulkAnalyze = async () => {
-    // Detect items that are likely UUIDs or have very short/meaningless names (e.g. without spaces, dashes only)
-    const targets = covers.filter(c => /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(c.game_name));
-    if (targets.length === 0) {
-      alert("Yapay Zeka analizi gerektiren (isimlendirilmemiş veya UUID formunda) cover bulunamadı.");
-      return;
-    }
-    
-    if (!confirm(`Toplam ${targets.length} adet isimsiz cover için Yapay Zeka analizi başlatılacak. Bu işlem biraz sürebilir. Onaylıyor musunuz?`)) return;
-
-    cancelAnalyzeRef.current = false;
-    setAnalyzing(true);
-    setAnalyzeProgress({ active: true, total: targets.length, current: 0, success: 0, fail: 0 });
-    setAnalyzeLogs([]);
-
-    let sCount = 0;
-    let fCount = 0;
-
-    for (let i = 0; i < targets.length; i++) {
-      if (cancelAnalyzeRef.current) {
-        setAnalyzeLogs(prev => [...prev, "🛑 AI Analizi iptal edildi!"]);
-        break;
-      }
-
-      const cover = targets[i];
-      try {
-        const res = await fetch('/api/analyze_cover', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: cover.id, file_url: cover.file_url })
-        });
-        const data = await res.json();
-        if (data.success) {
-          sCount++;
-          setAnalyzeLogs(prev => [...prev, `✅ [${i+1}/${targets.length}] Bulundu: ${data.game_name}`]);
-          setCovers(prevCovers => prevCovers.map(c => c.id === cover.id ? { ...c, game_name: data.game_name } : c));
-        } else {
-          fCount++;
-          setAnalyzeLogs(prev => [...prev, `❌ [${i+1}/${targets.length}] Hata: ${data.error}`]);
-        }
-      } catch (err) {
-        fCount++;
-        setAnalyzeLogs(prev => [...prev, `❌ [${i+1}/${targets.length}] Ağ Hatası: ${err.message}`]);
-      }
-
-      setAnalyzeProgress(prev => ({ ...prev, current: i + 1, success: sCount, fail: fCount }));
-
-      // Google AI Free Tier (15 RPM = 1 request per 4s) throttle
-      if (i < targets.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 4500));
-      }
-    }
-
-    setAnalyzing(false);
+  const handleEditSubmit = async (id) => {
+    if (!editGameName.trim()) { setEditingCoverId(null); return; }
+    await fetch('/api/covers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, game_name: editGameName }) });
+    setEditingCoverId(null);
+    fetchCovers();
   };
 
   const filtered = filter === 'all' ? covers : covers.filter(c => c.status === filter);
@@ -208,80 +157,11 @@ const CoversPage = () => {
           ))}
           
           <div className="ml-auto flex items-center gap-2">
-            {user.role === 'admin' && (
-              <button onClick={handleBulkAnalyze} disabled={analyzing} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${analyzing ? 'bg-purple-500/50 text-white cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white shadow-[0_4px_15px_rgba(168,85,247,0.3)]'}`}>
-                {analyzing ? <Loader2 size={16} className="animate-spin" /> : <span>🤖</span>}
-                {analyzing ? 'AI Tarıyor...' : 'AI ile İsimlendir'}
-              </button>
-            )}
-            
-            <button onClick={fetchCovers} disabled={fetching || analyzing} className={`p-2.5 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
+            <button onClick={fetchCovers} disabled={fetching} className={`p-2.5 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
               <RefreshCw size={16} className={fetching ? 'animate-spin' : ''} />
             </button>
           </div>
         </div>
-
-        {/* AI Progress & Logs Display */}
-        {(analyzeProgress.active || analyzeLogs.length > 0) && (
-          <div className={`${bg} border border-purple-500/30 rounded-2xl p-6 shadow-[0_0_20px_rgba(168,85,247,0.1)] relative overflow-hidden`}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-            
-            {analyzeProgress.active && (
-              <>
-                <div className="flex items-center justify-between text-sm font-bold mb-3">
-                  <span className="text-purple-400 flex items-center gap-2">
-                    <Loader2 size={16} className="animate-spin" /> Yapay Zeka Kapakları Analiz Ediyor... ({analyzeProgress.current} / {analyzeProgress.total})
-                  </span>
-                  <span className="text-white">{Math.round((analyzeProgress.current / analyzeProgress.total) * 100)}%</span>
-                </div>
-                <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden flex-shrink-0">
-                  <div 
-                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-400 rounded-full transition-all duration-300"
-                    style={{ width: `${(analyzeProgress.current / analyzeProgress.total) * 100}%` }}
-                  ></div>
-                </div>
-                
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex gap-4 text-xs font-medium text-gray-400">
-                    <span className="text-emerald-400">Başarılı: {analyzeProgress.success}</span>
-                    {analyzeProgress.fail > 0 && <span className="text-red-400">Hatalı: {analyzeProgress.fail}</span>}
-                  </div>
-                  
-                  {analyzing && (
-                    <button 
-                      onClick={() => { cancelAnalyzeRef.current = true; }} 
-                      className="text-xs font-bold text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 px-4 py-1.5 rounded-lg transition-colors"
-                    >
-                      Taramayı Durdur
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* AI Log Window */}
-            {analyzeLogs.length > 0 && (
-              <div className="mt-4 bg-black/60 border border-white/5 rounded-xl p-4 h-48 overflow-y-auto font-mono text-xs leading-relaxed flex flex-col-reverse shadow-inner">
-                <div>
-                  {analyzeLogs.map((log, idx) => (
-                    <div key={idx} className={`mb-1.5 ${log.includes('✅') ? 'text-emerald-400' : log.includes('🛑') ? 'text-yellow-400' : 'text-red-400'}`}>
-                      {log}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {!analyzing && analyzeLogs.length > 0 && (
-              <button 
-                onClick={() => { setAnalyzeLogs([]); setAnalyzeProgress({ active: false, total: 0, current: 0, success: 0, fail: 0 }); }}
-                className="mt-4 w-full py-2.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded-xl text-sm font-bold transition-colors"
-              >
-                Pencereyi Kapat
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Upload form (All users can upload now) */}
         <div className={`${bg} border ${panelBorder} rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden`}>
@@ -424,7 +304,26 @@ const CoversPage = () => {
                   </div>
                 </div>
                 <div className="p-3">
-                  <p className={`text-xs font-bold ${txt} truncate mb-1.5`}>{cover.game_name}</p>
+                  <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[24px]">
+                    {editingCoverId === cover.id ? (
+                      <div className="flex-1 flex items-center gap-1">
+                        <input 
+                          type="text" 
+                          value={editGameName} 
+                          onChange={e => setEditGameName(e.target.value)} 
+                          onKeyDown={e => e.key === 'Enter' && handleEditSubmit(cover.id)} 
+                          autoFocus 
+                          className={`w-full text-xs font-bold px-2 py-1 rounded border outline-none ${dark ? 'bg-black/50 border-white/20 text-white' : 'bg-white border-gray-300 text-black'}`} 
+                        />
+                        <button onClick={() => handleEditSubmit(cover.id)} className="p-1 rounded text-emerald-400 hover:bg-emerald-500/10"><Check size={14} /></button>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-between group/edit cursor-pointer" onClick={() => { if(user.role === 'admin') { setEditingCoverId(cover.id); setEditGameName(cover.game_name); } }}>
+                        <p className={`text-xs font-bold ${txt} truncate`} title={cover.game_name}>{cover.game_name}</p>
+                        {user.role === 'admin' && <Edit2 size={12} className={`opacity-0 group-hover/edit:opacity-100 transition-opacity ${sub}`} />}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center justify-between mb-2">
                     <StatusBadge status={cover.status} />
                     <span className={`text-xs ${sub} flex items-center gap-1`}>

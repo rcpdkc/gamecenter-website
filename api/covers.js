@@ -30,10 +30,18 @@ export default async function handler(req, res) {
     }
 
     if (method === 'PATCH') {
-      // Update status (approve/reject)
-      const { id, status } = req.body;
-      if (!id || !status) return res.status(400).json({ error: 'id ve status zorunludur.' });
-      await sql`UPDATE covers SET status = ${status} WHERE id = ${id}`;
+      // Update status or game_name
+      const { id, status, game_name } = req.body;
+      if (!id) return res.status(400).json({ error: 'id zorunludur.' });
+      
+      if (status && game_name) {
+        await sql`UPDATE covers SET status = ${status}, game_name = ${game_name} WHERE id = ${id}`;
+      } else if (status) {
+        await sql`UPDATE covers SET status = ${status} WHERE id = ${id}`;
+      } else if (game_name) {
+        await sql`UPDATE covers SET game_name = ${game_name} WHERE id = ${id}`;
+      }
+      
       return res.status(200).json({ success: true });
     }
 
