@@ -1,6 +1,4 @@
 import { sql } from '@vercel/postgres';
-import bcrypt from 'bcryptjs';
-
 export default async function handler(req, res) {
   // CORS Preflight
   if (req.method === 'OPTIONS') {
@@ -43,14 +41,10 @@ export default async function handler(req, res) {
     // Actually, usually they get assigned a default group or null, and admin can change it later.
     // Let's set group_id to NULL initially.
     
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     // 4. Create User
     const { rows: newUsers } = await sql`
       INSERT INTO users (first_name, last_name, cafe_name, phone, email, password, group_id)
-      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${hashedPassword}, NULL)
+      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${password}, NULL)
       RETURNING id, email, first_name, last_name, cafe_name
     `;
 
