@@ -45,7 +45,7 @@ const Gallery = () => {
             <div 
               key={index} 
               className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#0a0b10] shadow-2xl transition-all duration-500 hover:border-orange-500/50 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)] hover:-translate-y-2 animate-fade-in-up"
-              style={{ animationDelay: \`\${index * 50}ms\` }}
+              style={{ animationDelay: `${index * 50}ms` }}
               onClick={() => setSelectedImage(img)}
             >
               <div className="aspect-[16/10] overflow-hidden">
