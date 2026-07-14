@@ -45,7 +45,7 @@ const CafeDashboard = ({ user, dark }) => {
 
   useEffect(() => {
     if (!user.cafe_id || licenseExpired) { setLoading(false); return; }
-    fetch(`/api/get_telemetry?role=cafe&cafe_id=${user.cafe_id}`)
+    fetch(`/api/telemetry?role=cafe&cafe_id=${user.cafe_id}`)
       .then(r => r.json())
       .then(j => { setData((j.data || [])[0] || null); setLoading(false); })
       .catch(() => setLoading(false));
@@ -132,7 +132,7 @@ const AdminDashboard = ({ dark }) => {
   const tooltipStyle = { backgroundColor: dark ? '#1f2937' : '#fff', borderColor: dark ? '#374151' : '#e5e7eb' };
 
   useEffect(() => {
-    fetch('/api/get_telemetry?role=admin')
+    fetch('/api/telemetry?role=admin')
       .then(r => r.json())
       .then(j => { setData(j.data || []); setLoading(false); })
       .catch(() => setLoading(false));
