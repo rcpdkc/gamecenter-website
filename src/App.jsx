@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import SuperAdmin from './pages/SuperAdmin';
 import References from './pages/References';
+import UsersPage from './pages/UsersPage';
 import './index.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/superadmin" element={<AdminLayout />}>
           <Route index element={<SuperAdmin />} />
           <Route path="references" element={<References />} />
+          <Route path="users" element={<UsersPage />} />
         </Route>
 
       </Routes>

@@ -25,6 +25,7 @@ const Login = () => {
       
       if (res.ok && data.success) {
         localStorage.setItem('gc_admin_token', data.token);
+        localStorage.setItem('gc_user', JSON.stringify(data.user));
         navigate('/superadmin');
       } else {
         setError(data.error || 'Giriş başarısız.');

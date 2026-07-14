@@ -1,7 +1,7 @@
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Server, Settings, LogOut, Activity, Key, 
-  ChevronLeft, ChevronRight, Sun, Moon, Bell, Search, Menu
+  LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users,
+  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
 
@@ -10,15 +10,15 @@ export const ThemeContext = createContext({ dark: true, toggleTheme: () => {} })
 
 const NAV_ITEMS = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { to: '/superadmin/cafes', icon: Activity, label: 'Kafeler' },
+  { to: '/superadmin/users', icon: Users, label: 'Kullanıcılar' },
   { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
   { to: '/superadmin/settings', icon: Settings, label: 'Ayarlar' },
 ];
 
 const PAGE_TITLES = {
   '/superadmin': { title: 'Dashboard', subtitle: 'Tüm Game Center şubelerinin genel görünümü' },
+  '/superadmin/users': { title: 'Kullanıcı Yönetimi', subtitle: 'Kafe üyeleri ve lisans yönetimi' },
   '/superadmin/references': { title: 'Referans & Davet', subtitle: 'Kafe davet kodları ve kayıt yönetimi' },
-  '/superadmin/cafes': { title: 'Kafeler', subtitle: 'Kayıtlı tüm kafeler' },
   '/superadmin/settings': { title: 'Ayarlar', subtitle: 'Sistem tercihleri ve yapılandırma' },
 };
 
