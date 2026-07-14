@@ -56,14 +56,14 @@ const CoversPage = () => {
   useEffect(() => { fetchCovers(); }, []);
 
   const handleStatus = async (id, status) => {
+    setCovers(prev => prev.map(c => c.id === id ? { ...c, status } : c));
     await fetch('/api/covers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
-    fetchCovers();
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Bu cover\'ı silmek istediğinize emin misiniz?')) return;
+    setCovers(prev => prev.filter(c => c.id !== id));
     await fetch('/api/covers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    fetchCovers();
   };
 
   const handleUpload = async (e) => {
@@ -147,10 +147,11 @@ const CoversPage = () => {
   };
 
   const handleEditSubmit = async (id) => {
-    if (!editGameName.trim()) { setEditingCoverId(null); return; }
-    await fetch('/api/covers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, game_name: editGameName }) });
+    const updatedName = editGameName.trim();
+    if (!updatedName) { setEditingCoverId(null); return; }
     setEditingCoverId(null);
-    fetchCovers();
+    setCovers(prev => prev.map(c => c.id === id ? { ...c, game_name: updatedName } : c));
+    await fetch('/api/covers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, game_name: updatedName }) });
   };
 
   const isMessy = (name) => /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(name) || name.length < 3;
