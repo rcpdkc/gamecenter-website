@@ -113,7 +113,14 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Sunucu Kurulumu</h1>
       <p className="text-lg text-muted mb-8">Sistemin Inno Setup ile kurulan yerel ayağı.</p>
-      <img src="/images/setup_5_folder.png" className="w-full max-w-2xl border border-white/10 rounded" />
+      <div className="space-y-6">
+        <img src="/images/setup_1.png" className="w-full max-w-2xl border border-white/10 rounded" />
+        <img src="/images/setup_2_changelog.png" className="w-full max-w-2xl border border-white/10 rounded" />
+        <img src="/images/setup_3_bilesen.png" className="w-full max-w-2xl border border-white/10 rounded" />
+        <img src="/images/setup_4_ip.png" className="w-full max-w-2xl border border-white/10 rounded" />
+        <img src="/images/setup_5_folder.png" className="w-full max-w-2xl border border-white/10 rounded" />
+        <img src="/images/setup_6_kısayol.png" className="w-full max-w-2xl border border-white/10 rounded" />
+      </div>
     </div>
   ),
 
@@ -121,7 +128,14 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">İstemci ve Arayüz (Client)</h1>
       <p className="text-lg text-muted mb-8">Oturum açan oyuncuların gördüğü WPF tabanlı mükemmel arayüz.</p>
-      <img src="/images/client 1.png" className="w-full max-w-4xl border border-white/10 rounded" />
+      <div className="space-y-6">
+        <img src="/images/client 1.png" className="w-full max-w-4xl border border-white/10 rounded" />
+        <img src="/images/client_istatistik.png" className="w-full max-w-4xl border border-white/10 rounded" />
+        <img src="/images/client_oyunkayit.png" className="w-full max-w-4xl border border-white/10 rounded" />
+        <img src="/images/client_seslisohbet.png" className="w-full max-w-4xl border border-white/10 rounded" />
+        <img src="/images/client_steam.png" className="w-full max-w-4xl border border-white/10 rounded" />
+        <img src="/images/client_yenioyun.png" className="w-full max-w-4xl border border-white/10 rounded" />
+      </div>
     </div>
   ),
 
