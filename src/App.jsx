@@ -14,6 +14,7 @@ import GroupsPage from './pages/GroupsPage';
 import CoversPage from './pages/CoversPage';
 import SettingsPage from './pages/SettingsPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
+import MklinkArchivePage from './pages/MklinkArchivePage';
 import './index.css';
 
 function TitleUpdater() {
@@ -30,6 +31,7 @@ function TitleUpdater() {
       '/superadmin/users': 'Kullanıcılar - Game Center Plus',
       '/superadmin/groups': 'Lisans Grupları - Game Center Plus',
       '/superadmin/covers': 'Oyun Kapakları - Game Center Plus',
+      '/superadmin/mklink-archive': 'Mklink Arşivi - Game Center Plus',
       '/superadmin/announcements': 'Global Duyurular - Game Center Plus',
       '/superadmin/settings': 'Ayarlar - Game Center Plus'
     };
@@ -62,6 +64,7 @@ function App() {
           <Route path="users" element={<UsersPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="covers" element={<CoversPage />} />
+          <Route path="mklink-archive" element={<MklinkArchivePage />} />
           <Route path="announcements" element={<AnnouncementsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
