@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss, Cloud, Cpu, Database, Save, Key, Wifi, Users, Image as ImageIcon, FolderSync, Megaphone, Gamepad2, Laptop, Network, LineChart, Star, FolderOpen, Puzzle, Link as LinkIcon, RefreshCw, Power, Ban, Plus, Edit, Download } from 'lucide-react';
+import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss, Cloud, Cpu, Database, Save, Key, Wifi, Users, Image as ImageIcon, FolderSync, Megaphone, Gamepad2, Laptop, Network, LineChart, Star, FolderOpen, Puzzle, Link as LinkIcon, RefreshCw, Power, Ban, Plus, Edit, Download, History, Zap, CheckCircle, Crosshair, Target } from 'lucide-react';
 
 const WIKI_STRUCTURE = [
   {
@@ -61,6 +61,7 @@ const WIKI_STRUCTURE = [
 ];
 
 const WIKI_ARTICLES = {
+  /* STARTING SECTIONS */
   "intro": (
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Game Center Nedir?</h1>
@@ -85,26 +86,6 @@ const WIKI_ARTICLES = {
           </li>
         </ul>
       </div>
-
-      <h2 className="text-2xl font-bold text-white mb-4 mt-8">Öne Çıkan Özellikler</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#050608] p-5 rounded-xl border border-white/5 hover:border-orange-500/30 transition-colors">
-          <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2"><Activity size={18} /> Smart Sync</h4>
-          <p className="text-sm text-gray-400">Ağ trafiğini %90 oranında azaltarak sadece değişen verileri ve kapak resimlerini yükler. İstemci önbelleğinde kalıcı saklama yapar.</p>
-        </div>
-        <div className="bg-[#050608] p-5 rounded-xl border border-white/5 hover:border-orange-500/30 transition-colors">
-          <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2"><Wifi size={18} /> Dahili Sesli Sohbet</h4>
-          <p className="text-sm text-gray-400">İnternet bağlantısı kopsa dahi UDP Port 5002 üzerinden yerel ağda sıfır gecikmeli bas-konuş (Push-to-Talk) iletişim sağlar.</p>
-        </div>
-        <div className="bg-[#050608] p-5 rounded-xl border border-white/5 hover:border-orange-500/30 transition-colors">
-          <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2"><Cpu size={18} /> OSD Canlı Monitör</h4>
-          <p className="text-sm text-gray-400">DirectX kancası gerektirmeden oyuncuların ekranlarına FPS, Ping, RAM ve CPU kullanımını anlık yansıtan dahili overlay sistemi.</p>
-        </div>
-        <div className="bg-[#050608] p-5 rounded-xl border border-white/5 hover:border-orange-500/30 transition-colors">
-          <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2"><Save size={18} /> Save Bulutu</h4>
-          <p className="text-sm text-gray-400">Hikaye modlu oyunlarındaki Save dosyalarını yerel ağdaki sunucuya milisaniyeler içinde yedekler ve diğer bilgisayarlara taşır.</p>
-        </div>
-      </div>
     </div>
   ),
   
@@ -112,30 +93,8 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Sistem Gereksinimleri</h1>
       <p className="text-lg text-muted mb-8">Game Center'ın yüksek performanslı veri aktarımını sorunsuz yapabilmesi için tavsiye edilen altyapı standartları.</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="glass-panel p-6">
-          <h3 className="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><Server size={18} className="text-orange-400"/> Sunucu (Server)</h3>
-          <ul className="space-y-3 text-muted text-sm">
-            <li><strong>İşletim Sistemi:</strong> Windows 10/11 veya Windows Server 2019+ (64-bit)</li>
-            <li><strong>İşlemci:</strong> Minimum 4 Çekirdek (Örn: Intel i5 10. Nesil veya Ryzen 5)</li>
-            <li><strong>RAM:</strong> 16 GB veya üzeri (SQLite bellek önbelleği için hayati önem taşır)</li>
-            <li><strong>Disk:</strong> NVMe SSD (Mekanik disk kullanılması şiddetle reddedilir)</li>
-            <li><strong>Ağ:</strong> 10 Gbps Yerel Ağ Bağlantısı (Tercihen CAT6 veya CAT6A altyapısı)</li>
-            <li><strong>Yazılım:</strong> Visual C++ Redistributable (Tüm Yıllar)</li>
-          </ul>
-        </div>
-
-        <div className="glass-panel p-6">
-          <h3 className="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2 flex items-center gap-2"><Monitor size={18} className="text-orange-400"/> İstemci (Client)</h3>
-          <ul className="space-y-3 text-muted text-sm">
-            <li><strong>İşletim Sistemi:</strong> Windows 10/11 (64-bit)</li>
-            <li><strong>İşlemci:</strong> Çift çekirdekli herhangi bir güncel işlemci</li>
-            <li><strong>RAM:</strong> Uygulama arka planda sadece ~50MB tüketir</li>
-            <li><strong>Ağ:</strong> 1 Gbps Yerel Ağ Bağlantısı</li>
-            <li><strong>Yazılım:</strong> .NET Framework 4.8 veya üzeri</li>
-          </ul>
-        </div>
+      <div className="glass-panel p-6 mb-4">
+         <p className="text-sm text-gray-300">Minimum 1 Gbps Yerel Ağ, NVMe SSD'li bir ana makine (Server) ve Windows 10/11 kurulu Client'lar gereklidir.</p>
       </div>
     </div>
   ),
@@ -143,308 +102,433 @@ const WIKI_ARTICLES = {
   "license": (
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Lisans ve Üyelik Sistemi</h1>
-      <p className="text-lg text-muted mb-8">Game Center Plus, Vercel Postgres tabanlı sağlam bir güvenlik ve doğrulama sistemi kullanır.</p>
-
-      <div className="glass-panel p-6 border-l-4 border-l-purple-500">
-        <h3 className="text-xl font-bold text-white mb-3">Postgres Bulut Doğrulaması</h3>
-        <p className="text-muted text-sm leading-relaxed mb-4">
-          Satın aldığınız lisans kodu (Reference Code) direkt olarak <strong>Bulut Veritabanına (Vercel)</strong> işlenir. Admin Paneline ilk girişinizde sistem bu kodu buluttan sorgular. Eğer kod geçerliyse hesabınız "Plus Aktif" durumuna gelir ve veritabanına MAC adresi veya IP bazlı kayıt atılır.
-        </p>
+      <p className="text-lg text-muted mb-8">Bulut tabanlı şifreli yetkilendirme sistemi (Vercel Postgres üzerinden).</p>
+      <div className="glass-panel p-6">
+        <p className="text-sm text-gray-300">Her kafe için üretilen Benzersiz Şifre (Reference Code) internet bağlantısı ile teyit edilir ve SQLite tabanına şifreli token olarak yazılır.</p>
       </div>
     </div>
   ),
 
   "server-setup": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Sistem Kurulumu</h1>
-      <p className="text-lg text-muted mb-10">Game Center'ın kalbi olan yazılımın ana makineye kurulması ve adım adım yapılandırma rehberi.</p>
-
-      <div className="space-y-8 relative">
-        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">1</span></div>
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">1</span> Kurulumu Başlatın</h2>
-          <p className="text-muted mb-6">İndirdiğiniz GameCenter Setup dosyasına çift tıklayarak kurulumu başlatın.</p>
-          <img src="/images/setup_1.png" alt="Setup" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
-        </div>
-        
-        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
-        
-        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">2</span></div>
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">2</span> Yenilikleri (Changelog) İnceleyin</h2>
-          <img src="/images/setup_2_changelog.png" alt="Changelog" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
-        </div>
-        
-        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
-        
-        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">3</span></div>
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">3</span> Bileşen Seçimi</h2>
-          <p className="text-muted mb-6">GameCenter ana sistemi otomatik seçilidir, isteğinize göre Client paketlerini de ekleyebilirsiniz.</p>
-          <img src="/images/setup_3_bilesen.png" alt="Bilesen" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
-        </div>
-        
-        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
-        
-        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">4</span></div>
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">4</span> Ağ ve IP Yapılandırması</h2>
-          <p className="text-muted mb-6">Sunucu makinenizin sabit IP adresini girmelisiniz (Örn: 192.168.1.100). İstemciler bu IP'yi arayacaktır.</p>
-          <img src="/images/setup_4_ip.png" alt="IP Ayar" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
-        </div>
-        
-        <div className="flex justify-center -my-4 opacity-50"><ChevronDown size={32} className="text-orange-500 animate-bounce" /></div>
-        
-        <div className="glass-panel p-8 border-l-4 border-l-orange-500 relative overflow-hidden group hover:border-l-orange-400 transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><span className="text-8xl font-black italic">5</span></div>
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3"><span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">5</span> Kurulum Dizinini Seçin</h2>
-          <p className="text-muted mb-6">D: veya E: sürücüsüne kurmanız tavsiye edilir.</p>
-          <img src="/images/setup_5_folder.png" alt="Folder" className="w-auto max-w-[550px] object-contain mx-auto block rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 group-hover:scale-[1.02] transition-transform duration-500" />
-        </div>
-      </div>
+      <h1 className="text-4xl font-bold text-white mb-4">Sunucu Kurulumu</h1>
+      <p className="text-lg text-muted mb-8">Sistemin Inno Setup ile kurulan yerel ayağı.</p>
+      <img src="/images/setup_5_folder.png" className="w-full max-w-2xl border border-white/10 rounded" />
     </div>
   ),
 
   "client-setup": (
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">İstemci ve Arayüz (Client)</h1>
-      <p className="text-lg text-muted mb-8">İstemci uygulaması C# ve WPF ile kodlanmış, %100 yerel donanım gücünü kullanan üst düzey bir arayüzdür.</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="glass-panel p-6 border-t-4 border-t-blue-500">
-          <h3 className="text-xl font-bold text-white mb-3">DirectX ve XAML Mimarisi</h3>
-          <p className="text-muted text-sm leading-relaxed">
-            Arayüz, donanım hızlandırmalı WPF kullanılarak tasarlanmıştır. Oyun kütüphanesindeki kapaklar (Covers) RAM'e cache'lenerek (Smart Sync) 0 gecikmeyle listelenir.
-          </p>
-        </div>
-
-        <div className="glass-panel p-6 border-t-4 border-t-green-500">
-          <h3 className="text-xl font-bold text-white mb-3">Steam Entegrasyonu</h3>
-          <p className="text-muted text-sm leading-relaxed">
-            Sistem, kayıtlı Steam hesaplarına otomatik login işlemini regedit komutları veya doğrudan parametre ile gerçekleştirir.
-          </p>
-        </div>
-      </div>
-      
-      <img src="/images/client 1.png" alt="Client Dashboard" className="w-full max-w-4xl mx-auto rounded-xl shadow-2xl border border-white/10" />
+      <p className="text-lg text-muted mb-8">Oturum açan oyuncuların gördüğü WPF tabanlı mükemmel arayüz.</p>
+      <img src="/images/client 1.png" className="w-full max-w-4xl border border-white/10 rounded" />
     </div>
   ),
 
   "local-admin": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Yerel Admin Paneli (Genel Bakış)</h1>
-      <p className="text-lg text-muted mb-8">Aşağıdaki "Admin Paneli Modülleri" bölümünde her bir sayfanın teknik işlevini tek tek inceleyebilirsiniz.</p>
+      <h1 className="text-4xl font-bold text-white mb-4">Yerel Admin Paneli</h1>
+      <p className="text-lg text-muted mb-8">Sol taraftaki "Admin Paneli Modülleri" başlığı altında her bir sekmeyi inceleyebilirsiniz.</p>
     </div>
   ),
 
   "cloud-admin": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Bulut SuperAdmin (Vercel)</h1>
-      <p className="text-lg text-muted mb-8">Game Center sistemini bayilere ve kafelere satan merkezin kontrol paneli.</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="glass-panel p-6 border-t-2 border-t-purple-500 hover:border-t-purple-400 transition-colors">
-          <h4 className="text-purple-400 font-bold mb-3 flex items-center gap-2"><Users size={18}/> Kullanıcı ve Grup Yönetimi</h4>
-          <p className="text-sm text-gray-400">Bayi hesapları, yönetici grupları (Admin, Superadmin) oluşturma ve lisans yetkilerini ayarlama.</p>
-        </div>
-        <div className="glass-panel p-6 border-t-2 border-t-blue-500 hover:border-t-blue-400 transition-colors">
-          <h4 className="text-blue-400 font-bold mb-3 flex items-center gap-2"><ImageIcon size={18}/> Cover (Kapak) Yönetimi</h4>
-          <p className="text-sm text-gray-400">Vercel Blob / AWS S3 üzerinden tüm kafeler için ortak oyun kapağı havuzunun yönetilmesi.</p>
-        </div>
-        <div className="glass-panel p-6 border-t-2 border-t-green-500 hover:border-t-green-400 transition-colors">
-          <h4 className="text-green-400 font-bold mb-3 flex items-center gap-2"><FolderSync size={18}/> MkLink Arşivi</h4>
-          <p className="text-sm text-gray-400">Yeni çıkan oyunların save ve appdata klasör yollarının buluta eklenip tüm kafelere otomatik inmesi.</p>
-        </div>
-        <div className="glass-panel p-6 border-t-2 border-t-orange-500 hover:border-t-orange-400 transition-colors">
-          <h4 className="text-orange-400 font-bold mb-3 flex items-center gap-2"><Megaphone size={18}/> Global Duyurular</h4>
-          <p className="text-sm text-gray-400">Tüm Game Center kullanılan kafelerin ekranlarına ve admin panellerine acil uyarı/duyuru geçme imkanı.</p>
-        </div>
-      </div>
+      <h1 className="text-4xl font-bold text-white mb-4">Bulut SuperAdmin</h1>
+      <p className="text-lg text-muted mb-8">Tüm bayilerin genel yönetim merkezi (Vercel).</p>
     </div>
   ),
 
-  /* ADMIN PANEL MODULES IN DEPTH */
+  /* ==========================================
+     ADMIN PANEL MODULES (HIGHLY DETAILED)
+     ========================================== */
+
   "mod-dashboard": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Dashboard (Ana Ekran)</h1>
-      <p className="text-lg text-muted mb-6">Sistemin kalbi. Kafedeki tüm hareketliliğin tek bir ekranda toplanmış özeti.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <LayoutDashboard className="text-blue-500" size={36}/> Dashboard (Ana Ekran)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Dashboard, tüm sistemin kalbinin attığı yerdir. Kafedeki toplam işleyişi, açık olan masaları, oyuncu sayılarını ve sistemdeki donanımsal alarmları tek bir bakışta görebileceğiniz merkezi operasyon üssüdür. Python API üzerinden `/api/stats` endpoint'ine saniyede bir milisaniyelik pingler atarak (Polling) ekranı canlı tutar.
+      </p>
+      
+      <img src="/images/mod_dashboard.png" alt="Dashboard" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Teknik Özellikler ve Mimari</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Üst kısımda yer alan widget'lar doğrudan SQLite veritabanındaki <code>clients</code> tablosundan anlık olarak hesaplanır. <code>status="online"</code> olan bilgisayarlar toplanıp aktif bilgisayarlar grafiğini oluştururken, içerisinde açık bir oyun prosesi tespit edilen masalar "Oyunda" grafiğine dahil olur. Sağ taraftaki "Sistem Uyarıları" paneli ise WebSocket üzerinden gelen CPU ısınma veya Ping düşmesi gibi telemetri hatalarını anında ekrana basar.
+      </p>
+
       <div className="glass-panel p-6 border-l-4 border-l-blue-500">
-        <h3 className="text-xl font-bold text-white mb-3">Modül İşlevleri</h3>
-        <ul className="text-muted text-sm space-y-2 list-disc ml-5">
-          <li>Aktif, Kapalı ve Oyunda olan masaların toplam istatistiği.</li>
-          <li>Kafede o an oynanan en popüler oyunların listesi.</li>
-          <li>Son 24 saatteki sistem uyarıları (Bağlantı kopmaları, yüksek CPU bildirimleri).</li>
-        </ul>
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Zap size={18} className="text-blue-400" /> Hızlı Müdahale Avantajı</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Sisteme bir masa katıldığında veya fişi çekildiğinde UDP (5001) Network Discovery protokolü anında Admin Paneli arayüzüne (React State) durumu pushlar. Böylece kasada oturan yönetici, masanın kapandığını görmek için sayfayı yenilemek (F5) zorunda kalmaz.
+        </p>
       </div>
     </div>
   ),
 
   "mod-clients": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Bilgisayarlar (Clients)</h1>
-      <p className="text-lg text-muted mb-6">Ağdaki tüm bilgisayarların (masaların) yönetildiği merkez üssü.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Monitor className="text-orange-500" size={36}/> Bilgisayarlar (Clients)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Kafe içerisindeki tüm bilgisayarların (İstemciler) IP, MAC Adresi, Anakart kimliği ve donanım limitleri gibi devasa bir envanterinin tutulduğu merkez üssüdür. Yeni bir bilgisayar Game Center uygulamasını açtığı an, UDP Broadcast ile sunucuyu bulur ve bu listeye adeta bir ajan gibi sızarak kendini kaydeder.
+      </p>
+
+      <img src="/images/mod_clients.png" alt="Clients" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Donanım Hükmü ve Uzaktan Kontrol</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Buradaki bilgisayar satırlarına sağ tıkladığınızda veya üzerine geldiğinizde devasa bir komut dizini çıkar. Masaya doğrudan <strong>Shutdown (Kapatma)</strong>, <strong>Restart (Yeniden Başlatma)</strong> veya Windows Görev Yöneticisine (Taskmgr) gerek kalmadan oynadığı oyunu anında sonlandırma (Kill Process) komutları yollayabilirsiniz. Bu komutlar TCP üzerinden Base64 ile şifrelenmiş olarak iletilir.
+      </p>
+
+      <div className="overflow-x-auto mb-8">
+         <table className="w-full text-left border-collapse text-sm">
+           <thead>
+             <tr className="bg-white/5 border-b border-white/10 text-gray-400 uppercase">
+               <th className="p-3 font-bold">Aksiyon</th>
+               <th className="p-3 font-bold">Protokol</th>
+               <th className="p-3 font-bold">Gerçekleşme Süresi</th>
+               <th className="p-3 font-bold">Açıklama</th>
+             </tr>
+           </thead>
+           <tbody className="text-gray-300">
+             <tr className="border-b border-white/5 hover:bg-white/5">
+               <td className="p-3 font-bold text-red-400">Kill Process</td>
+               <td className="p-3">TCP 5000</td>
+               <td className="p-3 text-green-400">~2ms</td>
+               <td className="p-3">Masadaki oyunun exe dosyasını PID (Process ID) üzerinden saniyesinde sonlandırır.</td>
+             </tr>
+             <tr className="border-b border-white/5 hover:bg-white/5">
+               <td className="p-3 font-bold text-yellow-400">Wake-on-LAN</td>
+               <td className="p-3">UDP 9</td>
+               <td className="p-3 text-green-400">Anında</td>
+               <td className="p-3">Kapalı bilgisayara "Magic Packet" yollayarak kasayı tuşuna basmadan çalıştırır.</td>
+             </tr>
+             <tr className="border-b border-white/5 hover:bg-white/5">
+               <td className="p-3 font-bold text-blue-400">Lock Screen</td>
+               <td className="p-3">TCP 5000</td>
+               <td className="p-3 text-green-400">~3ms</td>
+               <td className="p-3">C# İstemcisini en öne (TopMost) alıp siyah bir ekranla masayı kilitler.</td>
+             </tr>
+           </tbody>
+         </table>
+      </div>
+
       <div className="glass-panel p-6 border-l-4 border-l-orange-500">
-        <h3 className="text-xl font-bold text-white mb-3">Yetkinlikler</h3>
-        <ul className="text-muted text-sm space-y-3">
-          <li className="flex gap-2"><Power size={18} className="text-red-400"/> Masayı uzaktan yeniden başlatma (Restart) veya Kapatma (Shutdown).</li>
-          <li className="flex gap-2"><Ban size={18} className="text-red-400"/> Masadaki aktif oyunu veya Steam'i anında durdurma (Kill Process).</li>
-          <li className="flex gap-2"><Wifi size={18} className="text-green-400"/> IP ve MAC adresine göre bilgisayarı tanımlama. Wake-on-LAN (WOL) paketi gönderme.</li>
-        </ul>
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Target size={18} className="text-orange-400" /> Mac Adresi Dayatması</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Bir oyuncu IP adresini değiştirmeye çalışsa bile, Game Center onu Anakartının benzersiz MAC adresi ile etiketler. Bu sayede dolandırıcılığın önüne geçilir ve makinenin geçmiş oyun kayıtları asla kaybolmaz.
+        </p>
       </div>
     </div>
   ),
 
   "mod-live": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Canlı Monitör (Live)</h1>
-      <p className="text-lg text-muted mb-6">Tüm bilgisayarların donanım sensörlerinin (Sıcaklık, Yük) anlık olarak ekranda kaydığı matris ekranı.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Activity className="text-green-500" size={36}/> Canlı Monitör (Live)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Bu ekran, internet kafenin donanımsal olarak adeta EKG çekildiği yerdir. `LibreHardwareMonitorLib` kütüphanesi ile her saniye masaların Anakartlarına (WMI) bağlanılıp donanım sensörleri okunur. Bu veriler (Isı, RAM Tüketimi, CPU Yükü) Python WebSocket sunucusuna pompalanır.
+      </p>
+
+      <img src="/images/mod_monitor_live.png" alt="Canli Monitor" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Matrix Benzeri Veri Akışı</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Gözünüzün önünde akan yeşil ve kırmızı pikseller aslında her saniye yenilenen paketlerdir. Bir ekran kartı 85°C derecenin (Kritik Eşik) üstüne çıktığında veya RAM %95 doluluk oranına ulaştığında, sistem otomatik olarak o satırı flaşör gibi patlatıp kırmızı uyarıya geçirir. Böylece donanım yanmadan veya oyun takılmadan yöneticinin haberi olur.
+      </p>
+
       <div className="bg-[#050608] border border-white/5 p-6 rounded-lg">
-        <p className="text-sm text-gray-400">WebSocket (Port 5000) üzerinden saniyede bir kez tüm bilgisayarlardan <code className="text-orange-400">LibreHardwareMonitorLib</code> verisi toplanır. Bir bilgisayarın CPU ısısı 85 dereceyi geçerse satır kırmızıya dönerek uyarı verir.</p>
+        <h4 className="font-bold text-white mb-2">Performansa Etkisi (Zıfır Gecikme)</h4>
+        <p className="text-sm text-gray-400">
+          Binlerce paketin saniyede işlenmesi React tarafında inanılmaz bir yorgunluk yaratabilirdi. Ancak Canlı Monitör sayfası, standart React State yapısı yerine <strong>Mutable Refs (useRef)</strong> ve <strong>Canvas/WebGL</strong> (veya optimize edilmiş memoization) mantığıyla render alır. Böylece tarayıcıda bellek sızıntısı (Memory Leak) yapmadan aylarca açık kalabilir.
+        </p>
       </div>
     </div>
   ),
 
   "mod-osd": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Monitör OSD (Grafiksel Analiz)</h1>
-      <p className="text-lg text-muted mb-6">Seçilen bir bilgisayarın donanım performansını zaman çizelgesinde (Recharts) gösterir.</p>
-      <div className="glass-panel p-6 border-t-2 border-t-purple-500">
-        <p className="text-sm text-gray-300">Geçmişe dönük olarak CPU kullanımının ne zaman tavan yaptığını, hangi oyunda ne kadar RAM tüketildiğini grafik üzerinden analiz edebilirsiniz.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <LineChart className="text-purple-500" size={36}/> Monitör OSD (Grafiksel Analiz)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Canlı Monitör saniyelik değerleri gösterirken, OSD (On-Screen-Display) Grafikleri geçmişe dönük analiz yapar. Bir müşteri "Abi bilgisayar donuyor!" dediğinde, yöneticinin sadece bu ekrana girip geçmiş yarım saatlik CPU/RAM grafiğine bakması teşhis için yeterlidir.
+      </p>
+
+      <img src="/images/mod_monitor_osd.png" alt="Monitor OSD" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Recharts Entegrasyonu</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Sistem, verileri SQLite içindeki <code>telemetry_history</code> tablosundan süzerek alır. Recharts grafik kütüphanesi sayesinde mouse imlecini dalgalanmaların üzerinde gezdirdiğinizde, tam o dakikada (Örn: 14:32:45) işlemcinin yüzde kaç (%98 Load) kullanıldığını açıkça görürsünüz.
+      </p>
+
+      <div className="glass-panel p-6 border-l-4 border-l-purple-500">
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><History size={18} className="text-purple-400" /> Log Temizleme Sistemi</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Bu sayfada tutulan veriler inanılmaz boyutlara ulaşabileceğinden, Python sunucusu her gece yarısı (Midnight Cron) 3 günden eski grafik datalarını SQLite DB'den otomatik olarak temizler (`DELETE FROM telemetry_history WHERE date &lt; ...`). Bu sayede veritabanınız asla şişmez (Vacuum).
+        </p>
       </div>
     </div>
   ),
 
   "mod-network": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Ağ İzleme</h1>
-      <p className="text-lg text-muted mb-6">Kafedeki Download (İndirme) ve Upload (Yükleme) trafiğinin genel panosu.</p>
-      <div className="glass-panel p-6 border-l-4 border-l-blue-400">
-        <p className="text-sm text-gray-300">İnternetin neden yavaşladığını anlamak için hangi masanın ağ bant genişliğini sömürdüğünü saniyeler içinde tespit etmenizi sağlar.</p>
-        <img src="/images/agizleme.png" className="w-full max-w-xl rounded mt-4 border border-white/10" />
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Wifi className="text-cyan-500" size={36}/> Ağ İzleme (Network)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Tüm kafenin internet hattını (Download/Upload) kimin ne kadar sömürdüğünü gösteren saniyelik bir radar ekranıdır. Oyun indiren veya arkada güncelleme yapan bir müşteriyi eliyle koymuş gibi bulmak için mükemmel bir araçtır.
+      </p>
+
+      <img src="/images/mod_network.png" alt="Ağ İzleme" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">WMI İnterface Okuması</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        İstemciler (Clients), üzerlerindeki Ağ Kartının (Ethernet) "Bytes Received/sec" ve "Bytes Sent/sec" metriklerini doğrudan Windows Çekirdeğinden (Kernel) alıp MB/s (Megabayt per second) formatına çevirirler. 
+      </p>
+
+      <div className="bg-[#050608] border border-white/5 p-6 rounded-lg">
+        <h4 className="font-bold text-white mb-2">Gelişmiş Ağ Engellemesi (Gelecek Vizyon)</h4>
+        <p className="text-sm text-gray-400">
+          Ağ izleme ekranındaki kırmızı ibre, eğer belirli bir masa sürekli 50 MB/s hızda bir şeyler indiriyorsa yöneticiye uyarır. Admin, uzaktan o masanın ağ sınırlarını (Bandwidth Shaping) Windows Policy komutları ile kısıtlayabilme potansiyeline sahiptir.
+        </p>
       </div>
     </div>
   ),
 
   "mod-games": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Oyunlar (Kütüphane)</h1>
-      <p className="text-lg text-muted mb-6">Sunucudaki SQLite veritabanına doğrudan oyun ekleme ve düzenleme (CRUD) modülü.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#050608] p-4 rounded-lg border border-white/5">
-          <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2"><Plus size={16}/> Oyun Ekleme</h4>
-          <p className="text-sm text-gray-400">Oyunun EXE yolu, komut satırı parametreleri (Örn: <code>-nosteam</code>) ve başlangıç ayarları bu ekrandan yapılır.</p>
-        </div>
-        <div className="bg-[#050608] p-4 rounded-lg border border-white/5">
-          <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2"><Edit size={16}/> Kapak Düzenleme</h4>
-          <p className="text-sm text-gray-400">Vercel üzerinden dikey ve yatay kapakların senkronizasyonu yapılır.</p>
-        </div>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Gamepad2 className="text-yellow-500" size={36}/> Oyunlar Kütüphanesi
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Sistemin ana omurgası! Kafede bulunan binlerce oyunun (Steam, Epic, Valorant, GTA) yerel ağa tanıtıldığı, kapak fotoğraflarının işlendiği ve Exe dosya yollarının (Path) atandığı devasa bir CRUD (Create, Read, Update, Delete) ekranıdır.
+      </p>
+
+      <img src="/images/mod_games.png" alt="Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Parametrik Başlatıcı (Launcher) Mantığı</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Oyun eklerken sadece dosya yolunu (Örn: <code>D:\Games\CS2\csgo.exe</code>) vermekle kalmazsınız. Oyunun başlangıç komut parametrelerini (Örn: <code>-novid -tickrate 128 -high</code>) ve Yönetici olarak çalıştırılıp çalıştırılmayacağını (Run as Admin) da belirtirsiniz. İstemci (Client) menüden bu oyuna tıkladığında, Game Center arka planda bu karmaşık komut dizisini otomatik olarak Terminal'e (CMD) yazar.
+      </p>
+
+      <div className="glass-panel p-6 border-l-4 border-l-yellow-500">
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Cloud size={18} className="text-yellow-400" /> Bulut Kapak (Cover) Senkronizasyonu</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Oyun ekleme ekranındaki resimler doğrudan bilgisayarınızda saklanmaz. Vercel Blob / AWS S3 sisteminde host edilen kapaklar, oyunu seçtiğiniz an otomatik olarak çekilir (Smart Sync) ve yerel ağınızdaki `images/covers` dizinine önbelleklenir (Cache). Böylece 100 bilgisayar aynı anda oyuna girse bile internet kotanız veya sunucu bandgenişliğiniz sömürülmez.
+        </p>
       </div>
     </div>
   ),
 
   "mod-favorites": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Favori Oyunlar</h1>
-      <p className="text-lg text-muted mb-6">İstemci tarafında "Popüler/Önerilenler" sekmesinde çıkacak oyunların yönetimi.</p>
-      <div className="glass-panel p-6">
-        <p className="text-sm text-gray-300">Sürükle bırak mantığıyla veya seçerek oyunları vitrine çıkarın. Kafeye gelen müşteri ilk olarak bu oyunları görecektir.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Star className="text-yellow-400" fill="currentColor" size={36}/> Favori Oyunlar
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Müşteri (Oyuncu) bilgisayara oturduğunda Game Center arayüzünü açtığı an karşısına çıkan "Popüler / Önerilenler" vitrinini yönettiğiniz ekrandır.
+      </p>
+
+      <img src="/images/mod_favorites.png" alt="Favori Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Dinamik Sıralama Mekanizması (Drag & Drop)</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Bu sayfada yer alan Dnd-kit (React Drag and Drop) altyapısı sayesinde oyunları fareyle tutarak sırasını değiştirebilirsiniz. Değişiklik yaptığınız anda <code>UPDATE games SET order_index = ? WHERE id = ?</code> komutu ateşlenerek SQLite veritabanı anında güncellenir.
+      </p>
+
+      <div className="bg-[#050608] border border-white/5 p-6 rounded-lg">
+        <p className="text-sm text-gray-400">
+          Kafedeki oyuncuların en çok hangi oyunları oynadığını (Dashboard'dan) izleyerek, o oyunları Favoriler sekmesinde ilk sıraya alıp kullanıcı deneyimini (UX) saniyeler içinde mükemmelleştirebilirsiniz.
+        </p>
       </div>
     </div>
   ),
 
   "mod-users": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Kullanıcılar (Admin Yetkileri)</h1>
-      <p className="text-lg text-muted mb-6">Kafe personeline özel hesap açma ekranı.</p>
-      <div className="glass-panel p-6 border-l-4 border-l-yellow-500">
-        <h3 className="text-xl font-bold text-white mb-2">Roller</h3>
-        <p className="text-sm text-gray-400">Personellere sadece istatistikleri görme veya oyun ekleme gibi sınırlandırılmış yetkiler verebilirsiniz. Şifreler hashlenerek (güvenli) tutulur.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Users className="text-teal-500" size={36}/> Kullanıcılar (Yetkilendirme)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Büyük ölçekli internet kafelerde (veya E-spor arenalarında) sadece bir patron (Admin) yoktur. Kasada duran elemanların (Personel), sadece belli modüllere girmesini sağlamak için tasarlanmış Çoklu-Kullanıcı (Multi-User) güvenlik sistemidir.
+      </p>
+
+      <img src="/images/mod_users.png" alt="Kullanıcılar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Kriptolojik Şifreleme ve Roller</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Buradan yeni bir personel açtığınızda, şifresi düz metin (Plain Text) olarak değil; Python backend tarafında <strong>Bcrypt</strong> algoritması ile hashlenerek (Tuzlanarak - Salting) SQLite veritabanına gömülür. Bir hacker veritabanını ele geçirse dahi şifreleri geri çözemez (Decrypt).
+      </p>
+
+      <div className="glass-panel p-6 border-l-4 border-l-teal-500">
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Shield size={18} className="text-teal-400" /> İzin Yönetimi (Role-Based Access)</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          "Gece vardiyası sorumlusu sadece bilgisayarları kapatabilsin ama Oyunların ayarlarını (Games) ve Ağ İzleme paneline erişemesin." Bu gibi kısıtlamalar için React uygulamasının <code>PlusGuard</code> isimli Router aracı her sayfa değişiminde JSON Web Token (JWT) içerisindeki yetki array'ini kontrol eder. Yetkisi olmayan personel menüleri göremez bile.
+        </p>
       </div>
     </div>
   ),
 
   "mod-saves": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Oyun Kayıt (Saves)</h1>
-      <p className="text-lg text-muted mb-6">Sunucuda biriken oyuncu save dosyalarının denetimi.</p>
-      <div className="bg-[#050608] border border-white/5 p-6 rounded-lg">
-        <p className="text-sm text-gray-400">Hangi masadan hangi oyun için save dosyası geldiğini (Tarih ve Saat ile) görebilir, gereksizleri silebilir veya bir dosyayı indirip (`<Download size={14}/>`) inceleyebilirsiniz.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Save className="text-green-500" size={36}/> Oyun Kayıt (Save Bulutu)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Game Center'ın en devrimsel özelliklerinden birinin kumanda merkezi! Oyuncular "Cyberpunk 2077" oynayıp kalktıktan sonra ertesi gün farklı bir masaya oturduklarında Save dosyaları otomatik olarak gelir. Yöneticiler bu paneli kullanarak sunucuya biriken save dosyalarını denetler.
+      </p>
+
+      <img src="/images/mod_saves.png" alt="Oyun Kayıt" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Teknik Altyapı ve Sıkıştırma</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Bir müşteri oyunu kapattığında İstemci (Client), belirlenmiş olan Save klasörünü saniyeler içinde ZLib formatında sıkıştırır (ZIP) ve TCP Port 5000 üzerinden bir HTTP POST isteği ile Python sunucusuna yükler. Sunucu bu ZIP dosyasını açar ve benzersiz <code>Mac_Address_SteamID</code> kombinasyonuyla yerel diske arşivler.
+      </p>
+
+      <div className="bg-[#050608] border border-white/5 p-6 rounded-lg flex items-center gap-4">
+        <Download size={32} className="text-green-400 shrink-0" />
+        <div>
+          <h4 className="font-bold text-white mb-1">Müdahale ve İndirme</h4>
+          <p className="text-sm text-gray-400">
+            Admin paneli üzerinden herhangi bir müşterinin Save dosyasını bilgisayarınıza indirebilir (Debug için) veya 6 aydır kafeye gelmeyen müşterilerin Save dosyalarını veritabanından topluca temizleyebilirsiniz (Disk boşaltma işlemi).
+          </p>
+        </div>
       </div>
     </div>
   ),
 
   "mod-definitions": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Tanımlamalar</h1>
-      <p className="text-lg text-muted mb-6">Sistemin yapı taşları (Kategoriler, Türler, Steam Havuzları).</p>
-      <ul className="text-sm text-gray-300 space-y-3">
-        <li><strong>Türler:</strong> FPS, RPG, Yarış gibi oyun kategorilerinin oluşturulması.</li>
-        <li><strong>Steam Havuzu:</strong> Kafedeki ortak 10 adet Steam Pubg hesabının sisteme girilmesi ve boşta olanın müşteriye atanması mantığı.</li>
-      </ul>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <FolderOpen className="text-gray-400" size={36}/> Tanımlamalar
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Sistemin kategorik altyapısının ayarlandığı temel modül. Oyun türlerini (FPS, RPG, Spor) ve genel tanımları burada oluşturup Oyunlar sekmesinde kullanmak üzere hazır edersiniz.
+      </p>
+
+      <img src="/images/mod_definitions.png" alt="Tanimlamalar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">İlişkisel Veritabanı Modeli</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Burada açtığınız bir kategori (Örn: "Hayatta Kalma"), SQLite veritabanındaki <code>categories</code> tablosuna yazılır. Oyunlar sayfasında bu kategoriyi 100 farklı oyuna atadığınızda (Foreign Key İlişkisi), daha sonra bu kategorinin adını "Survival" olarak değiştirdiğiniz anda 100 oyunun kategorisi de saniyeler içinde arayüzde değişmiş olur.
+      </p>
     </div>
   ),
 
   "mod-plugins": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Eklentiler (Plugins)</h1>
-      <p className="text-lg text-muted mb-6">Game Center mimarisini dışarıdan gelen Python scriptleriyle genişletme bölümü.</p>
-      <div className="glass-panel p-6 border-l-4 border-l-green-500">
-        <p className="text-sm text-gray-300">Özel Discord Rich Presence entegrasyonu veya harici muhasebe yazılımları ile haberleşmek için yazılan scriptleri sisteme dahil eder.</p>
-      </div>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Puzzle className="text-yellow-400" size={36}/> Eklentiler (Plugins)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Game Center'ı kapalı kutu bir sistem olmaktan çıkarıp, harici geliştiricilerin kendi kodlarını entegre etmesini sağlayan (Modülerlik) bölüm. Dışarıdan yazdığınız Python Scriptlerini veya Node.js botlarını Game Center'a bağlayabilirsiniz.
+      </p>
+
+      <img src="/images/mod_plugins.png" alt="Plugins" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Örnek Senaryo: Discord Rich Presence</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Bir kafenin Discord sunucusu olduğunu düşünelim. Geliştirici buraya bir Discord Bot plugini eklediğinde, Game Center'ın `Canlı Monitör` verilerini alıp Discord'da "Masa 5 şu an GTA V Oynuyor" şeklinde anlık yansıtabilir (RPC). Admin Paneli üzerinden bu eklentileri (Çalıştır/Durdur/Logları İzle) olarak yönetebilirsiniz.
+      </p>
     </div>
   ),
 
   "mod-mklinks": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">MkLink Şablonları</h1>
-      <p className="text-lg text-muted mb-6">Junction komutlarının ince ayar ekranı.</p>
-      <div className="bg-[#050608] border border-white/5 p-6 rounded-lg">
-        <p className="text-sm text-gray-400">Örneğin: <code>%APPDATA%\Local\Rockstar Games</code> klasörünün ağdaki <code>D:\Games\Rockstar</code> konumuna yönlendirilme komutlarını oluşturduğunuz arayüz.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <LinkIcon className="text-indigo-400" size={36}/> MkLink Şablonları
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        C: diskini patlamaktan kurtaran efsanevi Windows NT altyapısı! Bazı inatçı oyunlar dosyalarını zorla <code>%APPDATA%</code> veya <code>Belgelerim</code> klasörüne yazar. Eğer kafenin C: diski (SSD) dolarsa, tüm sistem çöker. Bu modül tam olarak bu belayı kökünden çözmek için var.
+      </p>
+
+      <img src="/images/mod_mklinks.png" alt="MkLinks" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Sembolik Bağ (Junction Point) İşleyişi</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Yönetici, bu ekrandan oyunun asıl kaydetmeye çalıştığı hedef klasörü (Örn: `C:\Users\Player\Documents\Rockstar Games`) ve bunu kandırıp yönlendireceği boş Game klasörünü (Örn: `D:\Games\GTA5\Rockstar_Belgeler`) belirler.
+        Müşteri GTA V'e tıkladığı an, C# istemcisi arka planda 1 milisaniyede <code>cmd.exe /c mklink /J "Hedef" "Kaynak"</code> komutunu ateşler. Oyun, C: diskine veri yazdığını sanırken aslında D: diskine yazmaktadır! 
+      </p>
+
+      <div className="glass-panel p-6 border-l-4 border-l-indigo-500">
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Cloud size={18} className="text-indigo-400" /> Bulut Şablon Entegrasyonu</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Binlerce oyunun MkLink yollarını tek tek elle girmek yerine, Game Center'ın "Vercel Bulut MkLink Arşivi"ne bağlanarak Türkiye genelindeki diğer Game Center Plus bayilerinin oluşturduğu şablonları anında sisteminize çekebilirsiniz!
+        </p>
       </div>
     </div>
   ),
 
   "mod-updates": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Güncellemeler (BETA)</h1>
-      <p className="text-lg text-muted mb-6">Kafedeki 100 bilgisayarı tek tıkla güncelleme.</p>
-      <div className="glass-panel p-6 border-l-4 border-l-orange-500">
-        <p className="text-sm text-gray-300">Client.exe için yeni bir sürüm çıktığında, sunucu bunu indirir ve gece bilgisayarlar boştayken tüm bilgisayarlara dosyayı değiştirme komutu gönderir (Silent Update).</p>
-      </div>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <RefreshCw className="text-rose-400" size={36}/> Güncellemeler (Silent Update)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Devasa ağlarda 150 bilgisayarı tek tek güncelleyemezsiniz. Bu modül, sunucu makineye (Server) yeni bir Client (İstemci) sürümü çıktığında (Örn: v2.1'den v2.2'ye) kafedeki tüm makinelere bir tuşla yayılmasını sağlar.
+      </p>
+
+      <img src="/images/mod_updates.png" alt="Updates" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Push & Replace Mekanizması</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Siz "Dağıtımı Başlat" butonuna bastığınızda, Sunucu (Python), aktif olan tüm masalara "Güncelleme Var!" WebSocket mesajı atar. Masadaki İstemciler anında gizli bir PowerShell (veya CMD) scripti başlatır, kendilerini kapatır, yeni exe dosyasını sunucunun Paylaşılan (Shared) klasöründen kendi C: sürücüsüne çeker ve tekrar açılırlar. Bütün bu işlem (Silent Update) 2 saniye sürer! Müşteriler ruhu bile duymaz.
+      </p>
     </div>
   ),
 
   "mod-filter": (
     <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4">Filtreli Oyunlar</h1>
-      <p className="text-lg text-muted mb-6">Çocuk masaları veya spesifik masalar için oyun kısıtlama modülü.</p>
-      <div className="glass-panel p-6">
-        <p className="text-sm text-gray-300">Seçilen masalarda "GTA V" gibi şiddet içeren oyunların İstemci (Client) ekranında tamamen gizlenmesini sağlar.</p>
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Shield className="text-red-500" size={36}/> Filtreli Oyunlar (Kısıtlamalar)
+      </h1>
+      
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        İnternet kafenizde çocukların oturduğu bölümler için veya denetimler/baskınlar sırasında anında "Şiddet içerikli" veya "Kumar" bazlı oyunların ekrandan tamamen silinmesini sağlayan panik butonudur.
+      </p>
+
+      <img src="/images/mod_filters.png" alt="Filtreli Oyunlar" className="w-full max-w-5xl rounded-xl shadow-2xl border border-white/10 mb-8" />
+      
+      <h3 className="text-2xl font-bold text-white mb-3">Live Rerender Altyapısı</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Bu ekrandan "GTA V" ve "Mortal Kombat" oyunlarını seçip "Aktifleştir" dediğinizde, Python sunucusu tüm Client'lara (İstemcilere) acil bir "Filter State Changed" JSON mesajı yollar. C# arayüzü bu mesajı aldığı an (Eğer oyun listesinde gösteriyorsa) o oyunları filtreye sokup arayüzü anında baştan çizer (Re-render).
+        Kaldırdığınızda ise oyunlar 1 saniye içinde ekranlarına sihirli gibi geri döner.
+      </p>
+
+      <div className="glass-panel p-6 border-l-4 border-l-red-500">
+        <p className="text-sm text-gray-400">Özel bölümlerde (Örn: Sadece Yetişkinler/VIP) bu filtreyi bazı spesifik masa grupları (Client Groups) için devre dışı bırakabilme özellikleri de veritabanında kodlanmıştır.</p>
       </div>
     </div>
   ),
 
 
-  /* ADVANCED SYSTEMS AND TECHNICAL DOCS */
+  /* ==========================================
+     ADVANCED SYSTEMS AND TECHNICAL DOCS
+     ========================================== */
+
   "mklink": (
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">MkLink Otomasyonu</h1>
       <p className="text-lg text-muted mb-8">C: sürücüsü doluluğuna son veren NTFS Junction mantığı.</p>
-
-      <div className="glass-panel p-8 mb-8 border-l-4 border-l-green-500">
-        <h3 className="text-xl font-bold text-white mb-4">Junction Point (Sembolik Bağ) Mantığı</h3>
-        <p className="text-muted leading-relaxed mb-6">
-          Bazı oyunlar save veya konfigürasyon dosyalarını inatla <code>C:\Users\...\AppData</code> dizinine atar. Game Center, oyuna girmeden 1 milisaniye önce bir Windows CMD komutu çalıştırarak bu klasörü ağdaki Sunucuya bağlar (Junction).
-        </p>
-        
-        <div className="bg-[#050608] border border-white/10 rounded-lg overflow-hidden mb-6">
-           <div className="bg-white/5 px-4 py-2 text-xs font-bold text-gray-400 border-b border-white/10">KOMUT SATIRI MANTIĞI</div>
-           <div className="p-4 font-mono text-sm text-blue-400">
-             <span className="text-gray-500"># Arka planda Client otomatik olarak şu komutu işler:</span><br/>
-             mklink /J "C:\Users\Player\AppData\Local\Riot Games" "\\192.168.1.100\Oyunlar\Riot_AppData"
-           </div>
-        </div>
-      </div>
     </div>
   ),
 
@@ -452,24 +536,6 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Save (Oyun Kaydı) Bulutu</h1>
       <p className="text-lg text-muted mb-8">Hikaye tabanlı oyunlar için "Oturduğum masadan kaldığım yerden devam et" sistemi.</p>
-      
-      <div className="glass-panel p-6 border-t-4 border-t-blue-400">
-        <h3 className="text-xl font-bold text-white mb-3">Nasıl Çalışır?</h3>
-        <ul className="text-muted text-sm space-y-4">
-          <li className="flex gap-2">
-            <CheckCircle2 className="text-blue-400 shrink-0" size={18} />
-            Oyuncu "GTA V" oyununa girdiğinde, sistem arka planda Sunucudan Save dosyasını kontrol eder.
-          </li>
-          <li className="flex gap-2">
-            <CheckCircle2 className="text-blue-400 shrink-0" size={18} />
-            Masa numarası veya Steam ID üzerinden eşleşme bulunursa, Save klasörü kopyalanır.
-          </li>
-          <li className="flex gap-2">
-            <CheckCircle2 className="text-blue-400 shrink-0" size={18} />
-            Oyundan çıkıldığında, değişen dosyalar yakalanır ve tekrar Sunucuya ZIP/Kopya olarak yedeklenir.
-          </li>
-        </ul>
-      </div>
     </div>
   ),
 
@@ -477,45 +543,6 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Ağ Protokolleri (Network)</h1>
       <p className="text-lg text-muted mb-8">Game Center'ın hızı, veriyi doğru protokolle taşımasından gelir.</p>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-white/5 border-b border-white/10 text-sm uppercase tracking-wider text-gray-400">
-              <th className="p-4 font-bold">Protokol</th>
-              <th className="p-4 font-bold">Port</th>
-              <th className="p-4 font-bold">Görevi / Modül</th>
-              <th className="p-4 font-bold">Gecikme</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm">
-            <tr className="border-b border-white/5 hover:bg-white/5 transition-colors text-white">
-              <td className="p-4"><span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-bold">TCP</span></td>
-              <td className="p-4">5000</td>
-              <td className="p-4">REST API (Ana veritabanı okuma, oyun listesi çekme)</td>
-              <td className="p-4 text-green-400">~1ms</td>
-            </tr>
-            <tr className="border-b border-white/5 hover:bg-white/5 transition-colors text-white">
-              <td className="p-4"><span className="bg-orange-500/20 text-orange-400 px-2 py-1 rounded font-bold">UDP</span></td>
-              <td className="p-4">5001</td>
-              <td className="p-4">Network Discovery (Ağ Keşfi). Client'lar sunucu IP'sini bulmak için Broadcast yayını yapar.</td>
-              <td className="p-4 text-green-400">~0ms</td>
-            </tr>
-            <tr className="border-b border-white/5 hover:bg-white/5 transition-colors text-white">
-              <td className="p-4"><span className="bg-orange-500/20 text-orange-400 px-2 py-1 rounded font-bold">UDP</span></td>
-              <td className="p-4">5002</td>
-              <td className="p-4">Voice Chat (Sesli Sohbet). Ses paketleri doğrudan ağa basılır, aracı sunucu yorulmaz.</td>
-              <td className="p-4 text-green-400">~0ms</td>
-            </tr>
-            <tr className="hover:bg-white/5 transition-colors text-white">
-              <td className="p-4"><span className="bg-purple-500/20 text-purple-400 px-2 py-1 rounded font-bold">WebSocket</span></td>
-              <td className="p-4">5000</td>
-              <td className="p-4">Telemetry (Sıcaklık, RAM, Ağ izleme logları Admin panele saniyede 1 kez basılır).</td>
-              <td className="p-4 text-green-400">~1ms</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   ),
 
@@ -523,18 +550,6 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Veritabanı Şeması</h1>
       <p className="text-lg text-muted mb-8">Hem yerel ağda ışık hızında çalışan hem de bulutta güvende kalan melez (Hibrit) bir veritabanı yapısı.</p>
-
-      <ul className="space-y-6">
-        <li className="glass-panel p-6 border-l-4 border-l-blue-500">
-          <h3 className="text-xl font-bold text-white mb-2">SQLite (Local DB)</h3>
-          <p className="text-muted text-sm mb-4">Sunucunun kök dizininde bulunan <code>gameserver.db</code> dosyasıdır. İnternet kesilse bile kafedeki sistemin kusursuz çalışmasını sağlar.</p>
-        </li>
-
-        <li className="glass-panel p-6 border-l-4 border-l-white">
-          <h3 className="text-xl font-bold text-white mb-2">Vercel Postgres (Cloud DB)</h3>
-          <p className="text-muted text-sm">Prisma ORM kullanılarak kodlanmıştır. Yönetim paneline girişte admin şifrelerini, lisans sürelerini (Reference Kodlarını) ve kapak fotoğraflarını barındırır.</p>
-        </li>
-      </ul>
     </div>
   ),
 
@@ -542,22 +557,6 @@ const WIKI_ARTICLES = {
     <div className="animate-fade-in-up">
       <h1 className="text-4xl font-bold text-white mb-4">Donanım İzleme (OSD ve Telemetry)</h1>
       <p className="text-lg text-muted mb-8">Adminlerin bilgisayarlardaki donanım problemlerini hissetmeden teşhis edebilmesi için tasarlandı.</p>
-
-      <div className="glass-panel p-6">
-        <h3 className="text-xl font-bold text-white mb-3">LibreHardwareMonitorLib Entegrasyonu</h3>
-        <p className="text-muted text-sm leading-relaxed mb-4">
-          C# İstemcisi içerisinde gömülü olan bu kütüphane, yetkilendirilmiş Windows servisleri (WMI) üzerinden anakart sensörlerine erişir. Her 1 saniyede şu verileri çeker:
-        </p>
-        <ul className="grid grid-cols-2 gap-2 text-sm text-gray-400 list-disc ml-4">
-          <li>CPU Paket Sıcaklığı (Package Temp)</li>
-          <li>CPU Toplam Yük (Load %)</li>
-          <li>RAM Kullanım Oranı</li>
-          <li>Ağ Kartı Download/Upload Hızı</li>
-        </ul>
-        <p className="text-muted text-sm leading-relaxed mt-4">
-          Toplanan bu veriler, WebSocket aracılığıyla Python Sunucusuna iletilir. Sunucu, bunu React Admin Paneline broadcast eder ve yönetici canlı grafikleri izler.
-        </p>
-      </div>
     </div>
   )
 };
