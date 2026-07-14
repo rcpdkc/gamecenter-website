@@ -170,6 +170,11 @@ const CoversPage = () => {
       }
 
       setAnalyzeProgress(prev => ({ ...prev, current: i + 1, success: sCount, fail: fCount }));
+
+      // Google AI Free Tier (15 RPM = 1 request per 4s) throttle
+      if (i < targets.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 4500));
+      }
     }
 
     setAnalyzing(false);
