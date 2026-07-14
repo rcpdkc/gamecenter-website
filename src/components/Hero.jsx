@@ -34,7 +34,7 @@ const Hero = () => {
             <div className="glass-panel p-2 md:p-4 rounded-3xl relative animate-float">
               <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 to-purple-500/20 rounded-3xl -z-10 blur-xl"></div>
               <img 
-                src="/images/dashboard.png" 
+                src="/images/bilgisayarlar.png" 
                 alt="Game Center Dashboard" 
                 className="w-full h-auto rounded-2xl border border-white/10 shadow-2xl"
               />
