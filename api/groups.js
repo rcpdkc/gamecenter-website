@@ -6,6 +6,7 @@ export default async function handler(req, res) {
     await sql`CREATE TABLE IF NOT EXISTS groups (
       id SERIAL PRIMARY KEY, name VARCHAR(100) UNIQUE NOT NULL,
       description TEXT, color VARCHAR(30) DEFAULT '#f97316',
+      permissions JSON DEFAULT '[]',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
 
@@ -20,20 +21,20 @@ export default async function handler(req, res) {
     }
 
     if (method === 'POST') {
-      const { name, description, color } = req.body;
+      const { name, description, color, permissions } = req.body;
       if (!name) return res.status(400).json({ error: 'Grup adı zorunludur.' });
       const { rows } = await sql`
-        INSERT INTO groups (name, description, color)
-        VALUES (${name}, ${description || ''}, ${color || '#f97316'})
+        INSERT INTO groups (name, description, color, permissions)
+        VALUES (${name}, ${description || ''}, ${color || '#f97316'}, ${JSON.stringify(permissions || [])})
         RETURNING *
       `;
       return res.status(200).json({ success: true, data: rows[0] });
     }
 
     if (method === 'PUT') {
-      const { id, name, description, color } = req.body;
+      const { id, name, description, color, permissions } = req.body;
       if (!id || !name) return res.status(400).json({ error: 'id ve name zorunludur.' });
-      await sql`UPDATE groups SET name=${name}, description=${description||''}, color=${color||'#f97316'} WHERE id=${id}`;
+      await sql`UPDATE groups SET name=${name}, description=${description||''}, color=${color||'#f97316'}, permissions=${JSON.stringify(permissions || [])} WHERE id=${id}`;
       return res.status(200).json({ success: true });
     }
 

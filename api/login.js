@@ -14,6 +14,7 @@ export default async function handler(request, response) {
         name VARCHAR(100) UNIQUE NOT NULL,
         description TEXT,
         color VARCHAR(30) DEFAULT '#f97316',
+        permissions JSON DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -41,6 +42,7 @@ export default async function handler(request, response) {
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_id INTEGER`,
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_expires_at TIMESTAMP`,
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS cafe_id VARCHAR(100)`,
+      `ALTER TABLE groups ADD COLUMN IF NOT EXISTS permissions JSON DEFAULT '[]'`,
     ];
     for (const m of migrations) {
       try { await sql.query(m); } catch (_) {}
@@ -57,7 +59,7 @@ export default async function handler(request, response) {
     const { rows } = await sql`
       SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role, 
              u.group_id, u.group_expires_at, u.cafe_id,
-             g.name AS group_name, g.color AS group_color
+             g.name AS group_name, g.color AS group_color, g.permissions AS group_permissions
       FROM users u
       LEFT JOIN groups g ON u.group_id = g.id
       WHERE u.email = ${username} AND u.password = ${password}

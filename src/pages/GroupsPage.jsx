@@ -8,10 +8,32 @@ const PRESET_COLORS = [
   '#84cc16', '#64748b'
 ];
 
+const LOCAL_MODULES = [
+  { id: '/clients', label: 'Bilgisayarlar' },
+  { id: '/monitor', label: 'Canlı Monitör' },
+  { id: '/monitortakip', label: 'Monitör OSD' },
+  { id: '/network', label: 'Ağ İzleme' },
+  { id: '/games', label: 'Oyunlar' },
+  { id: '/favorites', label: 'Favori Oyunlar' },
+  { id: '/users', label: 'Kullanıcılar' },
+  { id: '/saves', label: 'Oyun Kayıt' },
+  { id: '/definitions', label: 'Tanımlamalar' },
+  { id: '/plugins', label: 'Eklentiler' },
+  { id: '/mklinks', label: 'MkLink Şablonları' },
+  { id: '/updates', label: 'Guncellemeler' },
+  { id: '/filters', label: 'Filtreli Oyunlar' },
+  { id: '/alerts', label: 'Disk Uyarıları' },
+  { id: '/steam', label: 'Oyun Hesapları' },
+  { id: '/logs', label: 'Loglar' },
+  { id: '/requests', label: 'İstek / Öneri' },
+  { id: '/settings', label: 'Ayarlar' }
+];
+
 const GroupModal = ({ group, dark, onClose, onSave }) => {
   const [name, setName] = useState(group?.name || '');
   const [description, setDescription] = useState(group?.description || '');
   const [color, setColor] = useState(group?.color || '#f97316');
+  const [permissions, setPermissions] = useState(group?.permissions || []);
   const [saving, setSaving] = useState(false);
 
   const txt = dark ? 'text-white' : 'text-gray-900';
@@ -27,7 +49,7 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
       const res = await fetch('/api/groups', {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: group?.id, name: name.trim(), description, color })
+        body: JSON.stringify({ id: group?.id, name: name.trim(), description, color, permissions })
       });
       const data = await res.json();
       if (data.success) { onSave(); onClose(); }
@@ -80,6 +102,33 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
               />
             </div>
           </div>
+
+          {/* Permissions Selector */}
+          <div>
+            <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-2`}>Yerel Modül İzinleri</label>
+            <div className={`border rounded-xl p-3 ${inputBg} max-h-[160px] overflow-y-auto grid grid-cols-2 gap-2`}>
+              {LOCAL_MODULES.map(mod => {
+                const isChecked = permissions.includes(mod.id);
+                return (
+                  <label key={mod.id} className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        if (e.target.checked) setPermissions([...permissions, mod.id]);
+                        else setPermissions(permissions.filter(p => p !== mod.id));
+                      }}
+                      className="rounded border-gray-400 focus:ring-orange-500 text-orange-500 w-4 h-4 cursor-pointer"
+                    />
+                    <span className={`text-xs ${isChecked ? txt : sub} group-hover:${txt} transition-colors select-none`}>
+                      {mod.label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
 
           {/* Preview */}
           <div className={`p-3 rounded-xl ${dark ? 'bg-white/5' : 'bg-gray-50'} flex items-center gap-3`}>
@@ -187,6 +236,9 @@ const GroupsPage = () => {
                       </span>
                     </div>
                     <p className={`text-xs ${sub} truncate`}>{group.description || 'Açıklama eklenmemiş'}</p>
+                    {group.permissions?.length > 0 && (
+                      <p className={`text-[10px] text-blue-400 mt-1`}>{group.permissions.length} modül yetkisi</p>
+                    )}
                   </div>
                   <div className={`flex items-center gap-1.5 text-xs ${sub} mr-4`}>
                     <Users size={13} /> {group.member_count} üye

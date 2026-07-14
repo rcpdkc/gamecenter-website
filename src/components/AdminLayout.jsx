@@ -8,13 +8,18 @@ import { useEffect, useState, createContext, useContext } from 'react';
 // Theme Context
 export const ThemeContext = createContext({ dark: true, toggleTheme: () => {} });
 
-const NAV_ITEMS = [
+const NAV_ITEMS_ADMIN = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { to: '/superadmin/users', icon: Users, label: 'Kullanıcılar' },
   { to: '/superadmin/groups', icon: Layers, label: 'Gruplar' },
   { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
   { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
   { to: '/superadmin/settings', icon: Settings, label: 'Ayarlar' },
+];
+
+const NAV_ITEMS_CAFE = [
+  { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+  { to: '/superadmin/covers', icon: Image, label: 'İkon İndir' },
 ];
 
 const PAGE_TITLES = {
@@ -33,10 +38,14 @@ const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('gc_admin_token');
-    if (!token) setIsAuthenticated(false);
+    const storedUser = localStorage.getItem('gc_user');
+    if (!token || !storedUser) setIsAuthenticated(false);
+    else setUser(JSON.parse(storedUser));
+
     const savedTheme = localStorage.getItem('gc_admin_theme');
     if (savedTheme) setDark(savedTheme === 'dark');
   }, []);
@@ -106,7 +115,7 @@ const AdminLayout = () => {
 
           {/* Nav */}
           <nav className="flex-1 py-4 overflow-y-auto">
-            {NAV_ITEMS.map((item) => {
+            {(user?.role === 'admin' ? NAV_ITEMS_ADMIN : NAV_ITEMS_CAFE).map((item) => {
               const active = item.exact ? location.pathname === item.to : location.pathname === item.to || (item.to !== '/superadmin' && location.pathname.startsWith(item.to));
               return (
                 <Link
@@ -200,15 +209,17 @@ const AdminLayout = () => {
               </button>
 
               {/* Avatar */}
-              <div className="ml-1 flex items-center gap-2.5 pl-3 border-l border-white/10">
-                <div className="text-right hidden sm:block">
-                  <p className={`text-sm font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>Super Admin</p>
-                  <p className={`text-xs ${muted}`}>admin</p>
+              {user && (
+                <div className="ml-1 flex items-center gap-2.5 pl-3 border-l border-white/10">
+                  <div className="text-right hidden sm:block">
+                    <p className={`text-sm font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>{user.role === 'admin' ? 'Super Admin' : user.cafe_name}</p>
+                    <p className={`text-xs ${muted}`}>{user.role === 'admin' ? 'admin' : user.first_name}</p>
+                  </div>
+                  <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+                    {user.role === 'admin' ? 'SA' : (user.cafe_name || 'C').substring(0,2).toUpperCase()}
+                  </div>
                 </div>
-                <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                  SA
-                </div>
-              </div>
+              )}
             </div>
           </header>
 

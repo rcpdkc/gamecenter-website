@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye } from 'lucide-react';
+import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending:  { label: 'Bekliyor',    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
@@ -34,7 +34,7 @@ const CoversPage = () => {
   const fetchCovers = async () => {
     setFetching(true);
     try {
-      const res = await fetch('/api/covers?role=admin');
+      const res = await fetch(`/api/covers?role=${user.role || 'cafe'}&cafe_id=${user.cafe_id || ''}`);
       const data = await res.json();
       if (data.success) setCovers(data.data);
     } catch { } finally { setFetching(false); }
@@ -62,14 +62,23 @@ const CoversPage = () => {
       fd.append('game_name', uploadForm.game_name);
       fd.append('file', uploadForm.file);
       fd.append('uploaded_by_id', user.id || '');
-      fd.append('uploaded_by_role', user.role || 'admin');
+      fd.append('uploaded_by_role', user.role || 'cafe');
       fd.append('cafe_id', user.cafe_id || '');
       const res = await fetch('/api/upload_cover', { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.success) { setUploadForm({ game_name: '', file: null }); if (fileRef.current) fileRef.current.value = ''; fetchCovers(); }
+      if (data.success) { 
+        setUploadForm({ game_name: '', file: null }); 
+        if (fileRef.current) fileRef.current.value = ''; 
+        fetchCovers(); 
+        if (user.role !== 'admin') alert('Cover başarıyla yüklendi, admin onayından sonra görünecektir.');
+      }
       else alert(data.error);
     } catch { alert('Yükleme başarısız.'); }
     finally { setUploading(false); }
+  };
+
+  const handleDownload = (cover_url) => {
+    window.open(cover_url, '_blank');
   };
 
   const filtered = filter === 'all' ? covers : covers.filter(c => c.status === filter);
@@ -103,9 +112,9 @@ const CoversPage = () => {
           </button>
         </div>
 
-        {/* Upload form (Admin only) */}
+        {/* Upload form (All users can upload now) */}
         <div className={`${bg} border ${panelBorder} rounded-2xl p-6 shadow-sm`}>
-          <h3 className={`text-base font-bold ${txt} mb-4 flex items-center gap-2`}><Upload size={18} className="text-orange-500" /> Admin Cover Yükle</h3>
+          <h3 className={`text-base font-bold ${txt} mb-4 flex items-center gap-2`}><Upload size={18} className="text-orange-500" /> {user.role === 'admin' ? 'Admin Cover Yükle' : 'Cover Yükle'}</h3>
           <form onSubmit={handleUpload} className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[200px]">
               <label className={`block text-xs font-semibold uppercase tracking-wide ${sub} mb-1.5`}>Oyun Adı</label>
@@ -158,22 +167,30 @@ const CoversPage = () => {
                   </p>
                   {/* Action buttons */}
                   <div className="flex gap-1">
-                    {cover.status !== 'approved' && (
+                    {user.role === 'admin' && cover.status !== 'approved' && (
                       <button onClick={() => handleStatus(cover.id, 'approved')}
                         className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-1">
                         <CheckCircle2 size={11} /> Onayla
                       </button>
                     )}
-                    {cover.status !== 'rejected' && (
+                    {user.role === 'admin' && cover.status !== 'rejected' && (
                       <button onClick={() => handleStatus(cover.id, 'rejected')}
                         className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex items-center justify-center gap-1">
                         <XCircle size={11} /> Reddet
                       </button>
                     )}
-                    <button onClick={() => handleDelete(cover.id)}
-                      className={`p-1.5 rounded-lg text-xs transition-colors ${dark ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}>
-                      <Trash2 size={13} />
-                    </button>
+                    {cover.status === 'approved' && (
+                      <button onClick={() => handleDownload(cover.file_url)}
+                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors flex items-center justify-center gap-1">
+                        <Download size={11} /> İndir
+                      </button>
+                    )}
+                    {user.role === 'admin' && (
+                      <button onClick={() => handleDelete(cover.id)}
+                        className={`p-1.5 rounded-lg text-xs transition-colors ${dark ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}>
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
