@@ -23,7 +23,7 @@ const NAV_ITEMS_ADMIN = [
 
 const NAV_ITEMS_CAFE = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { to: '/superadmin/clients', icon: MonitorDot, label: 'Müşteri PC’leri' },
+  { to: '/superadmin/clients', icon: MonitorDot, label: 'Bilgisayarlar' },
   { to: '/superadmin/hardware', icon: HardDrive, label: 'Donanım' },
   { to: '/superadmin/games', icon: Gamepad2, label: 'Oyunlar' },
   { to: '/superadmin/monitoring', icon: Thermometer, label: 'İzleme' },
@@ -43,7 +43,7 @@ const PAGE_TITLES = {
   '/superadmin/hardware': { title: 'Donanım Envanteri', subtitle: 'GPU, CPU ve sistem donanım bilgileri' },
   '/superadmin/games': { title: 'Oyun İstatistikleri', subtitle: 'En çok oynanan oyunlar ve tıklama analizi' },
   '/superadmin/monitoring': { title: 'Sistem İzleme', subtitle: 'CPU ve GPU sıcaklık takibi' },
-  '/superadmin/clients': { title: 'Müşteri Bilgisayarları', subtitle: 'Kafedeki tüm PC’lerin canlı donanım ve durum bilgisi' },
+  '/superadmin/clients': { title: 'Bilgisayarlar', subtitle: 'Kafedeki tüm PC’lerin canlı donanım ve durum bilgisi' },
 };
 
 const AdminLayout = () => {

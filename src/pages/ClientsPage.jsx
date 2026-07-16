@@ -255,7 +255,7 @@ export default function ClientsPage() {
         <div className={`px-4 py-3 border-b ${border} flex flex-wrap items-center gap-2`}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Monitor size={14} className="text-orange-400 shrink-0" />
-            <h3 className={`font-bold text-sm ${txt} truncate`}>Müşteri Bilgisayarları</h3>
+            <h3 className={`font-bold text-sm ${txt} truncate`}>Bilgisayarlar</h3>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <input
