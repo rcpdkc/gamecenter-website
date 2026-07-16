@@ -71,7 +71,7 @@ const AdminLayout = () => {
     setUser(JSON.parse(storedUser));
 
     // Sunucu tarafında token doğrulama
-    fetch('/api/verify', {
+    fetch('/api/login?action=verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ token }),

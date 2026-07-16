@@ -39,6 +39,38 @@ export default async function handler(request, response) {
 
   // CORS Preflight
   if (request.method === 'OPTIONS') return response.status(200).end();
+
+  // ── POST /api/login?action=verify → Token doğrulama ────────────────────
+  if (request.query?.action === 'verify' || request.body?.action === 'verify') {
+    const authHeader = request.headers.authorization;
+    const token = (authHeader && authHeader.startsWith('Bearer '))
+      ? authHeader.slice(7)
+      : request.body?.token;
+
+    if (!token) return response.status(401).json({ error: 'Token bulunamadı.', code: 'NO_TOKEN' });
+
+    const payload = verifyToken(token);
+    if (!payload) return response.status(401).json({ error: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.', code: 'TOKEN_EXPIRED' });
+
+    try {
+      const { rows } = await sql`
+        SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role,
+               u.group_id, u.group_expires_at, u.cafe_id, u.created_at,
+               g.name AS group_name, g.color AS group_color, g.permissions AS group_permissions
+        FROM users u
+        LEFT JOIN groups g ON u.group_id = g.id
+        WHERE u.id = ${payload.uid}
+      `;
+      if (rows.length === 0) return response.status(401).json({ error: 'Kullanıcı bulunamadı.', code: 'USER_NOT_FOUND' });
+      const user = rows[0];
+      const licenseExpired = user.role !== 'admin' && user.group_id && user.group_expires_at
+        ? new Date(user.group_expires_at) < new Date() : false;
+      return response.status(200).json({ success: true, user: { ...user, license_expired: licenseExpired }, expires_at: payload.exp });
+    } catch (err) {
+      return response.status(500).json({ error: err.message });
+    }
+  }
+
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method Not Allowed' });
 
   try {
