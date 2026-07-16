@@ -27,7 +27,7 @@ const NAV_ITEMS_CAFE = [
   { to: '/superadmin/hardware', icon: HardDrive, label: 'Donanım' },
   { to: '/superadmin/games', icon: Gamepad2, label: 'Oyunlar' },
   { to: '/superadmin/monitoring', icon: Thermometer, label: 'İzleme' },
-  { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
+  { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi', mobileHidden: true },
 ];
 
 const PAGE_TITLES = {
@@ -192,6 +192,7 @@ const AdminLayout = () => {
                     flex items-center gap-3 mx-3 my-0.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
                     ${active ? navActive : navIdle}
                     ${collapsed ? 'justify-center' : ''}
+                    ${item.mobileHidden ? 'hidden md:flex' : ''}
                   `}
                 >
                   <item.icon size={18} className="shrink-0" />
