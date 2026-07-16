@@ -52,21 +52,33 @@ export default async function handler(request, response) {
       return response.status(200).json({ success: true, data: rows });
     }
 
-    // ── POST: cafe-link bağlama ───────────────────────────────────────────
+    // POST: cafe-link (admin) ve self-link (kafe otomatik)
     else if (request.method === 'POST') {
-      if (!isAuthed) return response.status(401).json({ error: 'Yetkisiz.' });
-      const { action, user_email, telemetry_cafe_id } = request.body;
+      const { action, user_email, telemetry_cafe_id, email, cafe_id: selfCafeId } = request.body;
 
-      if (action === 'cafe-link') {
-        if (!user_email || !telemetry_cafe_id) return response.status(400).json({ error: 'user_email ve telemetry_cafe_id gerekli.' });
-        const tResult = await sql`SELECT cafe_id, cafe_name, hwid FROM gamecenter_telemetry WHERE cafe_id = ${telemetry_cafe_id} LIMIT 1`;
-        if (!tResult.rows[0]) return response.status(404).json({ error: 'Telemetri kaydı bulunamadı.' });
-        const tel = tResult.rows[0];
-        await sql`UPDATE users SET cafe_id = ${tel.cafe_id}, hwid = COALESCE(NULLIF(hwid,''),${tel.hwid||null}) WHERE email = ${user_email}`;
-        return response.status(200).json({ success: true, message: `${user_email} → ${tel.cafe_name} bağlandı.` });
+      // self-link: kafe kendi sunucusundan otomatik baglama (token gerekmez)
+      if (action === 'self-link') {
+        if (!email || !selfCafeId) return response.status(400).json({ error: 'email ve cafe_id gerekli.' });
+        await sql`UPDATE users SET cafe_id = ${selfCafeId} WHERE email = ${email} AND (cafe_id IS NULL OR cafe_id = '')`;
+        const telRow = (await sql`SELECT hwid FROM gamecenter_telemetry WHERE cafe_id = ${selfCafeId} LIMIT 1`).rows[0];
+        if (telRow && telRow.hwid) {
+          await sql`UPDATE users SET hwid = ${telRow.hwid} WHERE email = ${email} AND (hwid IS NULL OR hwid = '')`;
+        }
+        return response.status(200).json({ success: true, message: 'cafe_id otomatik baglandi.' });
       }
 
-      return response.status(400).json({ error: 'Geçersiz action.' });
+      // cafe-link: admin manuel baglama (token gerekir)
+      if (action === 'cafe-link') {
+        if (!isAuthed) return response.status(401).json({ error: 'Yetkisiz.' });
+        if (!user_email || !telemetry_cafe_id) return response.status(400).json({ error: 'user_email ve telemetry_cafe_id gerekli.' });
+        const tResult = await sql`SELECT cafe_id, cafe_name, hwid FROM gamecenter_telemetry WHERE cafe_id = ${telemetry_cafe_id} LIMIT 1`;
+        if (!tResult.rows[0]) return response.status(404).json({ error: 'Telemetri kaydi bulunamadi.' });
+        const tel = tResult.rows[0];
+        await sql`UPDATE users SET cafe_id = ${tel.cafe_id}, hwid = COALESCE(NULLIF(hwid,''),${tel.hwid||null}) WHERE email = ${user_email}`;
+        return response.status(200).json({ success: true, message: user_email + ' baglandi.' });
+      }
+
+      return response.status(400).json({ error: 'Gecersiz action.' });
     }
 
     // ── PATCH: Kullanıcı güncelle ─────────────────────────────────────────
