@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import {
@@ -347,13 +347,18 @@ const CafeDashboard = ({ user, dark }) => {
   }
 
   const topGames = data?.top_games || [];
-  const gpus = data?.hardware_stats?.gpus || [];
-  const cpus = data?.hardware_stats?.cpus || [];
+  const clientsData = data?.clients_data || [];
   const temps = data?.hardware_stats?.temps || {};
   const cpuTemp = temps.cpu_avg || null;
   const gpuTemp = temps.gpu_avg || null;
-  const totalClicks = topGames.reduce((a, g) => a + g.clicks, 0);
+  const totalGames = topGames.length;
   const maxClicks = topGames[0]?.clicks || 1;
+
+  // En sıcak GPU/CPU - clients_data üzerinden
+  const hotGpu = clientsData.filter(p => p.gpu_temp).sort((a, b) => b.gpu_temp - a.gpu_temp)[0] || null;
+  const hotCpu = clientsData.filter(p => p.cpu_temp).sort((a, b) => b.cpu_temp - a.cpu_temp)[0] || null;
+  const hotGpus = clientsData.filter(p => p.gpu_temp).sort((a, b) => b.gpu_temp - a.gpu_temp).slice(0, 6);
+  const hotCpus = clientsData.filter(p => p.cpu_temp).sort((a, b) => b.cpu_temp - a.cpu_temp).slice(0, 6);
 
   const lastUpdated = data?.last_updated ? new Date(data.last_updated) : null;
   const minsAgo = lastUpdated ? Math.round((Date.now() - lastUpdated) / 60000) : null;
@@ -397,10 +402,10 @@ const CafeDashboard = ({ user, dark }) => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { icon: Monitor, label: 'Aktif PC', value: data?.active_clients ?? '—', color: 'blue', from: 'from-blue-500', to: 'to-blue-600', glow: 'shadow-blue-500/20', bg: 'bg-blue-500/10', border2: 'border-blue-500/20', text: 'text-blue-400' },
-          { icon: Gamepad2, label: 'Toplam Tıklama', value: totalClicks > 0 ? totalClicks.toLocaleString('tr-TR') : '—', color: 'emerald', from: 'from-emerald-500', to: 'to-emerald-600', glow: 'shadow-emerald-500/20', bg: 'bg-emerald-500/10', border2: 'border-emerald-500/20', text: 'text-emerald-400' },
-          { icon: HardDrive, label: 'GPU Modeli', value: gpus.length > 0 ? gpus.length : '—', color: 'purple', from: 'from-purple-500', to: 'to-purple-600', glow: 'shadow-purple-500/20', bg: 'bg-purple-500/10', border2: 'border-purple-500/20', text: 'text-purple-400' },
-          { icon: Cpu, label: 'CPU Modeli', value: cpus.length > 0 ? cpus.length : '—', color: 'orange', from: 'from-orange-500', to: 'to-orange-600', glow: 'shadow-orange-500/20', bg: 'bg-orange-500/10', border2: 'border-orange-500/20', text: 'text-orange-400' },
-        ].map(({ icon: Icon, label, value, from, to, glow, bg: ib, border2, text }, i) => (
+          { icon: Gamepad2, label: 'Toplam Oyun', value: totalGames > 0 ? totalGames : '—', color: 'emerald', from: 'from-emerald-500', to: 'to-emerald-600', glow: 'shadow-emerald-500/20', bg: 'bg-emerald-500/10', border2: 'border-emerald-500/20', text: 'text-emerald-400' },
+          { icon: HardDrive, label: 'En Sıcak GPU', value: hotGpu ? `${hotGpu.gpu_temp}°C` : '—', sub2: hotGpu?.hostname, color: 'purple', from: 'from-purple-500', to: 'to-purple-600', glow: 'shadow-purple-500/20', bg: 'bg-purple-500/10', border2: 'border-purple-500/20', text: 'text-purple-400' },
+          { icon: Cpu, label: 'En Sıcak CPU', value: hotCpu ? `${hotCpu.cpu_temp}°C` : '—', sub2: hotCpu?.hostname, color: 'orange', from: 'from-orange-500', to: 'to-orange-600', glow: 'shadow-orange-500/20', bg: 'bg-orange-500/10', border2: 'border-orange-500/20', text: 'text-orange-400' },
+        ].map(({ icon: Icon, label, value, sub2, from, to, glow, bg: ib, border2, text }, i) => (
           <div key={i} className={`${card} border ${border} rounded-2xl p-4 sm:p-5 relative overflow-hidden group`}>
             <div className={`absolute -right-4 -bottom-4 opacity-[0.04] group-hover:opacity-[0.07] transition-opacity`}>
               <Icon size={80} />
@@ -409,6 +414,7 @@ const CafeDashboard = ({ user, dark }) => {
               <Icon size={16} className={text} />
             </div>
             <div className={`text-2xl sm:text-3xl font-black ${txt} leading-none`}>{value}</div>
+            {sub2 && <div className={`text-[10px] font-mono mt-0.5 text-gray-500 truncate`}>{sub2}</div>}
             <div className={`text-xs font-medium ${sub} mt-1.5`}>{label}</div>
           </div>
         ))}
@@ -474,42 +480,48 @@ const CafeDashboard = ({ user, dark }) => {
             </div>
             <h3 className={`font-bold text-sm sm:text-base ${txt}`}>Donanım Envanteri</h3>
           </div>
-          {gpus.length === 0 && cpus.length === 0 ? (
+          {hotGpus.length === 0 && hotCpus.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 gap-3">
               <div className={`w-12 h-12 rounded-xl ${dark ? 'bg-white/5' : 'bg-gray-100'} flex items-center justify-center`}>
                 <HardDrive size={22} className={`${muted} opacity-40`} />
               </div>
-              <span className={`text-sm ${sub}`}>Donanım verisi bekleniyor...</span>
+              <span className={`text-sm ${sub}`}>Sıcaklık verisi bekleniyor...</span>
             </div>
           ) : (
             <div className="space-y-4">
-              {gpus.length > 0 && (
+              {hotGpus.length > 0 && (
                 <div>
                   <p className={`text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-2 flex items-center gap-1`}>
-                    <HardDrive size={9} /> Ekran Kartları
+                    <HardDrive size={9} /> En Sıcak GPU
                   </p>
                   <div className="space-y-1.5">
-                    {gpus.map((g, i) => (
-                      <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl ${rowBg} transition-colors`}>
-                        <span className={`text-xs sm:text-sm ${txt} truncate flex-1 mr-2`}>{g.name}</span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-purple-500/10 text-purple-400 shrink-0">{g.count} adet</span>
-                      </div>
-                    ))}
+                    {hotGpus.map((pc, i) => {
+                      const color = pc.gpu_temp < 70 ? '#10b981' : pc.gpu_temp < 85 ? '#f59e0b' : '#ef4444';
+                      return (
+                        <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl ${rowBg} transition-colors`}>
+                          <span className={`text-xs sm:text-sm ${txt} truncate flex-1 mr-2`}>{pc.hostname}</span>
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg shrink-0" style={{ background: color + '22', color }}>{pc.gpu_temp}°C</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
-              {cpus.length > 0 && (
+              {hotCpus.length > 0 && (
                 <div>
                   <p className={`text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2 flex items-center gap-1`}>
-                    <Cpu size={9} /> İşlemciler
+                    <Cpu size={9} /> En Sıcak CPU
                   </p>
                   <div className="space-y-1.5">
-                    {cpus.map((c, i) => (
-                      <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl ${rowBg} transition-colors`}>
-                        <span className={`text-xs sm:text-sm ${txt} truncate flex-1 mr-2`}>{c.name}</span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-400 shrink-0">{c.count} adet</span>
-                      </div>
-                    ))}
+                    {hotCpus.map((pc, i) => {
+                      const color = pc.cpu_temp < 65 ? '#10b981' : pc.cpu_temp < 80 ? '#f59e0b' : '#ef4444';
+                      return (
+                        <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl ${rowBg} transition-colors`}>
+                          <span className={`text-xs sm:text-sm ${txt} truncate flex-1 mr-2`}>{pc.hostname}</span>
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg shrink-0" style={{ background: color + '22', color }}>{pc.cpu_temp}°C</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
