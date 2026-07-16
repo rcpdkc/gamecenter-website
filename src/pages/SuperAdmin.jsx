@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import {
   Server, Users, Gamepad2, Cpu, Activity, Clock, TrendingUp,
   Wifi, AlertTriangle, Crown, Zap, Gift, ChevronDown, ChevronUp,
-  Monitor, RefreshCw, CircleAlert, Layers, HardDrive
+  Monitor, RefreshCw, CircleAlert, Layers, HardDrive, Trash2, X
 } from 'lucide-react';
 
 const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#f59e0b', '#06b6d4', '#ec4899'];
@@ -35,8 +35,10 @@ const StatCard = ({ icon: Icon, label, value, color, dark, delta }) => {
 };
 
 // ─── Her kafe için genişletilebilir kart ───────────────────────────────────
-const CafeCard = ({ cafe, dark, index }) => {
+const CafeCard = ({ cafe, dark, index, onDelete }) => {
   const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const bg = dark ? 'bg-[#111827]' : 'bg-white';
   const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
   const txt = dark ? 'text-white' : 'text-gray-900';
@@ -107,9 +109,67 @@ const CafeCard = ({ cafe, dark, index }) => {
           {isOnline ? 'Çevrimiçi' : 'Pasif'}
         </span>
 
+        {/* Sil butonu */}
+        <button
+          onClick={e => { e.stopPropagation(); setConfirmDelete(true); }}
+          className="shrink-0 p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          title="Kafeyi sil"
+        >
+          <Trash2 size={14} />
+        </button>
+
         {/* Aç/kapat */}
         {open ? <ChevronUp size={16} className={sub} /> : <ChevronDown size={16} className={sub} />}
       </button>
+
+      {/* Silme onayı dialog */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className={`${bg} border ${panelBorder} rounded-2xl p-6 shadow-2xl max-w-sm w-full mx-4`}>
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                <Trash2 size={18} className="text-red-400" />
+              </div>
+              <div>
+                <p className={`font-bold text-sm ${txt}`}>Kafeyi Sil</p>
+                <p className={`text-xs ${sub} mt-1`}>
+                  <span className="font-semibold text-red-400">{cafe.cafe_name}</span> kaydı kalıcı olarak silinecek.
+                  Sunucu aktifse bir sonraki telemetride tekrar görünür.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  dark ? 'bg-white/5 text-gray-300 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                İptal
+              </button>
+              <button
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    const token = localStorage.getItem('gc_admin_token');
+                    await fetch(`/api/telemetry?hwid=${encodeURIComponent(cafe.hwid || cafe.cafe_id)}`, {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${token}` },
+                    });
+                    setConfirmDelete(false);
+                    onDelete(cafe.hwid || cafe.cafe_id);
+                  } catch (_) {}
+                  setDeleting(false);
+                }}
+                className="flex-1 py-2 rounded-xl text-sm font-bold bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-60"
+              >
+                {deleting ? 'Siliniyor...' : 'Evet, Sil'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Detay paneli (genişletilince görünür) ── */}
       {open && (
@@ -336,6 +396,10 @@ const AdminDashboard = ({ dark }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  const handleDelete = useCallback((hwid) => {
+    setData(prev => prev.filter(c => (c.hwid || c.cafe_id) !== hwid));
+  }, []);
   const bg = dark ? 'bg-[#111827]' : 'bg-white';
   const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
   const txt = dark ? 'text-white' : 'text-gray-900';
@@ -476,7 +540,7 @@ const AdminDashboard = ({ dark }) => {
         ) : (
           <div className="space-y-2">
             {filteredCafes.map((cafe, i) => (
-              <CafeCard key={cafe.cafe_id || i} cafe={cafe} dark={dark} index={i} />
+              <CafeCard key={cafe.hwid || cafe.cafe_id || i} cafe={cafe} dark={dark} index={i} onDelete={handleDelete} />
             ))}
           </div>
         )}
