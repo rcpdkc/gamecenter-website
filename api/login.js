@@ -1,6 +1,36 @@
 import { sql } from '@vercel/postgres';
 import crypto from 'crypto';
 
+// ── JWT benzeri imzalı token (HMAC-SHA256) ───────────────────────────────
+// Format: base64(header).base64(payload).base64(signature)
+// SESSION_SECRET ortam değişkeninden alınır, yoksa fallback kullanılır
+
+const SECRET = process.env.SESSION_SECRET || 'gc-default-secret-change-in-prod-2026';
+const SESSION_HOURS = 8; // Oturum süresi (saat)
+
+function signToken(payload) {
+  const header  = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const body    = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig     = crypto.createHmac('sha256', SECRET).update(`${header}.${body}`).digest('base64url');
+  return `${header}.${body}.${sig}`;
+}
+
+export function verifyToken(token) {
+  try {
+    const [header, body, sig] = token.split('.');
+    if (!header || !body || !sig) return null;
+    const expected = crypto.createHmac('sha256', SECRET).update(`${header}.${body}`).digest('base64url');
+    // Sabit zamanlı karşılaştırma (timing attack'a karşı)
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+    const payload = JSON.parse(Buffer.from(body, 'base64url').toString());
+    // Expiry kontrolü
+    if (payload.exp && Date.now() > payload.exp) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Credentials', true);
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,11 +38,9 @@ export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   // CORS Preflight
-  if (request.method === 'OPTIONS') {
-    return response.status(200).end();
-  }
-
+  if (request.method === 'OPTIONS') return response.status(200).end();
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method Not Allowed' });
+
   try {
     const { username, password, hwid } = request.body;
     if (!username || !password) return response.status(400).json({ error: 'E-posta ve şifre zorunludur.' });
@@ -95,21 +123,32 @@ export default async function handler(request, response) {
     // HWID Binding Check
     if (user.role !== 'admin' && hwid) {
       if (!user.hwid) {
-        // First login, bind HWID
         await sql`UPDATE users SET hwid = ${hwid} WHERE id = ${user.id}`;
         user.hwid = hwid;
       } else if (user.hwid !== hwid) {
-        // HWID mismatch
-        return response.status(403).json({ error: 'Bu hesap başka bir sunucuya (bilgisayara) kayıtlıdır. Lütfen lisansınızı sıfırlamak için yönetici ile iletişime geçin.' });
+        return response.status(403).json({ error: 'Bu hesap başka bir sunucuya kayıtlıdır. Lütfen yönetici ile iletişime geçin.' });
       }
     }
+
     const licenseExpired = user.role !== 'admin' && user.group_id && user.group_expires_at
       ? new Date(user.group_expires_at) < new Date()
       : false;
 
-    const token = Buffer.from(user.email + ':' + Date.now()).toString('base64');
+    // İmzalı JWT token — 8 saat geçerli
+    const now = Date.now();
+    const exp = now + SESSION_HOURS * 60 * 60 * 1000;
+    const token = signToken({
+      uid: user.id,
+      email: user.email,
+      role: user.role,
+      iat: now,
+      exp,
+    });
+
     return response.status(200).json({
-      success: true, token,
+      success: true,
+      token,
+      expires_at: exp,
       user: { ...user, license_expired: licenseExpired }
     });
   } catch (error) {

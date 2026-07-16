@@ -1,4 +1,5 @@
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useRef } from 'react';
 import { 
   LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone, FolderSync,
   ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu
@@ -43,15 +44,68 @@ const AdminLayout = () => {
   const [dark, setDark] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [sessionInfo, setSessionInfo] = useState(null); // { expiresAt, remainingLabel }
+  const autoLogoutTimer = useRef(null);
+
+  const doLogout = (reason) => {
+    localStorage.removeItem('gc_admin_token');
+    localStorage.removeItem('gc_user');
+    localStorage.removeItem('gc_expires_at');
+    if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current);
+    navigate('/login', { state: { reason } });
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('gc_admin_token');
     const storedUser = localStorage.getItem('gc_user');
-    if (!token || !storedUser) setIsAuthenticated(false);
-    else setUser(JSON.parse(storedUser));
+    const expiresAt = parseInt(localStorage.getItem('gc_expires_at') || '0', 10);
+
+    if (!token || !storedUser) { setIsAuthenticated(false); return; }
+
+    // Hızlı expiry ön kontrolü (API çağırmadan)
+    if (expiresAt && Date.now() > expiresAt) {
+      doLogout('expired');
+      return;
+    }
+
+    setUser(JSON.parse(storedUser));
+
+    // Sunucu tarafında token doğrulama
+    fetch('/api/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ token }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          // Token geçersiz veya süresi dolmuş
+          doLogout(data.code === 'TOKEN_EXPIRED' ? 'expired' : 'invalid');
+        } else {
+          // Güncel kullanıcı bilgisini yaz
+          setUser(data.user);
+          localStorage.setItem('gc_user', JSON.stringify(data.user));
+
+          // Otomatik logout zamanlayıcısı
+          if (data.expires_at) {
+            const msLeft = data.expires_at - Date.now();
+            const hLeft = Math.floor(msLeft / 3600000);
+            const mLeft = Math.floor((msLeft % 3600000) / 60000);
+            setSessionInfo({ expiresAt: data.expires_at, remainingLabel: `${hLeft}s ${mLeft}dk` });
+
+            if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current);
+            autoLogoutTimer.current = setTimeout(() => doLogout('expired'), Math.max(0, msLeft));
+          }
+        }
+      })
+      .catch(() => {
+        // Ağ hatası — offline olabilir, sessizce geç
+      });
 
     const savedTheme = localStorage.getItem('gc_admin_theme');
     if (savedTheme) setDark(savedTheme === 'dark');
+
+    return () => { if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current); };
   }, []);
 
   const toggleTheme = () => {
@@ -60,10 +114,7 @@ const AdminLayout = () => {
     localStorage.setItem('gc_admin_theme', next ? 'dark' : 'light');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('gc_admin_token');
-    navigate('/login');
-  };
+  const handleLogout = () => doLogout('manual');
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
@@ -211,6 +262,16 @@ const AdminLayout = () => {
                 <Bell size={18} />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full"></span>
               </button>
+
+              {/* Kalan oturum süresi */}
+              {sessionInfo && (
+                <div className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs ${
+                  dark ? 'bg-white/5 text-gray-500' : 'bg-gray-100 text-gray-400'
+                }`} title="Oturum bitiş süresi">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {sessionInfo.remainingLabel}
+                </div>
+              )}
 
               {/* Avatar */}
               {user && (
