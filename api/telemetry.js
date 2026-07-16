@@ -20,8 +20,9 @@ async function ensureSchema() {
       last_updated   TIMESTAMP DEFAULT NOW()
     );
   `;
-  // Mevcut tabloya hwid kolonu ekle (yoksa)
+  // Mevcut tabloya ek kolonlar ekle (yoksa)
   try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS hwid VARCHAR(255)`; } catch (_) {}
+  try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS server_version VARCHAR(20)`; } catch (_) {}
 }
 
 // ─── GET /api/telemetry ─────────────────────────────────────────────────────
@@ -97,15 +98,13 @@ async function handleGet(request, response) {
 
 // ─── POST /api/telemetry ────────────────────────────────────────────────────
 async function handlePost(request, response) {
-  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email } = request.body;
+  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email, server_version } = request.body;
 
   if (!cafe_id) return response.status(400).json({ error: 'Missing cafe_id' });
 
   await ensureSchema();
 
   // ── HWID Deduplicate ───────────────────────────────────────────────────
-  // Aynı HWID farklı cafe_id ile kayıtlıysa (DB sıfırlanmış kafe),
-  // eski kaydı sil. Böylece tek fiziksel makine = tek kayıt.
   if (hwid) {
     await sql`
       DELETE FROM gamecenter_telemetry
@@ -114,14 +113,15 @@ async function handlePost(request, response) {
     `;
   }
 
-  // ── cafe_id üzerinden UPSERT (güvenilir, PRIMARY KEY çakışması olmaz) ──
+  // ── cafe_id üzerinden UPSERT ──
   await sql`
     INSERT INTO gamecenter_telemetry
-      (cafe_id, cafe_name, hwid, active_clients, hardware_stats, top_games, last_updated)
+      (cafe_id, cafe_name, hwid, active_clients, hardware_stats, top_games, server_version, last_updated)
     VALUES
       (${cafe_id}, ${cafe_name}, ${hwid || null}, ${active_clients || 0},
        ${JSON.stringify(hardware_stats || {})}::jsonb,
        ${JSON.stringify(top_games || [])}::jsonb,
+       ${server_version || null},
        NOW())
     ON CONFLICT (cafe_id) DO UPDATE SET
       cafe_name      = EXCLUDED.cafe_name,
@@ -129,6 +129,7 @@ async function handlePost(request, response) {
       active_clients = EXCLUDED.active_clients,
       hardware_stats = EXCLUDED.hardware_stats,
       top_games      = EXCLUDED.top_games,
+      server_version = COALESCE(EXCLUDED.server_version, gamecenter_telemetry.server_version),
       last_updated   = NOW();
   `;
 

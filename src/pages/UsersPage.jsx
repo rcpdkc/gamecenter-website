@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Users, RefreshCw, Loader2, Edit2, CheckCircle2, X, Shield, AlertTriangle, Unlock } from 'lucide-react';
+import { Users, RefreshCw, Loader2, Edit2, X, AlertTriangle, Unlock, Tag } from 'lucide-react';
 
 const EditModal = ({ user, groups, dark, onClose, onSave }) => {
   const [groupId, setGroupId] = useState(user.group_id ? String(user.group_id) : '');
@@ -101,6 +101,7 @@ const UsersPage = () => {
   const dark = context.dark !== undefined ? context.dark : true;
   const [users, setUsers] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [telemetry, setTelemetry] = useState({});
   const [fetching, setFetching] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
 
@@ -113,10 +114,20 @@ const UsersPage = () => {
   const fetchAll = async () => {
     setFetching(true);
     try {
-      const [uRes, gRes] = await Promise.all([fetch('/api/users'), fetch('/api/groups')]);
-      const [uData, gData] = await Promise.all([uRes.json(), gRes.json()]);
+      const [uRes, gRes, tRes] = await Promise.all([
+        fetch('/api/users'),
+        fetch('/api/groups'),
+        fetch('/api/telemetry?role=admin'),
+      ]);
+      const [uData, gData, tData] = await Promise.all([uRes.json(), gRes.json(), tRes.json()]);
       if (uData.success) setUsers(uData.data);
       if (gData.success) setGroups(gData.data);
+      // Telemetriyi cafe_id → server_version haritasına çevir
+      if (tData.success) {
+        const map = {};
+        (tData.data || []).forEach(t => { if (t.cafe_id) map[t.cafe_id] = t.server_version; });
+        setTelemetry(map);
+      }
     } catch (e) { console.error(e); }
     finally { setFetching(false); }
   };
@@ -188,7 +199,7 @@ const UsersPage = () => {
               <table className="w-full text-sm text-left">
                 <thead>
                   <tr className={dark ? 'bg-white/3' : 'bg-gray-50'}>
-                    {['Kafe', 'İletişim', 'Grup', 'Bitiş', 'Kayıt', 'HWID', 'İşlem'].map(h => (
+                    {['Kafe', 'İletişim', 'Grup', 'Bitiş', 'Kayıt', 'GC Sürüm', 'HWID', 'İşlem'].map(h => (
                       <th key={h} className={`px-5 py-3 text-xs font-semibold uppercase tracking-wider ${sub}`}>{h}</th>
                     ))}
                   </tr>
@@ -210,6 +221,17 @@ const UsersPage = () => {
                           : <span className="text-gray-500">Süresiz</span>}
                       </td>
                       <td className={`px-5 py-3.5 text-xs ${sub}`}>{new Date(user.created_at).toLocaleDateString('tr-TR')}</td>
+                      <td className="px-5 py-3.5">
+                        {(() => {
+                          const v = telemetry[user.cafe_id];
+                          if (!v) return <span className={`text-xs ${sub}`}>—</span>;
+                          return (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                              <Tag size={9} /> v{v}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td className={`px-5 py-3.5 text-xs`}>
                         {user.hwid ? (
                           <span className="text-emerald-400 font-mono" title={user.hwid}>Kilitli</span>
