@@ -97,7 +97,7 @@ async function handleGet(request, response) {
 
 // ─── POST /api/telemetry ────────────────────────────────────────────────────
 async function handlePost(request, response) {
-  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid } = request.body;
+  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email } = request.body;
 
   if (!cafe_id) return response.status(400).json({ error: 'Missing cafe_id' });
 
@@ -155,6 +155,19 @@ async function handlePost(request, response) {
       WHERE hwid = ${hwid}
         AND hwid IS NOT NULL
         AND hwid != '';
+    `;
+  }
+
+  // ── cloud_email ile otomatik self-link ───────────────────────────────────
+  // Sunucu web_admin'den cloud login yapilmissa email settings'te kayitlidir.
+  // Bu email'e sahip kullanicinin cafe_id/hwid'ini otomatik guncelle.
+  if (cloud_email) {
+    await sql`
+      UPDATE users
+      SET cafe_id = ${cafe_id},
+          hwid    = COALESCE(NULLIF(hwid, ''), ${hwid || null})
+      WHERE email = ${cloud_email}
+        AND (cafe_id IS NULL OR cafe_id = '')
     `;
   }
 
