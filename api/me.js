@@ -1,12 +1,70 @@
 import { sql } from '@vercel/postgres';
+import { verifyToken } from './login.js';
+
+// POST /api/me         → kullanıcı profil bilgisi
+// GET  /api/me?view=logs → sistem logları (admin)
+// DELETE /api/me?view=logs&id=X → log sil (admin)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── Loglar ─────────────────────────────────────────────────────────────────
+  if (req.query.view === 'logs') {
+    const auth = req.headers.authorization;
+    const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null;
+    const payload = token ? verifyToken(token) : null;
+    if (!payload) return res.status(401).json({ error: 'Yetkisiz.' });
+
+    try {
+      await sql`
+        CREATE TABLE IF NOT EXISTS system_logs (
+          id         SERIAL PRIMARY KEY,
+          event      VARCHAR(100) NOT NULL,
+          email      VARCHAR(255),
+          details    TEXT,
+          ip         VARCHAR(50),
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `;
+
+      if (req.method === 'GET') {
+        const { event, email, limit = 200 } = req.query;
+        let rows;
+        if (event && email) {
+          rows = (await sql`SELECT * FROM system_logs WHERE event ILIKE ${'%' + event + '%'} AND email ILIKE ${'%' + email + '%'} ORDER BY created_at DESC LIMIT ${Number(limit)}`).rows;
+        } else if (event) {
+          rows = (await sql`SELECT * FROM system_logs WHERE event ILIKE ${'%' + event + '%'} ORDER BY created_at DESC LIMIT ${Number(limit)}`).rows;
+        } else if (email) {
+          rows = (await sql`SELECT * FROM system_logs WHERE email ILIKE ${'%' + email + '%'} ORDER BY created_at DESC LIMIT ${Number(limit)}`).rows;
+        } else {
+          rows = (await sql`SELECT * FROM system_logs ORDER BY created_at DESC LIMIT ${Number(limit)}`).rows;
+        }
+        return res.status(200).json({ success: true, data: rows });
+      }
+
+      if (req.method === 'DELETE') {
+        if (payload.role !== 'admin') return res.status(403).json({ error: 'Sadece admin silebilir.' });
+        const { id } = req.query;
+        if (id) {
+          await sql`DELETE FROM system_logs WHERE id = ${Number(id)}`;
+        } else {
+          await sql`DELETE FROM system_logs`;
+        }
+        return res.status(200).json({ success: true });
+      }
+
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // ── Profil bilgisi ─────────────────────────────────────────────────────────
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { email } = req.body;

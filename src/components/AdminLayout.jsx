@@ -2,7 +2,7 @@ import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-d
 import { useRef } from 'react';
 import { 
   LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone, FolderSync,
-  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu
+  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
 
@@ -17,6 +17,7 @@ const NAV_ITEMS_ADMIN = [
   { to: '/superadmin/mklink-archive', icon: FolderSync, label: 'Mklink Arşivi' },
   { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
   { to: '/superadmin/announcements', icon: Megaphone, label: 'Duyurular' },
+  { to: '/superadmin/logs', icon: ScrollText, label: 'Loglar' },
   { to: '/superadmin/settings', icon: Settings, label: 'Ayarlar' },
 ];
 
@@ -33,6 +34,7 @@ const PAGE_TITLES = {
   '/superadmin/mklink-archive': { title: 'Mklink Arşivi', subtitle: 'Global MkLink şablonlarını yönetin' },
   '/superadmin/references': { title: 'Referans & Davet', subtitle: 'Kafe davet kodları ve kayıt yönetimi' },
   '/superadmin/announcements': { title: 'Global Duyurular', subtitle: 'Tüm kafelere sistem bildirimleri gönderin' },
+  '/superadmin/logs': { title: 'Sistem Logları', subtitle: 'Giriş, şifre sıfırlama ve güvenlik olayları' },
   '/superadmin/settings': { title: 'Ayarlar', subtitle: 'Sistem tercihleri ve yapılandırma' },
 };
 
