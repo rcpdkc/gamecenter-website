@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import {
   Server, Users, Gamepad2, Cpu, Activity, Clock, TrendingUp,
   Wifi, AlertTriangle, Crown, Zap, Gift, ChevronDown, ChevronUp,
-  Monitor, RefreshCw, CircleAlert, Layers, HardDrive, Trash2, X
+  Monitor, RefreshCw, CircleAlert, Layers, HardDrive, Trash2, X, Link
 } from 'lucide-react';
 
 const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#f59e0b', '#06b6d4', '#ec4899'];
@@ -396,6 +396,12 @@ const AdminDashboard = ({ dark }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [linkData, setLinkData] = useState(null); // { users, telemetry_records }
+  const [linkModal, setLinkModal] = useState(false);
+  const [linking, setLinking] = useState(false);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedTelemetry, setSelectedTelemetry] = useState('');
+  const [linkMsg, setLinkMsg] = useState('');
 
   const handleDelete = useCallback((hwid) => {
     setData(prev => prev.filter(c => (c.hwid || c.cafe_id) !== hwid));
@@ -412,6 +418,37 @@ const AdminDashboard = ({ dark }) => {
       .then(r => r.json())
       .then(j => { setData(j.data || []); setLoading(false); })
       .catch(() => setLoading(false));
+  };
+
+  const loadLinkData = () => {
+    const token = localStorage.getItem('gc_admin_token');
+    setLinkMsg('');
+    fetch('/api/admin/cafe-link', { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(j => { setLinkData(j); setLinkModal(true); })
+      .catch(() => setLinkMsg('Yüklenemedi.'));
+  };
+
+  const doLink = async () => {
+    if (!selectedUser || !selectedTelemetry) return;
+    setLinking(true);
+    setLinkMsg('');
+    const token = localStorage.getItem('gc_admin_token');
+    try {
+      const r = await fetch('/api/admin/cafe-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ user_email: selectedUser, telemetry_cafe_id: selectedTelemetry }),
+      });
+      const j = await r.json();
+      if (j.success) {
+        setLinkMsg('✅ ' + j.message);
+        loadLinkData(); // yenile
+      } else {
+        setLinkMsg('❌ ' + (j.error || 'Hata'));
+      }
+    } catch { setLinkMsg('❌ Bağlantı hatası.'); }
+    setLinking(false);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -444,6 +481,75 @@ const AdminDashboard = ({ dark }) => {
 
   return (
     <div className="space-y-6">
+
+      {/* ── Hesap Bağlama Modal ── */}
+      {linkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className={`${bg} border ${panelBorder} rounded-2xl p-6 shadow-2xl w-full max-w-lg mx-4`}>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Link size={18} className="text-blue-400" />
+                <p className={`font-bold text-sm ${txt}`}>Kafe Hesabı Bağla</p>
+              </div>
+              <button onClick={() => { setLinkModal(false); setLinkMsg(''); }} className="text-gray-500 hover:text-gray-300"><X size={16}/></button>
+            </div>
+
+            {/* Bağlanmamış kullanıcılar listesi */}
+            {linkData?.users?.filter(u => !u.is_linked).length > 0 && (
+              <div className="mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                <p className="text-xs text-yellow-400 font-medium mb-1">⚠️ Bağlanmamış hesaplar:</p>
+                {linkData.users.filter(u => !u.is_linked).map(u => (
+                  <p key={u.email} className="text-xs text-yellow-300">{u.email} ({u.cafe_name})</p>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className={`text-xs font-semibold ${txt} mb-1 block`}>Kullanıcı (e-posta)</label>
+                <select
+                  value={selectedUser}
+                  onChange={e => setSelectedUser(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl text-sm border focus:outline-none ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                >
+                  <option value="">Kullanıcı seç...</option>
+                  {(linkData?.users || []).map(u => (
+                    <option key={u.email} value={u.email}>
+                      {u.email} — {u.cafe_name || '?'} {u.is_linked ? '✅' : '⚠️'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={`text-xs font-semibold ${txt} mb-1 block`}>Telemetri Kaydı (Sunucu)</label>
+                <select
+                  value={selectedTelemetry}
+                  onChange={e => setSelectedTelemetry(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl text-sm border focus:outline-none ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                >
+                  <option value="">Telemetri seç...</option>
+                  {(linkData?.telemetry_records || []).map(t => (
+                    <option key={t.cafe_id} value={t.cafe_id}>
+                      {t.cafe_name} — {t.active_clients} PC aktif
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {linkMsg && <p className="text-xs mb-3 text-center">{linkMsg}</p>}
+
+            <button
+              onClick={doLink}
+              disabled={linking || !selectedUser || !selectedTelemetry}
+              className="w-full py-2.5 rounded-xl text-sm font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50"
+            >
+              {linking ? 'Bağlanıyor...' : 'Hesabı Bağla'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Üst bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -454,6 +560,15 @@ const AdminDashboard = ({ dark }) => {
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Canlı Senkronizasyon
           </div>
+          <button
+            onClick={loadLinkData}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+              dark ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100'
+            }`}
+            title="Kafe hesaplarını telemetri ile bağla"
+          >
+            <Link size={13} /> Hesap Bağla
+          </button>
           <button onClick={fetchData} className={`p-2 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
             <RefreshCw size={15} />
           </button>
