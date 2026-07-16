@@ -7,30 +7,21 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
-// ─── Tablo migration ───────────────────────────────────────────────────────
+// ─── Schema: cafe_id PRIMARY KEY (orijinal), hwid ek kolon ────────────────
 async function ensureSchema() {
-  // Ana tablo (hwid PRIMARY KEY — fiziksel makine = tek kayıt)
   await sql`
     CREATE TABLE IF NOT EXISTS gamecenter_telemetry (
-      hwid          VARCHAR(255) PRIMARY KEY,
-      cafe_id       VARCHAR(255) NOT NULL,
-      cafe_name     VARCHAR(255),
+      cafe_id        VARCHAR(255) PRIMARY KEY,
+      cafe_name      VARCHAR(255),
+      hwid           VARCHAR(255),
       active_clients INT DEFAULT 0,
       hardware_stats JSONB DEFAULT '{}',
       top_games      JSONB DEFAULT '[]',
       last_updated   TIMESTAMP DEFAULT NOW()
     );
   `;
-
-  // Migration: eski cafe_id PRIMARY KEY tablolarını HWID'li yapıya geçir
-  // (hwid kolonu yoksa ekle, sonra PRIMARY KEY taşı)
-  const migrations = [
-    `ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS hwid VARCHAR(255)`,
-    `ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS cafe_id VARCHAR(255)`,
-  ];
-  for (const m of migrations) {
-    try { await sql.query(m); } catch (_) {}
-  }
+  // Mevcut tabloya hwid kolonu ekle (yoksa)
+  try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS hwid VARCHAR(255)`; } catch (_) {}
 }
 
 // ─── GET /api/telemetry ─────────────────────────────────────────────────────
@@ -39,7 +30,7 @@ async function handleGet(request, response) {
 
   let rows;
   if (role === 'admin') {
-    // Tüm kafeler — son 90 günde aktif olanlar (30+ gün sessiz = eski kayıt)
+    // Admin: aktif (son 90 gün) tüm kafeler
     const result = await sql`
       SELECT * FROM gamecenter_telemetry
       WHERE last_updated >= NOW() - INTERVAL '90 days'
@@ -47,10 +38,10 @@ async function handleGet(request, response) {
     `;
     rows = result.rows;
   } else if (cafe_id) {
+    // Kafe kullanıcısı: sadece kendi verisi
     const result = await sql`
       SELECT * FROM gamecenter_telemetry
       WHERE cafe_id = ${cafe_id}
-      ORDER BY last_updated DESC
       LIMIT 1
     `;
     rows = result.rows;
@@ -75,38 +66,34 @@ async function handlePost(request, response) {
 
   await ensureSchema();
 
-  const effectiveHwid = hwid || cafe_id; // HWID yoksa cafe_id'yi fallback kullan
+  // ── HWID Deduplicate ───────────────────────────────────────────────────
+  // Aynı HWID farklı cafe_id ile kayıtlıysa (DB sıfırlanmış kafe),
+  // eski kaydı sil. Böylece tek fiziksel makine = tek kayıt.
+  if (hwid) {
+    await sql`
+      DELETE FROM gamecenter_telemetry
+      WHERE hwid = ${hwid}
+        AND cafe_id != ${cafe_id};
+    `;
+  }
 
-  // ── HWID bazlı UPSERT ──────────────────────────────────────────────────
-  // Aynı HWID = aynı fiziksel makine. cafe_id değişmiş bile olsa (DB sıfırlandı)
-  // tek kayıt güncellenir. Bu duplicate kayıt sorununu tamamen önler.
+  // ── cafe_id üzerinden UPSERT (güvenilir, PRIMARY KEY çakışması olmaz) ──
   await sql`
     INSERT INTO gamecenter_telemetry
-      (hwid, cafe_id, cafe_name, active_clients, hardware_stats, top_games, last_updated)
+      (cafe_id, cafe_name, hwid, active_clients, hardware_stats, top_games, last_updated)
     VALUES
-      (${effectiveHwid}, ${cafe_id}, ${cafe_name}, ${active_clients || 0},
+      (${cafe_id}, ${cafe_name}, ${hwid || null}, ${active_clients || 0},
        ${JSON.stringify(hardware_stats || {})}::jsonb,
        ${JSON.stringify(top_games || [])}::jsonb,
        NOW())
-    ON CONFLICT (hwid) DO UPDATE SET
-      cafe_id        = EXCLUDED.cafe_id,
+    ON CONFLICT (cafe_id) DO UPDATE SET
       cafe_name      = EXCLUDED.cafe_name,
+      hwid           = COALESCE(EXCLUDED.hwid, gamecenter_telemetry.hwid),
       active_clients = EXCLUDED.active_clients,
       hardware_stats = EXCLUDED.hardware_stats,
       top_games      = EXCLUDED.top_games,
       last_updated   = NOW();
   `;
-
-  // ── Aynı cafe_id ile oluşmuş ESKI/ARTIK kayıtları temizle ─────────────
-  // (Migration sonrası eski cafe_id PRIMARY KEY kayıtları varsa sil)
-  if (hwid) {
-    await sql`
-      DELETE FROM gamecenter_telemetry
-      WHERE cafe_id = ${cafe_id}
-        AND hwid != ${hwid}
-        AND hwid IS NOT NULL;
-    `;
-  }
 
   // ── Otomatik cleanup: 30 günden eski sessiz kafeler ────────────────────
   await sql`
@@ -114,23 +101,20 @@ async function handlePost(request, response) {
     WHERE last_updated < NOW() - INTERVAL '30 days';
   `;
 
-  // ── HWID → users tablosuna yaz (login binding için) ────────────────────
+  // ── users tablosu: HWID + cafe_id senkronizasyonu ─────────────────────
   if (hwid) {
-    // 1) HWID ile eşleşen kullanıcının HWID alanını doldur (ilk bağlama)
+    // 1) Bu cafe_id'ye ait kullanıcının HWID'ini doldur (ilk bağlama)
     await sql`
-      UPDATE users
-      SET hwid = ${hwid}
+      UPDATE users SET hwid = ${hwid}
       WHERE cafe_id = ${cafe_id}
         AND (hwid IS NULL OR hwid = '');
     `;
 
-    // 2) KRİTİK: HWID ile eşleşen kullanıcının cafe_id'sini sunucunun
-    //    gönderdiği cafe_id ile senkronize et.
-    //    Kullanıcı kayıt sırasında farklı bir cafe_id almış olabilir;
-    //    bu satır ikisini eşitler → kafe paneli artık doğru veriyi gösterir.
+    // 2) KRİTİK: Bu HWID'e sahip kullanıcının cafe_id'sini güncelle.
+    //    Kullanıcı kayıtta farklı cafe_id almışsa burada eşitlenir →
+    //    kafe paneli artık doğru veriyi gösterir.
     await sql`
-      UPDATE users
-      SET cafe_id = ${cafe_id}
+      UPDATE users SET cafe_id = ${cafe_id}
       WHERE hwid = ${hwid}
         AND hwid IS NOT NULL
         AND hwid != '';
@@ -142,7 +126,6 @@ async function handlePost(request, response) {
 
 // ─── DELETE /api/telemetry?cafe_id=xxx  (admin only) ───────────────────────
 async function handleDelete(request, response) {
-  // Token doğrulama — Authorization: Bearer <token>
   const authHeader = request.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return response.status(401).json({ error: 'Yetkisiz.' });
