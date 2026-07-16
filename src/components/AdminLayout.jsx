@@ -61,14 +61,18 @@ const AdminLayout = () => {
     localStorage.removeItem('gc_admin_token');
     localStorage.removeItem('gc_user');
     localStorage.removeItem('gc_expires_at');
+    sessionStorage.removeItem('gc_admin_token');
+    sessionStorage.removeItem('gc_user');
+    sessionStorage.removeItem('gc_expires_at');
     if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current);
     navigate('/login', { state: { reason } });
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('gc_admin_token');
-    const storedUser = localStorage.getItem('gc_user');
-    const expiresAt = parseInt(localStorage.getItem('gc_expires_at') || '0', 10);
+    const storage = localStorage.getItem('gc_admin_token') || sessionStorage.getItem('gc_admin_token') ? (localStorage.getItem('gc_admin_token') ? localStorage : sessionStorage) : localStorage;
+    const token = storage.getItem('gc_admin_token');
+    const storedUser = storage.getItem('gc_user');
+    const expiresAt = parseInt(storage.getItem('gc_expires_at') || '0', 10);
 
     if (!token || !storedUser) { setIsAuthenticated(false); return; }
 
@@ -94,7 +98,8 @@ const AdminLayout = () => {
         } else {
           // Güncel kullanıcı bilgisini yaz
           setUser(data.user);
-          localStorage.setItem('gc_user', JSON.stringify(data.user));
+          const storage = localStorage.getItem('gc_admin_token') ? localStorage : sessionStorage;
+          storage.setItem('gc_user', JSON.stringify(data.user));
 
           // Otomatik logout zamanlayıcısı
           if (data.expires_at) {

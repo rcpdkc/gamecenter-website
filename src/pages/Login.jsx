@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Server, Lock, User, ArrowRight, Loader2, Home, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Server, Lock, User, ArrowRight, Loader2, Home, Mail, ArrowLeft, CheckCircle2, Check } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -30,8 +31,11 @@ const Login = () => {
       const data = await res.json();
       
       if (res.ok && data.success) {
-        localStorage.setItem('gc_admin_token', data.token);
-        localStorage.setItem('gc_user', JSON.stringify(data.user));
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('gc_admin_token', data.token);
+        storage.setItem('gc_user', JSON.stringify(data.user));
+        if (data.expires_at) storage.setItem('gc_expires_at', data.expires_at.toString());
+        
         navigate('/superadmin');
       } else {
         setError(data.error || 'Giriş başarısız.');
@@ -117,16 +121,7 @@ const Login = () => {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-400">Şifre</label>
-                    <button
-                      type="button"
-                      onClick={() => { setView('forgot'); setForgotError(''); setForgotEmail(''); }}
-                      className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
-                    >
-                      Şifremi Unuttum
-                    </button>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Şifre</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
@@ -140,6 +135,15 @@ const Login = () => {
                   </div>
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-3 cursor-pointer group w-fit" onClick={() => setRememberMe(!rememberMe)}>
+                    <div className={`relative flex items-center justify-center w-5 h-5 rounded-md border transition-colors ${rememberMe ? 'bg-orange-500/20 border-orange-500/50' : 'bg-[#12141d] border-white/10 group-hover:border-orange-500/30'}`}>
+                      {rememberMe && <Check size={14} className="text-orange-500" />}
+                    </div>
+                    <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors select-none">Beni Hatırla</span>
+                  </label>
+                </div>
+
                 <button 
                   type="submit" 
                   disabled={loading}
@@ -151,6 +155,16 @@ const Login = () => {
                     <>Giriş Yap <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
                   )}
                 </button>
+
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => { setView('forgot'); setForgotError(''); setForgotEmail(''); }}
+                    className="text-sm text-gray-500 hover:text-white transition-colors border-b border-transparent hover:border-white/20 pb-0.5"
+                  >
+                    Şifrenizi mi unuttunuz?
+                  </button>
+                </div>
               </form>
             </div>
 
