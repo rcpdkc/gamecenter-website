@@ -224,7 +224,8 @@ export default function ClientsPage() {
 
   const filtered = clients
     .filter(pc => filter === 'all' ? true : filter === 'online' ? isOnline(pc.last_seen) : !isOnline(pc.last_seen))
-    .filter(pc => !search || pc.hostname?.toLowerCase().includes(search.toLowerCase()) || pc.ip?.includes(search) || pc.cpu?.toLowerCase().includes(search.toLowerCase()) || pc.gpu?.toLowerCase().includes(search.toLowerCase()));
+    .filter(pc => !search || pc.hostname?.toLowerCase().includes(search.toLowerCase()) || pc.ip?.includes(search) || pc.cpu?.toLowerCase().includes(search.toLowerCase()) || pc.gpu?.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (a.hostname || '').localeCompare(b.hostname || '', 'tr', { numeric: true }));
 
   const onlineCount = clients.filter(pc => isOnline(pc.last_seen)).length;
 
@@ -265,7 +266,7 @@ export default function ClientsPage() {
               className={`border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/40 ${inputBg} w-32 sm:w-44`}
             />
             <div className="flex rounded-xl overflow-hidden border border-white/10">
-              {[['all','Tümü'],['online','Online'],['offline','Offline']].map(([v,l]) => (
+              {[['all','Tümü'],['online','Açık'],['offline','Kapalı']].map(([v,l]) => (
                 <button key={v} onClick={() => setFilter(v)}
                   className={`px-2 py-1.5 text-[11px] font-semibold transition-colors ${filter === v ? 'bg-orange-500 text-white' : dark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                   {l}
