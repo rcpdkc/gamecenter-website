@@ -423,7 +423,7 @@ const AdminDashboard = ({ dark }) => {
   const loadLinkData = () => {
     const token = localStorage.getItem('gc_admin_token');
     setLinkMsg('');
-    fetch('/api/admin/cafe-link', { headers: { 'Authorization': `Bearer ${token}` } })
+    fetch('/api/users?view=cafe-link', { headers: { 'Authorization': `Bearer ${token}` } })
       .then(r => r.json())
       .then(j => { setLinkData(j); setLinkModal(true); })
       .catch(() => setLinkMsg('Yüklenemedi.'));
@@ -435,10 +435,10 @@ const AdminDashboard = ({ dark }) => {
     setLinkMsg('');
     const token = localStorage.getItem('gc_admin_token');
     try {
-      const r = await fetch('/api/admin/cafe-link', {
+      const r = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ user_email: selectedUser, telemetry_cafe_id: selectedTelemetry }),
+        body: JSON.stringify({ action: 'cafe-link', user_email: selectedUser, telemetry_cafe_id: selectedTelemetry }),
       });
       const j = await r.json();
       if (j.success) {

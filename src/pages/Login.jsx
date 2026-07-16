@@ -49,7 +49,7 @@ const Login = () => {
     setForgotError('');
 
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const res = await fetch('/api/auth?action=forgot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),
