@@ -270,19 +270,19 @@ const CafeDashboard = ({ user, dark }) => {
     const tryFetch = async () => {
       try {
         if (user.cafe_id) {
-          const r = await fetch(/api/telemetry?role=cafe&cafe_id=);
+          const r = await fetch(`/api/telemetry?role=cafe&cafe_id=${user.cafe_id}`);
           const j = await r.json();
           const rec = (j.data||[])[0]||null;
           if (rec) { setData(rec); setLoading(false); return; }
         }
         if (user.hwid) {
-          const r = await fetch(/api/telemetry?hwid=);
+          const r = await fetch(`/api/telemetry?hwid=${encodeURIComponent(user.hwid)}`);
           const j = await r.json();
           const rec = (j.data||[])[0]||null;
           if (rec) { setData(rec); setLoading(false); return; }
         }
         if (user.email) {
-          const r = await fetch(/api/telemetry?email=);
+          const r = await fetch(`/api/telemetry?email=${encodeURIComponent(user.email)}`);
           const j = await r.json();
           setData((j.data||[])[0]||null);
         }
