@@ -266,12 +266,31 @@ const CafeDashboard = ({ user, dark }) => {
   const planMeta = PLAN_META[plan] || PLAN_META.free;
 
   useEffect(() => {
-    if (!user.cafe_id || licenseExpired) { setLoading(false); return; }
-    fetch(`/api/telemetry?role=cafe&cafe_id=${user.cafe_id}`)
-      .then(r => r.json())
-      .then(j => { setData((j.data || [])[0] || null); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [user.cafe_id]);
+    if (licenseExpired) { setLoading(false); return; }
+    const tryFetch = async () => {
+      try {
+        if (user.cafe_id) {
+          const r = await fetch(/api/telemetry?role=cafe&cafe_id=);
+          const j = await r.json();
+          const rec = (j.data||[])[0]||null;
+          if (rec) { setData(rec); setLoading(false); return; }
+        }
+        if (user.hwid) {
+          const r = await fetch(/api/telemetry?hwid=);
+          const j = await r.json();
+          const rec = (j.data||[])[0]||null;
+          if (rec) { setData(rec); setLoading(false); return; }
+        }
+        if (user.email) {
+          const r = await fetch(/api/telemetry?email=);
+          const j = await r.json();
+          setData((j.data||[])[0]||null);
+        }
+      } catch(e) { console.error(e); }
+      setLoading(false);
+    };
+    tryFetch();
+  }, [user.cafe_id, user.hwid, user.email]);
 
   if (licenseExpired) {
     return (
