@@ -298,7 +298,7 @@ const AdminLayout = () => {
 
           {/* PAGE CONTENT */}
           <main className={`flex-1 overflow-y-auto p-6 md:p-8 ${bg}`}>
-            <Outlet context={{ dark }} />
+            <Outlet context={{ dark, user }} />
           </main>
         </div>
       </div>
