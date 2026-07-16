@@ -252,14 +252,44 @@ const CafeCard = ({ cafe, dark, index, onDelete }) => {
 };
 
 // ===== CAFE DASHBOARD (kafe sahibi - sadece kendi verisi) =====
+const TempGauge = ({ value, label, icon: Icon, dark }) => {
+  const color = !value ? '#6b7280' : value < 65 ? '#10b981' : value < 80 ? '#f59e0b' : '#ef4444';
+  const status = !value ? '—' : value < 65 ? 'Normal' : value < 80 ? 'Yüksek' : 'Kritik';
+  const statusColor = !value ? 'text-gray-500' : value < 65 ? 'text-emerald-400' : value < 80 ? 'text-yellow-400' : 'text-red-400';
+  const pct = value ? Math.min((value / 110) * 100, 100) : 0;
+  const card = dark ? 'bg-[#161b22]' : 'bg-white';
+  const border = dark ? 'border-white/5' : 'border-gray-100';
+  const txt = dark ? 'text-white' : 'text-gray-900';
+  const sub = dark ? 'text-gray-400' : 'text-gray-500';
+  return (
+    <div className={`${card} border ${border} rounded-2xl p-4 sm:p-5`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Icon size={14} style={{ color }} />
+          <span className={`text-xs font-semibold ${sub}`}>{label}</span>
+        </div>
+        <span className={`text-[10px] font-bold uppercase tracking-wide ${statusColor}`}>{status}</span>
+      </div>
+      <div className="flex items-end gap-1 mb-3">
+        <span className="text-3xl sm:text-4xl font-black" style={{ color: value ? color : undefined, opacity: value ? 1 : 0.3 }}>{value ?? '—'}</span>
+        {value && <span className={`text-base font-bold ${sub} mb-1`}>°C</span>}
+      </div>
+      <div className={`h-2 rounded-full ${dark ? 'bg-white/5' : 'bg-gray-100'} overflow-hidden`}>
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+};
+
 const CafeDashboard = ({ user, dark }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const bg = dark ? 'bg-[#111827]' : 'bg-white';
-  const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
+  const card = dark ? 'bg-[#161b22]' : 'bg-white';
+  const border = dark ? 'border-white/5' : 'border-gray-100';
   const txt = dark ? 'text-white' : 'text-gray-900';
-  const sub = dark ? 'text-gray-500' : 'text-gray-400';
-  const tooltipStyle = { backgroundColor: dark ? '#1f2937' : '#fff', borderColor: dark ? '#374151' : '#e5e7eb' };
+  const sub = dark ? 'text-gray-400' : 'text-gray-500';
+  const muted = dark ? 'text-gray-600' : 'text-gray-400';
+  const rowBg = dark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100';
 
   const licenseExpired = user.license_expired;
   const plan = user.plan || 'free';
@@ -299,11 +329,18 @@ const CafeDashboard = ({ user, dark }) => {
           <AlertTriangle size={36} className="text-red-400" />
         </div>
         <h2 className={`text-2xl font-bold ${txt}`}>Lisansınız Sona Erdi</h2>
-        <p className={`text-sm ${sub} max-w-sm`}>
-          Game Center Cloud erişiminiz sona ermiştir. Yenileme için sistem yöneticinizle iletişime geçin.
-        </p>
-        <div className="px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
-          Hesap Askıya Alındı
+        <p className={`text-sm ${sub} max-w-sm`}>Game Center Cloud erişiminiz sona ermiştir. Yenileme için sistem yöneticinizle iletişime geçin.</p>
+        <div className="px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">Hesap Askıya Alındı</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className={`text-sm ${sub}`}>Veriler yükleniyor...</p>
         </div>
       </div>
     );
@@ -312,48 +349,115 @@ const CafeDashboard = ({ user, dark }) => {
   const topGames = data?.top_games || [];
   const gpus = data?.hardware_stats?.gpus || [];
   const cpus = data?.hardware_stats?.cpus || [];
+  const temps = data?.hardware_stats?.temps || {};
+  const cpuTemp = temps.cpu_avg || null;
+  const gpuTemp = temps.gpu_avg || null;
   const totalClicks = topGames.reduce((a, g) => a + g.clicks, 0);
+  const maxClicks = topGames[0]?.clicks || 1;
+
+  const lastUpdated = data?.last_updated ? new Date(data.last_updated) : null;
+  const minsAgo = lastUpdated ? Math.round((Date.now() - lastUpdated) / 60000) : null;
+  const isOnline = minsAgo !== null && minsAgo < 20;
 
   return (
-    <div className="space-y-6">
-      {/* Plan + online badge */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${planMeta.bg} ${planMeta.color}`}>
-          <planMeta.icon size={13} /> {planMeta.label} Plan
-          {user.plan_expires_at && ` · ${new Date(user.plan_expires_at).toLocaleDateString('tr-TR')} tarihine kadar`}
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Çevrimiçi
+    <div className="space-y-4 sm:space-y-5">
+
+      {/* ── Hero Header ── */}
+      <div className={`${card} border ${border} rounded-2xl p-4 sm:p-6`}>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
+              <Server size={20} className="text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className={`text-lg sm:text-xl font-black ${txt} truncate`}>{user.cafe_name || 'Kafeniz'}</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${isOnline ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'}`} />
+                  {isOnline ? 'Çevrimiçi' : 'Pasif'}
+                </span>
+                {minsAgo !== null && (
+                  <span className={`text-[11px] ${muted} flex items-center gap-1`}>
+                    <Clock size={9} />
+                    {minsAgo < 1 ? 'Az önce' : `${minsAgo} dk önce`}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${planMeta.bg} ${planMeta.color}`}>
+            <planMeta.icon size={12} />
+            {planMeta.label} Plan
+            {user.plan_expires_at && <span className="opacity-70 hidden sm:inline"> · {new Date(user.plan_expires_at).toLocaleDateString('tr-TR')}</span>}
+          </div>
         </div>
       </div>
 
-      {/* İstatistik kartları */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard icon={Monitor} label="Aktif PC" value={data?.active_clients ?? '—'} color="bg-gradient-to-br from-blue-500 to-blue-600" dark={dark} />
-        <StatCard icon={Gamepad2} label="Toplam Tıklama" value={totalClicks > 0 ? totalClicks.toLocaleString() : '—'} color="bg-gradient-to-br from-emerald-500 to-emerald-600" dark={dark} />
-        <StatCard icon={HardDrive} label="GPU Modeli" value={gpus.length > 0 ? gpus.length : '—'} color="bg-gradient-to-br from-purple-500 to-purple-600" dark={dark} />
-        <StatCard icon={Cpu} label="CPU Modeli" value={cpus.length > 0 ? cpus.length : '—'} color="bg-gradient-to-br from-orange-500 to-orange-600" dark={dark} />
+      {/* ── 4 Stat Cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[
+          { icon: Monitor, label: 'Aktif PC', value: data?.active_clients ?? '—', color: 'blue', from: 'from-blue-500', to: 'to-blue-600', glow: 'shadow-blue-500/20', bg: 'bg-blue-500/10', border2: 'border-blue-500/20', text: 'text-blue-400' },
+          { icon: Gamepad2, label: 'Toplam Tıklama', value: totalClicks > 0 ? totalClicks.toLocaleString('tr-TR') : '—', color: 'emerald', from: 'from-emerald-500', to: 'to-emerald-600', glow: 'shadow-emerald-500/20', bg: 'bg-emerald-500/10', border2: 'border-emerald-500/20', text: 'text-emerald-400' },
+          { icon: HardDrive, label: 'GPU Modeli', value: gpus.length > 0 ? gpus.length : '—', color: 'purple', from: 'from-purple-500', to: 'to-purple-600', glow: 'shadow-purple-500/20', bg: 'bg-purple-500/10', border2: 'border-purple-500/20', text: 'text-purple-400' },
+          { icon: Cpu, label: 'CPU Modeli', value: cpus.length > 0 ? cpus.length : '—', color: 'orange', from: 'from-orange-500', to: 'to-orange-600', glow: 'shadow-orange-500/20', bg: 'bg-orange-500/10', border2: 'border-orange-500/20', text: 'text-orange-400' },
+        ].map(({ icon: Icon, label, value, from, to, glow, bg: ib, border2, text }, i) => (
+          <div key={i} className={`${card} border ${border} rounded-2xl p-4 sm:p-5 relative overflow-hidden group`}>
+            <div className={`absolute -right-4 -bottom-4 opacity-[0.04] group-hover:opacity-[0.07] transition-opacity`}>
+              <Icon size={80} />
+            </div>
+            <div className={`w-9 h-9 rounded-xl ${ib} border ${border2} flex items-center justify-center mb-3`}>
+              <Icon size={16} className={text} />
+            </div>
+            <div className={`text-2xl sm:text-3xl font-black ${txt} leading-none`}>{value}</div>
+            <div className={`text-xs font-medium ${sub} mt-1.5`}>{label}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Oyunlar + Donanım */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      {/* ── Sıcaklık Kartları ── */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <TempGauge value={cpuTemp} label="CPU Sıcaklığı (Ort.)" icon={Cpu} dark={dark} />
+        <TempGauge value={gpuTemp} label="GPU Sıcaklığı (Ort.)" icon={HardDrive} dark={dark} />
+      </div>
+
+      {/* ── Oyunlar + Donanım ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
+
         {/* En çok oynanan oyunlar */}
-        <div className={`${bg} border ${panelBorder} rounded-2xl p-6 shadow-sm`}>
-          <h3 className={`text-base font-bold ${txt} mb-4`}>En Çok Oynanan Oyunlar</h3>
+        <div className={`${card} border ${border} rounded-2xl p-4 sm:p-6`}>
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Gamepad2 size={13} className="text-emerald-400" />
+              </div>
+              <h3 className={`font-bold text-sm sm:text-base ${txt}`}>En Çok Oynanan</h3>
+            </div>
+            <span className={`text-[11px] font-medium ${muted} px-2 py-0.5 rounded-full ${dark ? 'bg-white/5' : 'bg-gray-100'}`}>{topGames.length} oyun</span>
+          </div>
           {topGames.length === 0 ? (
-            <div className={`flex items-center justify-center h-40 ${sub} text-sm`}>Henüz veri yok</div>
+            <div className="flex flex-col items-center justify-center h-40 gap-3">
+              <div className={`w-12 h-12 rounded-xl ${dark ? 'bg-white/5' : 'bg-gray-100'} flex items-center justify-center`}>
+                <Gamepad2 size={22} className={`${muted} opacity-40`} />
+              </div>
+              <span className={`text-sm ${sub}`}>Oyun verisi bekleniyor...</span>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {topGames.slice(0, 8).map((g, i) => {
-                const pct = totalClicks > 0 ? Math.round((g.clicks / totalClicks) * 100) : 0;
+                const pct = Math.round((g.clicks / maxClicks) * 100);
                 return (
                   <div key={i}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-sm font-medium ${txt} truncate max-w-[200px]`}>{g.name}</span>
-                      <span className={`text-xs ${sub} ml-2 shrink-0`}>{g.clicks.toLocaleString()} tık</span>
+                    <div className="flex items-center gap-2.5 mb-1.5">
+                      <span className="w-5 h-5 rounded-md text-[10px] font-black flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
+                        style={{ background: COLORS[i % COLORS.length] + '22', color: COLORS[i % COLORS.length] }}>
+                        {i + 1}
+                      </span>
+                      <span className={`text-sm font-medium ${txt} flex-1 truncate`}>{g.name}</span>
+                      <span className={`text-[11px] font-semibold ${sub} shrink-0 tabular-nums`}>{g.clicks.toLocaleString('tr-TR')}</span>
                     </div>
-                    <div className={`h-2 rounded-full ${dark ? 'bg-white/5' : 'bg-gray-100'} overflow-hidden`}>
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }} />
+                    <div className={`h-1.5 rounded-full ml-7 ${dark ? 'bg-white/5' : 'bg-gray-100'} overflow-hidden`}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }} />
                     </div>
                   </div>
                 );
@@ -362,21 +466,33 @@ const CafeDashboard = ({ user, dark }) => {
           )}
         </div>
 
-        {/* Donanım */}
-        <div className={`${bg} border ${panelBorder} rounded-2xl p-6 shadow-sm`}>
-          <h3 className={`text-base font-bold ${txt} mb-4`}>Donanım Envanteri</h3>
+        {/* Donanım Envanteri */}
+        <div className={`${card} border ${border} rounded-2xl p-4 sm:p-6`}>
+          <div className="flex items-center gap-2 mb-4 sm:mb-5">
+            <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+              <Layers size={13} className="text-purple-400" />
+            </div>
+            <h3 className={`font-bold text-sm sm:text-base ${txt}`}>Donanım Envanteri</h3>
+          </div>
           {gpus.length === 0 && cpus.length === 0 ? (
-            <div className={`flex items-center justify-center h-40 ${sub} text-sm`}>Henüz veri yok</div>
+            <div className="flex flex-col items-center justify-center h-40 gap-3">
+              <div className={`w-12 h-12 rounded-xl ${dark ? 'bg-white/5' : 'bg-gray-100'} flex items-center justify-center`}>
+                <HardDrive size={22} className={`${muted} opacity-40`} />
+              </div>
+              <span className={`text-sm ${sub}`}>Donanım verisi bekleniyor...</span>
+            </div>
           ) : (
             <div className="space-y-4">
               {gpus.length > 0 && (
                 <div>
-                  <p className={`text-xs font-semibold uppercase tracking-widest text-purple-400 mb-2`}>Ekran Kartları</p>
-                  <div className="space-y-2">
+                  <p className={`text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-2 flex items-center gap-1`}>
+                    <HardDrive size={9} /> Ekran Kartları
+                  </p>
+                  <div className="space-y-1.5">
                     {gpus.map((g, i) => (
-                      <div key={i} className="flex items-center justify-between">
-                        <span className={`text-sm ${txt} truncate`}>{g.name}</span>
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400">{g.count} adet</span>
+                      <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl ${rowBg} transition-colors`}>
+                        <span className={`text-xs sm:text-sm ${txt} truncate flex-1 mr-2`}>{g.name}</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-purple-500/10 text-purple-400 shrink-0">{g.count} adet</span>
                       </div>
                     ))}
                   </div>
@@ -384,12 +500,14 @@ const CafeDashboard = ({ user, dark }) => {
               )}
               {cpus.length > 0 && (
                 <div>
-                  <p className={`text-xs font-semibold uppercase tracking-widest text-blue-400 mb-2`}>İşlemciler</p>
-                  <div className="space-y-2">
+                  <p className={`text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2 flex items-center gap-1`}>
+                    <Cpu size={9} /> İşlemciler
+                  </p>
+                  <div className="space-y-1.5">
                     {cpus.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between">
-                        <span className={`text-sm ${txt} truncate`}>{c.name}</span>
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400">{c.count} adet</span>
+                      <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl ${rowBg} transition-colors`}>
+                        <span className={`text-xs sm:text-sm ${txt} truncate flex-1 mr-2`}>{c.name}</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-400 shrink-0">{c.count} adet</span>
                       </div>
                     ))}
                   </div>
@@ -400,10 +518,14 @@ const CafeDashboard = ({ user, dark }) => {
         </div>
       </div>
 
-      {!loading && !data && (
-        <div className={`${bg} border ${panelBorder} rounded-2xl p-12 text-center shadow-sm`}>
-          <Server size={36} className={`mx-auto mb-3 ${sub} opacity-30`} />
-          <p className={`text-sm ${sub}`}>Kafenizden henüz telemetri verisi gelmedi. Game Center Server'ın çalıştığından emin olun.</p>
+      {/* ── Veri Yok Durumu ── */}
+      {!data && (
+        <div className={`${card} border ${border} rounded-2xl p-10 sm:p-16 text-center`}>
+          <div className={`w-16 h-16 rounded-2xl ${dark ? 'bg-white/5' : 'bg-gray-100'} border ${border} flex items-center justify-center mx-auto mb-4`}>
+            <Server size={28} className={`${sub} opacity-40`} />
+          </div>
+          <h3 className={`font-bold ${txt} mb-2`}>Veri Bekleniyor</h3>
+          <p className={`text-sm ${sub} max-w-xs mx-auto`}>Kafenizden henüz telemetri verisi gelmedi. Game Center Server'ın çalıştığından emin olun.</p>
         </div>
       )}
     </div>
