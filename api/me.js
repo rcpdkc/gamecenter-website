@@ -13,6 +13,19 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ---- debug view ----
+  if (req.query.view === 'debug') {
+    const { email } = req.query;
+    try {
+      const user = email
+        ? (await sql`SELECT id, email, cafe_name, cafe_id, hwid, role FROM users WHERE email = ${email} LIMIT 1`).rows[0]
+        : null;
+      const tel = (await sql`SELECT cafe_id, cafe_name, hwid, active_clients, last_updated FROM gamecenter_telemetry ORDER BY last_updated DESC`).rows;
+      const matched = user ? tel.find(t => (user.cafe_id && t.cafe_id === user.cafe_id) || (user.hwid && t.hwid === user.hwid)) || null : null;
+      return res.status(200).json({ user: user || null, telemetry_count: tel.length, telemetry: tel, matched, linked: !!matched });
+    } catch(e) { return res.status(500).json({ error: e.message }); }
+  }
+
   // ── Loglar ─────────────────────────────────────────────────────────────────
   if (req.query.view === 'logs') {
     const auth = req.headers.authorization;
