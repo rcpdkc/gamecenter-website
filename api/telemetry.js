@@ -160,14 +160,23 @@ async function handlePost(request, response) {
 
   // ── cloud_email ile otomatik self-link ───────────────────────────────────
   // Sunucu web_admin'den cloud login yapilmissa email settings'te kayitlidir.
-  // Bu email'e sahip kullanicinin cafe_id/hwid'ini otomatik guncelle.
+  // Guncelleme kosulu:
+  //   1) cafe_id hic set edilmemis (NULL/bos), VEYA
+  //   2) Mevcut cafe_id'ye ait telemetri kaydi yok (eski/silinmis kurulum)
   if (cloud_email) {
     await sql`
       UPDATE users
       SET cafe_id = ${cafe_id},
-          hwid    = COALESCE(NULLIF(hwid, ''), ${hwid || null})
+          hwid    = COALESCE(NULLIF(users.hwid, ''), ${hwid || null})
       WHERE email = ${cloud_email}
-        AND (cafe_id IS NULL OR cafe_id = '')
+        AND (
+          cafe_id IS NULL
+          OR cafe_id = ''
+          OR NOT EXISTS (
+            SELECT 1 FROM gamecenter_telemetry t
+            WHERE t.cafe_id = users.cafe_id
+          )
+        )
     `;
   }
 
