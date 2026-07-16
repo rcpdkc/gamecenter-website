@@ -128,6 +128,14 @@ const AdminLayout = () => {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
+  // user henüz localStorage'dan yüklenmemişse spinner göster
+  // (direkt URL erişiminde Outlet'in null user ile render edilmesini engeller)
+  if (!user) return (
+    <div className="flex items-center justify-center min-h-screen bg-[#080a0f]">
+      <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
   const currentPage = PAGE_TITLES[location.pathname] || { title: 'Yönetim Paneli', subtitle: '' };
 
   // Theme classes
