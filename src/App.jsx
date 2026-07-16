@@ -18,6 +18,9 @@ import SettingsPage from './pages/SettingsPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
 import MklinkArchivePage from './pages/MklinkArchivePage';
 import LogsPage from './pages/LogsPage';
+import GamesPage from './pages/GamesPage';
+import HardwarePage from './pages/HardwarePage';
+import MonitoringPage from './pages/MonitoringPage';
 import './index.css';
 
 function TitleUpdater() {
@@ -76,6 +79,9 @@ function App() {
           <Route path="announcements" element={<AnnouncementsPage />} />
           <Route path="logs" element={<LogsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="hardware" element={<HardwarePage />} />
+          <Route path="games" element={<GamesPage />} />
+          <Route path="monitoring" element={<MonitoringPage />} />
         </Route>
 
       </Routes>

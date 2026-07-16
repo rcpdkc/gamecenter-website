@@ -2,7 +2,7 @@ import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-d
 import { useRef } from 'react';
 import { 
   LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone, FolderSync,
-  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText
+  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText, Cpu, HardDrive, Gamepad2, Thermometer
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
 
@@ -23,6 +23,9 @@ const NAV_ITEMS_ADMIN = [
 
 const NAV_ITEMS_CAFE = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+  { to: '/superadmin/hardware', icon: HardDrive, label: 'Donanım' },
+  { to: '/superadmin/games', icon: Gamepad2, label: 'Oyunlar' },
+  { to: '/superadmin/monitoring', icon: Thermometer, label: 'İzleme' },
   { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
 ];
 
@@ -36,6 +39,9 @@ const PAGE_TITLES = {
   '/superadmin/announcements': { title: 'Global Duyurular', subtitle: 'Tüm kafelere sistem bildirimleri gönderin' },
   '/superadmin/logs': { title: 'Sistem Logları', subtitle: 'Giriş, şifre sıfırlama ve güvenlik olayları' },
   '/superadmin/settings': { title: 'Ayarlar', subtitle: 'Sistem tercihleri ve yapılandırma' },
+  '/superadmin/hardware': { title: 'Donanım Envanteri', subtitle: 'GPU, CPU ve sistem donanım bilgileri' },
+  '/superadmin/games': { title: 'Oyun İstatistikleri', subtitle: 'En çok oynanan oyunlar ve tıklama analizi' },
+  '/superadmin/monitoring': { title: 'Sistem İzleme', subtitle: 'CPU ve GPU sıcaklık takibi' },
 };
 
 const AdminLayout = () => {
