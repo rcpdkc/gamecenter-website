@@ -25,6 +25,12 @@ export default async function handler(request, response) {
         await sql`UPDATE users SET group_id = ${gid}, group_expires_at = ${expiresAt} WHERE id = ${user_id}`;
         return response.status(200).json({ success: true });
       }
+      else if (action === 'assign_cafe_id') {
+        const { cafe_id } = request.body;
+        if (!cafe_id) return response.status(400).json({ error: 'cafe_id zorunludur.' });
+        await sql`UPDATE users SET cafe_id = ${cafe_id} WHERE id = ${user_id}`;
+        return response.status(200).json({ success: true });
+      }
       else if (action === 'update_hwid') {
         const { hwid } = request.body;
         await sql`UPDATE users SET hwid = ${hwid || null} WHERE id = ${user_id}`;

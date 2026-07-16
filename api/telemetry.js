@@ -40,7 +40,7 @@ export default async function handler(request, response) {
 
   if (request.method === 'POST') {
     try {
-      const { cafe_id, cafe_name, active_clients, hardware_stats, top_games } = request.body;
+      const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid } = request.body;
       
       if (!cafe_id) {
          return response.status(400).json({ error: 'Missing cafe_id' });
@@ -58,7 +58,7 @@ export default async function handler(request, response) {
         );
       `;
       
-      // Upsert the data
+      // Upsert telemetri verisini kaydet
       await sql`
         INSERT INTO gamecenter_telemetry (cafe_id, cafe_name, active_clients, hardware_stats, top_games, last_updated)
         VALUES (${cafe_id}, ${cafe_name}, ${active_clients || 0}, ${JSON.stringify(hardware_stats || {})}, ${JSON.stringify(top_games || {})}, NOW())
@@ -69,6 +69,17 @@ export default async function handler(request, response) {
           top_games = EXCLUDED.top_games,
           last_updated = NOW();
       `;
+
+      // Setup olan server PC'nin HWID'sini users tablosuna da yaz
+      // (cafe_id eşleşen kullanıcının HWID'si yoksa otomatik bağla)
+      if (hwid) {
+        await sql`
+          UPDATE users
+          SET hwid = ${hwid}
+          WHERE cafe_id = ${cafe_id}
+            AND (hwid IS NULL OR hwid = '')
+        `;
+      }
       
       return response.status(200).json({ success: true });
     } catch (error) {

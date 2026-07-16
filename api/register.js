@@ -1,4 +1,5 @@
 import { sql } from '@vercel/postgres';
+import { randomUUID } from 'crypto';
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -53,11 +54,12 @@ export default async function handler(req, res) {
     // Actually, usually they get assigned a default group or null, and admin can change it later.
     // Let's set group_id to NULL initially.
     
-    // 4. Create User
+    // 4. Create User (cafe_id otomatik UUID ile atanır)
+    const cafeId = randomUUID();
     const { rows: newUsers } = await sql`
-      INSERT INTO users (first_name, last_name, cafe_name, phone, email, password, group_id)
-      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${password}, NULL)
-      RETURNING id, email, first_name, last_name, cafe_name
+      INSERT INTO users (first_name, last_name, cafe_name, phone, email, password, group_id, cafe_id)
+      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${password}, NULL, ${cafeId})
+      RETURNING id, email, first_name, last_name, cafe_name, cafe_id
     `;
 
     // 5. Mark Reference Code as Used
@@ -68,7 +70,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ 
       success: true, 
       message: 'Kayıt başarıyla tamamlandı. Artık giriş yapabilirsiniz.',
-      user: newUsers[0]
+      user: newUsers[0],
+      cafe_id: newUsers[0].cafe_id
     });
 
   } catch (error) {
