@@ -116,11 +116,24 @@ async function handlePost(request, response) {
 
   // ── HWID → users tablosuna yaz (login binding için) ────────────────────
   if (hwid) {
+    // 1) HWID ile eşleşen kullanıcının HWID alanını doldur (ilk bağlama)
     await sql`
       UPDATE users
       SET hwid = ${hwid}
       WHERE cafe_id = ${cafe_id}
         AND (hwid IS NULL OR hwid = '');
+    `;
+
+    // 2) KRİTİK: HWID ile eşleşen kullanıcının cafe_id'sini sunucunun
+    //    gönderdiği cafe_id ile senkronize et.
+    //    Kullanıcı kayıt sırasında farklı bir cafe_id almış olabilir;
+    //    bu satır ikisini eşitler → kafe paneli artık doğru veriyi gösterir.
+    await sql`
+      UPDATE users
+      SET cafe_id = ${cafe_id}
+      WHERE hwid = ${hwid}
+        AND hwid IS NOT NULL
+        AND hwid != '';
     `;
   }
 
