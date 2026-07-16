@@ -529,12 +529,13 @@ const AdminDashboard = ({ dark }) => {
                 <select
                   value={selectedUser}
                   onChange={e => setSelectedUser(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-xl text-sm border focus:outline-none ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                  style={{ backgroundColor: '#fff', color: '#111', border: '1px solid #d1d5db' }}
+                  className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none"
                 >
-                  <option value="">Kullanıcı seç...</option>
+                  <option value="" style={{ color: '#111', backgroundColor: '#fff' }}>Kullanıcı seç...</option>
                   {(linkData?.users || []).map(u => (
-                    <option key={u.email} value={u.email}>
-                      {u.email} — {u.cafe_name || '?'} {u.is_linked ? '✅' : '⚠️'}
+                    <option key={u.email} value={u.email} style={{ color: '#111', backgroundColor: '#fff' }}>
+                      {u.is_linked ? '✅' : '⚠️'} {u.cafe_name || '?'} — {u.email}
                     </option>
                   ))}
                 </select>
@@ -544,11 +545,12 @@ const AdminDashboard = ({ dark }) => {
                 <select
                   value={selectedTelemetry}
                   onChange={e => setSelectedTelemetry(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-xl text-sm border focus:outline-none ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                  style={{ backgroundColor: '#fff', color: '#111', border: '1px solid #d1d5db' }}
+                  className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none"
                 >
-                  <option value="">Telemetri seç...</option>
+                  <option value="" style={{ color: '#111', backgroundColor: '#fff' }}>Telemetri seç...</option>
                   {(linkData?.telemetry_records || []).map(t => (
-                    <option key={t.cafe_id} value={t.cafe_id}>
+                    <option key={t.cafe_id} value={t.cafe_id} style={{ color: '#111', backgroundColor: '#fff' }}>
                       {t.cafe_name} — {t.active_clients} PC aktif
                     </option>
                   ))}
