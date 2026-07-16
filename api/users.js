@@ -1,4 +1,5 @@
 import { sql } from '@vercel/postgres';
+import bcrypt from 'bcryptjs';
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,7 +47,6 @@ export default async function handler(request, response) {
                g.name AS group_name, g.color AS group_color
         FROM users u
         LEFT JOIN groups g ON u.group_id = g.id
-        WHERE u.role != 'admin'
         ORDER BY u.created_at DESC
       `;
       return response.status(200).json({ success: true, data: rows });
@@ -78,6 +78,23 @@ export default async function handler(request, response) {
         return response.status(200).json({ success: true, message: user_email + ' baglandi.' });
       }
 
+      // ── Admin Kullanıcı Ekleme ──────────────────────────────────────────
+      if (action === 'create_user') {
+        if (!isAuthed) return response.status(401).json({ error: 'Yetkisiz.' });
+        const { email, password, first_name, last_name, role } = request.body;
+        if (!email || !password) return response.status(400).json({ error: 'Email ve şifre zorunlu.' });
+
+        const { rowCount } = await sql`SELECT id FROM users WHERE email = ${email}`;
+        if (rowCount > 0) return response.status(400).json({ error: 'Bu e-posta zaten kullanımda.' });
+
+        const hashed = await bcrypt.hash(password, 12);
+        await sql`
+          INSERT INTO users (first_name, last_name, email, password, role)
+          VALUES (${first_name || null}, ${last_name || null}, ${email}, ${hashed}, ${role || 'admin'})
+        `;
+        return response.status(200).json({ success: true, message: 'Kullanıcı eklendi.' });
+      }
+
       return response.status(400).json({ error: 'Gecersiz action.' });
     }
 
@@ -96,6 +113,18 @@ export default async function handler(request, response) {
         await sql`UPDATE users SET first_name = ${first_name}, last_name = ${last_name}, cafe_name = ${cafe_name}, phone = ${phone} WHERE id = ${user_id}`;
         return response.status(200).json({ success: true });
       }
+      if (action === 'update_admin') {
+        if (!isAuthed) return response.status(401).json({ error: 'Yetkisiz.' });
+        const { first_name, last_name, email, password, role } = request.body;
+        
+        if (password) {
+          const hashed = await bcrypt.hash(password, 12);
+          await sql`UPDATE users SET first_name = ${first_name}, last_name = ${last_name}, email = ${email}, role = ${role}, password = ${hashed} WHERE id = ${user_id}`;
+        } else {
+          await sql`UPDATE users SET first_name = ${first_name}, last_name = ${last_name}, email = ${email}, role = ${role} WHERE id = ${user_id}`;
+        }
+        return response.status(200).json({ success: true });
+      }
       return response.status(400).json({ error: 'Geçersiz action.' });
     }
 
@@ -104,7 +133,15 @@ export default async function handler(request, response) {
       if (!isAuthed) return response.status(401).json({ error: 'Yetkisiz.' });
       const { user_id } = request.query;
       if (!user_id) return response.status(400).json({ error: 'user_id gerekli.' });
-      await sql`DELETE FROM users WHERE id = ${user_id} AND role != 'admin'`;
+      
+      // En az bir admin kalmasını sağla
+      const { rows } = await sql`SELECT role FROM users WHERE id = ${user_id}`;
+      if (rows.length > 0 && rows[0].role === 'admin') {
+        const adminCount = (await sql`SELECT COUNT(id) as c FROM users WHERE role = 'admin'`).rows[0].c;
+        if (parseInt(adminCount) <= 1) return response.status(400).json({ error: 'Sistemde en az bir yönetici bulunmalıdır.' });
+      }
+
+      await sql`DELETE FROM users WHERE id = ${user_id}`;
       return response.status(200).json({ success: true });
     }
 

@@ -1,12 +1,10 @@
 import { sql } from '@vercel/postgres';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 // ── JWT benzeri imzalı token (HMAC-SHA256) ───────────────────────────────
-// Format: base64(header).base64(payload).base64(signature)
-// SESSION_SECRET ortam değişkeninden alınır, yoksa fallback kullanılır
-
 const SECRET = process.env.SESSION_SECRET || 'gc-default-secret-change-in-prod-2026';
-const SESSION_HOURS = 8; // Oturum süresi (saat)
+const SESSION_HOURS = 8;
 
 function signToken(payload) {
   const header  = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
@@ -20,10 +18,8 @@ export function verifyToken(token) {
     const [header, body, sig] = token.split('.');
     if (!header || !body || !sig) return null;
     const expected = crypto.createHmac('sha256', SECRET).update(`${header}.${body}`).digest('base64url');
-    // Sabit zamanlı karşılaştırma (timing attack'a karşı)
     if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString());
-    // Expiry kontrolü
     if (payload.exp && Date.now() > payload.exp) return null;
     return payload;
   } catch {
@@ -37,7 +33,6 @@ export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   response.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
-  // CORS Preflight
   if (request.method === 'OPTIONS') return response.status(200).end();
 
   // ── POST /api/login?action=verify → Token doğrulama ────────────────────
@@ -77,7 +72,7 @@ export default async function handler(request, response) {
     const { username, password, hwid } = request.body;
     if (!username || !password) return response.status(400).json({ error: 'E-posta ve şifre zorunludur.' });
 
-    // Ensure groups table exists
+    // Ensure groups table
     await sql`
       CREATE TABLE IF NOT EXISTS groups (
         id SERIAL PRIMARY KEY,
@@ -89,7 +84,7 @@ export default async function handler(request, response) {
       );
     `;
 
-    // Ensure reference_codes table exists
+    // Ensure reference_codes table
     await sql`
       CREATE TABLE IF NOT EXISTS reference_codes (
         id SERIAL PRIMARY KEY,
@@ -100,7 +95,7 @@ export default async function handler(request, response) {
       );
     `;
 
-    // Ensure users table has full schema
+    // Ensure users table
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -119,7 +114,7 @@ export default async function handler(request, response) {
       );
     `;
 
-    // Migrations - add missing columns safely
+    // Migrations
     const migrations = [
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_id INTEGER`,
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS group_expires_at TIMESTAMP`,
@@ -131,58 +126,68 @@ export default async function handler(request, response) {
       try { await sql.query(m); } catch (_) {}
     }
 
-    // Seed default admin
-    const { rowCount } = await sql`SELECT id FROM users WHERE role = 'admin' LIMIT 1`;
-    if (rowCount === 0) {
+    // ── Seed/Migrate admin şifresi ───────────────────────────────────────
+    // Bcrypt hash ile güvenli admin hesabı — plain text şifre artık yok
+    const DEFAULT_ADMIN_PW = 'Ngrbee60...!!!---';
+    const { rows: adminRows } = await sql`SELECT id, password FROM users WHERE role = 'admin' LIMIT 1`;
+    if (adminRows.length === 0) {
+      // İlk kez: hashed şifreyle oluştur
+      const hashed = await bcrypt.hash(DEFAULT_ADMIN_PW, 12);
       await sql`INSERT INTO users (first_name, last_name, email, password, role, cafe_id)
-        VALUES ('Super', 'Admin', 'admin', 'admin123', 'admin', ${crypto.randomUUID()})`;
+        VALUES ('Super', 'Admin', 'admin', ${hashed}, 'admin', ${crypto.randomUUID()})`;
+    } else if (!adminRows[0].password.startsWith('$2')) {
+      // Eski plain text şifre varsa → hashed versiyona geç
+      const hashed = await bcrypt.hash(DEFAULT_ADMIN_PW, 12);
+      await sql`UPDATE users SET password = ${hashed} WHERE role = 'admin'`;
     }
 
-    // Fetch user with group info
+    // ── Kullanıcıyı e-posta ile bul ─────────────────────────────────────
     const { rows } = await sql`
-      SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role, 
+      SELECT u.id, u.email, u.first_name, u.last_name, u.cafe_name, u.role,
              u.group_id, u.group_expires_at, u.cafe_id, u.hwid, u.created_at,
+             u.password AS pw_hash,
              g.name AS group_name, g.color AS group_color, g.permissions AS group_permissions
       FROM users u
       LEFT JOIN groups g ON u.group_id = g.id
-      WHERE u.email = ${username} AND u.password = ${password}
+      WHERE u.email = ${username}
     `;
 
     if (rows.length === 0) return response.status(401).json({ error: 'Geçersiz e-posta veya şifre.' });
 
     const user = rows[0];
-    
-    // HWID Binding Check
-    if (user.role !== 'admin' && hwid) {
-      if (!user.hwid) {
-        await sql`UPDATE users SET hwid = ${hwid} WHERE id = ${user.id}`;
-        user.hwid = hwid;
-      } else if (user.hwid !== hwid) {
+
+    // ── Şifre doğrulama (bcrypt) ─────────────────────────────────────────
+    const passwordMatch = await bcrypt.compare(password, user.pw_hash);
+    if (!passwordMatch) return response.status(401).json({ error: 'Geçersiz e-posta veya şifre.' });
+
+    // pw_hash'i response'dan çıkar
+    const { pw_hash, ...safeUser } = user;
+
+    // HWID Binding
+    if (safeUser.role !== 'admin' && hwid) {
+      if (!safeUser.hwid) {
+        await sql`UPDATE users SET hwid = ${hwid} WHERE id = ${safeUser.id}`;
+        safeUser.hwid = hwid;
+      } else if (safeUser.hwid !== hwid) {
         return response.status(403).json({ error: 'Bu hesap başka bir sunucuya kayıtlıdır. Lütfen yönetici ile iletişime geçin.' });
       }
     }
 
-    const licenseExpired = user.role !== 'admin' && user.group_id && user.group_expires_at
-      ? new Date(user.group_expires_at) < new Date()
+    const licenseExpired = safeUser.role !== 'admin' && safeUser.group_id && safeUser.group_expires_at
+      ? new Date(safeUser.group_expires_at) < new Date()
       : false;
 
-    // İmzalı JWT token — 8 saat geçerli
     const now = Date.now();
     const exp = now + SESSION_HOURS * 60 * 60 * 1000;
-    const token = signToken({
-      uid: user.id,
-      email: user.email,
-      role: user.role,
-      iat: now,
-      exp,
-    });
+    const token = signToken({ uid: safeUser.id, email: safeUser.email, role: safeUser.role, iat: now, exp });
 
     return response.status(200).json({
       success: true,
       token,
       expires_at: exp,
-      user: { ...user, license_expired: licenseExpired }
+      user: { ...safeUser, license_expired: licenseExpired }
     });
+
   } catch (error) {
     console.error('Login Error:', error);
     return response.status(500).json({ error: error.message });
