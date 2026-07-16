@@ -26,11 +26,11 @@ async function ensureSchema() {
 
 // ─── GET /api/telemetry ─────────────────────────────────────────────────────
 async function handleGet(request, response) {
-  const { role, cafe_id } = request.query;
+  const { role, cafe_id, hwid, email } = request.query;
 
   let rows;
   if (role === 'admin') {
-    // Admin: users tablosuyla JOIN — kayıtlı kafe ismi varsa onu göster
+    // Admin: tüm kafeler + users JOIN
     const result = await sql`
       SELECT
         t.*,
@@ -45,18 +45,43 @@ async function handleGet(request, response) {
       ORDER BY t.last_updated DESC
     `;
     rows = result.rows;
+
   } else if (cafe_id) {
-    // Kafe kullanıcısı: kendi verisi + gerçek kayıtlı isim
+    // cafe_id ile direkt sorgu
     const result = await sql`
-      SELECT
-        t.*,
-        COALESCE(u.cafe_name, t.cafe_name) AS cafe_name
+      SELECT t.*, COALESCE(u.cafe_name, t.cafe_name) AS cafe_name
       FROM gamecenter_telemetry t
       LEFT JOIN users u ON u.cafe_id = t.cafe_id
       WHERE t.cafe_id = ${cafe_id}
       LIMIT 1
     `;
     rows = result.rows;
+
+  } else if (hwid) {
+    // HWID fallback — cafe_id bağlanmamış kafeler için
+    const result = await sql`
+      SELECT t.*, COALESCE(u.cafe_name, t.cafe_name) AS cafe_name
+      FROM gamecenter_telemetry t
+      LEFT JOIN users u ON u.hwid = t.hwid
+      WHERE t.hwid = ${hwid}
+      LIMIT 1
+    `;
+    rows = result.rows;
+
+  } else if (email) {
+    // Email fallback — users tablosundan cafe_id bulup sorgula
+    const userRow = (await sql`SELECT cafe_id, hwid FROM users WHERE email = ${email} LIMIT 1`).rows[0];
+    if (!userRow) return response.status(200).json({ success: true, data: [] });
+    const lookupId = userRow.cafe_id;
+    const lookupHwid = userRow.hwid;
+    if (lookupId) {
+      rows = (await sql`SELECT t.*, COALESCE(u.cafe_name, t.cafe_name) AS cafe_name FROM gamecenter_telemetry t LEFT JOIN users u ON u.cafe_id = t.cafe_id WHERE t.cafe_id = ${lookupId} LIMIT 1`).rows;
+    } else if (lookupHwid) {
+      rows = (await sql`SELECT t.*, COALESCE(u.cafe_name, t.cafe_name) AS cafe_name FROM gamecenter_telemetry t LEFT JOIN users u ON u.hwid = t.hwid WHERE t.hwid = ${lookupHwid} LIMIT 1`).rows;
+    } else {
+      rows = [];
+    }
+
   } else {
     return response.status(403).json({ error: 'Yetkisiz erişim.' });
   }
