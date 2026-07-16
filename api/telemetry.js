@@ -30,18 +30,30 @@ async function handleGet(request, response) {
 
   let rows;
   if (role === 'admin') {
-    // Admin: aktif (son 90 gün) tüm kafeler
+    // Admin: users tablosuyla JOIN — kayıtlı kafe ismi varsa onu göster
     const result = await sql`
-      SELECT * FROM gamecenter_telemetry
-      WHERE last_updated >= NOW() - INTERVAL '90 days'
-      ORDER BY last_updated DESC
+      SELECT
+        t.*,
+        COALESCE(u.cafe_name, t.cafe_name) AS cafe_name,
+        u.email      AS user_email,
+        u.first_name AS user_first_name,
+        u.last_name  AS user_last_name,
+        u.phone      AS user_phone
+      FROM gamecenter_telemetry t
+      LEFT JOIN users u ON u.cafe_id = t.cafe_id
+      WHERE t.last_updated >= NOW() - INTERVAL '90 days'
+      ORDER BY t.last_updated DESC
     `;
     rows = result.rows;
   } else if (cafe_id) {
-    // Kafe kullanıcısı: sadece kendi verisi
+    // Kafe kullanıcısı: kendi verisi + gerçek kayıtlı isim
     const result = await sql`
-      SELECT * FROM gamecenter_telemetry
-      WHERE cafe_id = ${cafe_id}
+      SELECT
+        t.*,
+        COALESCE(u.cafe_name, t.cafe_name) AS cafe_name
+      FROM gamecenter_telemetry t
+      LEFT JOIN users u ON u.cafe_id = t.cafe_id
+      WHERE t.cafe_id = ${cafe_id}
       LIMIT 1
     `;
     rows = result.rows;
