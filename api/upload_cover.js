@@ -41,6 +41,20 @@ export default async function handler(req, res) {
     }
 
     const ext = originalFilename.split('.').pop();
+    
+    // Ensure table has original_filename column
+    try {
+      await sql`ALTER TABLE covers ADD COLUMN original_filename VARCHAR(255)`;
+    } catch (e) { /* ignore if exists */ }
+
+    // Check for duplicates
+    if (originalFilename) {
+      const existing = await sql`SELECT id FROM covers WHERE original_filename = ${originalFilename} LIMIT 1`;
+      if (existing.rows.length > 0) {
+        return res.status(200).json({ success: true, skipped: true, message: 'Zaten yüklü' });
+      }
+    }
+
     const blobName = `covers/${Date.now()}_${game_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
 
     const blob = await put(blobName, fs.createReadStream(filepath), {
@@ -58,7 +72,8 @@ export default async function handler(req, res) {
         uploaded_by_role VARCHAR(50),
         cafe_id VARCHAR(100),
         status VARCHAR(30) DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        original_filename VARCHAR(255)
       )
     `;
 
@@ -66,8 +81,8 @@ export default async function handler(req, res) {
     const status = uploaded_by_role === 'admin' ? 'approved' : 'pending';
 
     const { rows } = await sql`
-      INSERT INTO covers (game_name, file_url, uploaded_by_id, uploaded_by_role, cafe_id, status)
-      VALUES (${game_name}, ${blob.url}, ${uploaded_by_id || null}, ${uploaded_by_role || 'cafe'}, ${cafe_id || null}, ${status})
+      INSERT INTO covers (game_name, file_url, uploaded_by_id, uploaded_by_role, cafe_id, status, original_filename)
+      VALUES (${game_name}, ${blob.url}, ${uploaded_by_id || null}, ${uploaded_by_role || 'cafe'}, ${cafe_id || null}, ${status}, ${originalFilename})
       RETURNING *
     `;
 

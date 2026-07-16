@@ -8,6 +8,7 @@ import Gallery from './pages/Gallery';
 import Download from './pages/Download';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import SuperAdmin from './pages/SuperAdmin';
 import References from './pages/References';
 import UsersPage from './pages/UsersPage';
@@ -28,6 +29,7 @@ function TitleUpdater() {
       '/download': 'İndir - Game Center Plus',
       '/login': 'Giriş Yap - Game Center Plus',
       '/register': 'Kayıt Ol - Game Center Plus',
+      '/reset-password': 'Şifre Sıfırla - Game Center Plus',
       '/superadmin': 'Sistem Yönetimi - Game Center Plus',
       '/superadmin/references': 'Referans Kodları - Game Center Plus',
       '/superadmin/users': 'Kullanıcılar - Game Center Plus',
@@ -59,6 +61,7 @@ function App() {
         {/* Standalone Auth Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected Admin Pages with Sidebar */}
         <Route path="/superadmin" element={<AdminLayout />}>
