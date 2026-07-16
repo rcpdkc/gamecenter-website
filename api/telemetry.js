@@ -23,6 +23,7 @@ async function ensureSchema() {
   // Mevcut tabloya ek kolonlar ekle (yoksa)
   try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS hwid VARCHAR(255)`; } catch (_) {}
   try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS server_version VARCHAR(20)`; } catch (_) {}
+  try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS clients_data JSONB DEFAULT '[]'`; } catch (_) {}
 }
 
 // ─── GET /api/telemetry ─────────────────────────────────────────────────────
@@ -91,6 +92,7 @@ async function handleGet(request, response) {
     ...row,
     top_games: typeof row.top_games === 'string' ? JSON.parse(row.top_games) : (row.top_games || []),
     hardware_stats: typeof row.hardware_stats === 'string' ? JSON.parse(row.hardware_stats) : (row.hardware_stats || {}),
+    clients_data: typeof row.clients_data === 'string' ? JSON.parse(row.clients_data) : (row.clients_data || []),
   }));
 
   return response.status(200).json({ success: true, data: parsed });
@@ -98,7 +100,7 @@ async function handleGet(request, response) {
 
 // ─── POST /api/telemetry ────────────────────────────────────────────────────
 async function handlePost(request, response) {
-  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email, server_version } = request.body;
+  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email, server_version, clients_data } = request.body;
 
   if (!cafe_id) return response.status(400).json({ error: 'Missing cafe_id' });
 
@@ -116,12 +118,13 @@ async function handlePost(request, response) {
   // ── cafe_id üzerinden UPSERT ──
   await sql`
     INSERT INTO gamecenter_telemetry
-      (cafe_id, cafe_name, hwid, active_clients, hardware_stats, top_games, server_version, last_updated)
+      (cafe_id, cafe_name, hwid, active_clients, hardware_stats, top_games, server_version, clients_data, last_updated)
     VALUES
       (${cafe_id}, ${cafe_name}, ${hwid || null}, ${active_clients || 0},
        ${JSON.stringify(hardware_stats || {})}::jsonb,
        ${JSON.stringify(top_games || [])}::jsonb,
        ${server_version || null},
+       ${JSON.stringify(clients_data || [])}::jsonb,
        NOW())
     ON CONFLICT (cafe_id) DO UPDATE SET
       cafe_name      = EXCLUDED.cafe_name,
@@ -130,6 +133,7 @@ async function handlePost(request, response) {
       hardware_stats = EXCLUDED.hardware_stats,
       top_games      = EXCLUDED.top_games,
       server_version = COALESCE(EXCLUDED.server_version, gamecenter_telemetry.server_version),
+      clients_data   = EXCLUDED.clients_data,
       last_updated   = NOW();
   `;
 

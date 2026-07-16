@@ -21,6 +21,7 @@ import LogsPage from './pages/LogsPage';
 import GamesPage from './pages/GamesPage';
 import HardwarePage from './pages/HardwarePage';
 import MonitoringPage from './pages/MonitoringPage';
+import ClientsPage from './pages/ClientsPage';
 import './index.css';
 
 function TitleUpdater() {
@@ -82,6 +83,7 @@ function App() {
           <Route path="hardware" element={<HardwarePage />} />
           <Route path="games" element={<GamesPage />} />
           <Route path="monitoring" element={<MonitoringPage />} />
+          <Route path="clients" element={<ClientsPage />} />
         </Route>
 
       </Routes>

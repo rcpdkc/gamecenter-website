@@ -2,7 +2,7 @@ import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-d
 import { useRef } from 'react';
 import { 
   LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone, FolderSync,
-  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText, Cpu, HardDrive, Gamepad2, Thermometer
+  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText, Cpu, HardDrive, Gamepad2, Thermometer, MonitorDot
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
 
@@ -23,6 +23,7 @@ const NAV_ITEMS_ADMIN = [
 
 const NAV_ITEMS_CAFE = [
   { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+  { to: '/superadmin/clients', icon: MonitorDot, label: 'Müşteri PC’leri' },
   { to: '/superadmin/hardware', icon: HardDrive, label: 'Donanım' },
   { to: '/superadmin/games', icon: Gamepad2, label: 'Oyunlar' },
   { to: '/superadmin/monitoring', icon: Thermometer, label: 'İzleme' },
@@ -42,6 +43,7 @@ const PAGE_TITLES = {
   '/superadmin/hardware': { title: 'Donanım Envanteri', subtitle: 'GPU, CPU ve sistem donanım bilgileri' },
   '/superadmin/games': { title: 'Oyun İstatistikleri', subtitle: 'En çok oynanan oyunlar ve tıklama analizi' },
   '/superadmin/monitoring': { title: 'Sistem İzleme', subtitle: 'CPU ve GPU sıcaklık takibi' },
+  '/superadmin/clients': { title: 'Müşteri Bilgisayarları', subtitle: 'Kafedeki tüm PC’lerin canlı donanım ve durum bilgisi' },
 };
 
 const AdminLayout = () => {

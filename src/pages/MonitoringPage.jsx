@@ -133,10 +133,10 @@ export default function MonitoringPage() {
             <Thermometer size={14} className="text-yellow-400" />
           </div>
           <div>
-            <p className={`text-sm font-bold ${txt}`}>Sıcaklık Verisi Bekleniyor</p>
+            <p className={`text-sm font-bold ${txt}`}>Sıcaklık Verisi Henüz Yok</p>
             <p className={`text-xs ${sub} mt-0.5`}>
-              Sıcaklık verisi için sunucudaki Game Center istemcilerinin OSD sıcaklık bilgisi göndermesi gerekiyor.
-              OSD ayarlarında CPU/GPU temp etkinleştirildiğinde buraya otomatik yansır.
+              Sıcaklık verisi için kafenin <strong className="text-orange-400">Game Center v3.1.6</strong> veya üstünü kurması gerekiyor.
+              Güncelleme sonrası sunucu otomatik olarak CPU/GPU sıcaklık ortalamalarını gönderecek.
             </p>
           </div>
         </div>
