@@ -231,44 +231,44 @@ const AdminLayout = () => {
 
           {/* TOPBAR */}
           <header className={`
-            sticky top-0 z-20 h-16 flex items-center justify-between px-6 border-b
+            sticky top-0 z-20 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6 border-b
             backdrop-blur-xl transition-colors ${topbar}
           `}>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               {/* Mobile hamburger */}
               <button
-                className={`md:hidden p-2 rounded-lg ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
+                className={`md:hidden p-1.5 sm:p-2 rounded-lg shrink-0 ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
                 onClick={() => setMobileOpen(true)}
               >
                 <Menu size={20} />
               </button>
 
               {/* Page Title in Header */}
-              <div>
-                <h1 className={`text-lg font-bold leading-none ${dark ? 'text-white' : 'text-gray-900'}`}>
+              <div className="min-w-0">
+                <h1 className={`text-sm sm:text-lg font-bold leading-none truncate ${dark ? 'text-white' : 'text-gray-900'}`}>
                   {currentPage.title}
                 </h1>
                 {currentPage.subtitle && (
-                  <p className={`text-xs mt-0.5 ${muted}`}>{currentPage.subtitle}</p>
+                  <p className={`text-xs mt-0.5 ${muted} hidden sm:block truncate`}>{currentPage.subtitle}</p>
                 )}
               </div>
             </div>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className={`p-2 rounded-xl transition-all ${dark ? 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/10' : 'text-gray-500 hover:text-orange-500 hover:bg-orange-50'}`}
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${dark ? 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/10' : 'text-gray-500 hover:text-orange-500 hover:bg-orange-50'}`}
                 title="Tema Değiştir"
               >
-                {dark ? <Sun size={18} /> : <Moon size={18} />}
+                {dark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
 
               {/* Notifications */}
-              <button className={`relative p-2 rounded-xl transition-all ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
-                <Bell size={18} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full"></span>
+              <button className={`relative p-1.5 sm:p-2 rounded-xl transition-all ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
+                <Bell size={16} />
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
               </button>
 
               {/* Kalan oturum süresi */}
@@ -283,12 +283,12 @@ const AdminLayout = () => {
 
               {/* Avatar */}
               {user && (
-                <div className="ml-1 flex items-center gap-2.5 pl-3 border-l border-white/10">
-                  <div className="text-right hidden sm:block">
+                <div className="ml-1 flex items-center gap-2 sm:gap-2.5 pl-2 sm:pl-3 border-l border-white/10">
+                  <div className="text-right hidden lg:block">
                     <p className={`text-sm font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>{user.role === 'admin' ? 'Super Admin' : user.cafe_name}</p>
                     <p className={`text-xs ${muted}`}>{user.role === 'admin' ? 'admin' : user.first_name}</p>
                   </div>
-                  <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center font-bold text-white text-xs sm:text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
                     {user.role === 'admin' ? 'SA' : (user.cafe_name || 'C').substring(0,2).toUpperCase()}
                   </div>
                 </div>
