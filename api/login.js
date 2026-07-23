@@ -128,7 +128,10 @@ export default async function handler(request, response) {
 
     // ── Seed/Migrate admin şifresi ───────────────────────────────────────
     // Bcrypt hash ile güvenli admin hesabı — plain text şifre artık yok
-    const DEFAULT_ADMIN_PW = 'Ngrbee60...!!!---';
+    // GÜVENLİK: Koda gömülü şifre kaldırıldı. Vercel ortam değişkeninden okunur.
+    // ADMIN_DEFAULT_PASSWORD tanımlı değilse rastgele bir şifre üretilir (kimse
+    // varsayılan şifreyle giremez); admin, şifre sıfırlama akışıyla erişir.
+    const DEFAULT_ADMIN_PW = process.env.ADMIN_DEFAULT_PASSWORD || crypto.randomBytes(24).toString('hex');
     const { rows: adminRows } = await sql`SELECT id, password FROM users WHERE role = 'admin' LIMIT 1`;
     if (adminRows.length === 0) {
       // İlk kez: hashed şifreyle oluştur

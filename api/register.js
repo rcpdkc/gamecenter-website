@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres';
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -55,10 +56,13 @@ export default async function handler(req, res) {
     // Let's set group_id to NULL initially.
     
     // 4. Create User (cafe_id otomatik UUID ile atanır)
+    // GÜVENLİK: Şifre bcrypt ile hash'lenir. login.js zaten bcrypt.compare
+    // beklediğinden, düz metin saklamak hem güvensiz hem de girişi bozuyordu.
     const cafeId = randomUUID();
+    const hashedPassword = await bcrypt.hash(password, 12);
     const { rows: newUsers } = await sql`
       INSERT INTO users (first_name, last_name, cafe_name, phone, email, password, group_id, cafe_id)
-      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${password}, NULL, ${cafeId})
+      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${hashedPassword}, NULL, ${cafeId})
       RETURNING id, email, first_name, last_name, cafe_name, cafe_id
     `;
 
