@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss, Cloud, Cpu, Database, Save, Key, Wifi, Users, Image as ImageIcon, FolderSync, Megaphone, Gamepad2, Laptop, Network, LineChart, Star, FolderOpen, Puzzle, Link as LinkIcon, RefreshCw, Power, Ban, Plus, Edit, Download, History, Zap, CheckCircle, Crosshair, Target } from 'lucide-react';
+import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss, Cloud, Cpu, Database, Save, Key, Wifi, Users, Image as ImageIcon, FolderSync, Megaphone, Gamepad2, Laptop, Network, LineChart, Star, FolderOpen, Puzzle, Link as LinkIcon, RefreshCw, Power, Ban, Plus, Edit, Download, History, Zap, CheckCircle, Crosshair, Target, Layers } from 'lucide-react';
 
 const WIKI_STRUCTURE = [
   {
