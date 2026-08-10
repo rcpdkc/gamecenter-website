@@ -17,6 +17,7 @@ import CoversPage from './pages/CoversPage';
 import SettingsPage from './pages/SettingsPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
 import MklinkArchivePage from './pages/MklinkArchivePage';
+import ShaderArchivePage from './pages/ShaderArchivePage';
 import LogsPage from './pages/LogsPage';
 import GamesPage from './pages/GamesPage';
 import HardwarePage from './pages/HardwarePage';
@@ -41,6 +42,7 @@ function TitleUpdater() {
       '/superadmin/groups': 'Lisans Grupları - Game Center Plus',
       '/superadmin/covers': 'Oyun Kapakları - Game Center Plus',
       '/superadmin/mklink-archive': 'Mklink Arşivi - Game Center Plus',
+      '/superadmin/shader-archive': 'Shader Arşivi - Game Center Plus',
       '/superadmin/announcements': 'Global Duyurular - Game Center Plus',
       '/superadmin/logs': 'Sistem Logları - Game Center Plus',
       '/superadmin/settings': 'Ayarlar - Game Center Plus'
@@ -77,6 +79,7 @@ function App() {
           <Route path="groups" element={<GroupsPage />} />
           <Route path="covers" element={<CoversPage />} />
           <Route path="mklink-archive" element={<MklinkArchivePage />} />
+          <Route path="shader-archive" element={<ShaderArchivePage />} />
           <Route path="announcements" element={<AnnouncementsPage />} />
           <Route path="logs" element={<LogsPage />} />
           <Route path="settings" element={<SettingsPage />} />

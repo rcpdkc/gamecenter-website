@@ -2,7 +2,7 @@ import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-d
 import { useRef } from 'react';
 import { 
   LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone, FolderSync,
-  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText, Cpu, HardDrive, Gamepad2, Thermometer, MonitorDot
+  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText, Cpu, HardDrive, Gamepad2, Thermometer, MonitorDot, DatabaseZap
 } from 'lucide-react';
 import { useEffect, useState, createContext, useContext } from 'react';
 
@@ -15,6 +15,7 @@ const NAV_ITEMS_ADMIN = [
   { to: '/superadmin/groups', icon: Layers, label: 'Gruplar' },
   { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
   { to: '/superadmin/mklink-archive', icon: FolderSync, label: 'Mklink Arşivi' },
+  { to: '/superadmin/shader-archive', icon: DatabaseZap, label: 'Shader Arşivi' },
   { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
   { to: '/superadmin/announcements', icon: Megaphone, label: 'Duyurular' },
   { to: '/superadmin/logs', icon: ScrollText, label: 'Loglar' },
@@ -36,6 +37,7 @@ const PAGE_TITLES = {
   '/superadmin/groups': { title: 'Gruplar', subtitle: 'Üyelik gruplarını oluşturun ve yönetin' },
   '/superadmin/covers': { title: 'Cover Yönetimi', subtitle: 'Oyun kapaklarını yönetin ve onaylayın' },
   '/superadmin/mklink-archive': { title: 'Mklink Arşivi', subtitle: 'Global MkLink şablonlarını yönetin' },
+  '/superadmin/shader-archive': { title: 'Shader Arşivi', subtitle: 'Oyun bazlı shader cache dizin yollarını yönetin (listele/sil)' },
   '/superadmin/references': { title: 'Referans & Davet', subtitle: 'Kafe davet kodları ve kayıt yönetimi' },
   '/superadmin/announcements': { title: 'Global Duyurular', subtitle: 'Tüm kafelere sistem bildirimleri gönderin' },
   '/superadmin/logs': { title: 'Sistem Logları', subtitle: 'Giriş, şifre sıfırlama ve güvenlik olayları' },
