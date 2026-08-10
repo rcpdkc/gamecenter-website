@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { DatabaseZap, Trash2, Loader2, FolderInput, RefreshCw, HardDrive } from 'lucide-react';
+import { DatabaseZap, Trash2, Loader2, FolderInput, RefreshCw, Plus, X, CloudUpload } from 'lucide-react';
 
 const API = '/api/mklink_archive?type=shader';
 
@@ -11,6 +11,11 @@ const ShaderArchivePage = () => {
   const [archives, setArchives] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+
+  // Dogrudan ekleme formu
+  const [newName, setNewName] = useState('');
+  const [newDirs, setNewDirs] = useState(['']);
+  const [adding, setAdding] = useState(false);
 
   const bg = dark ? 'bg-[#111827]' : 'bg-white';
   const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
@@ -31,6 +36,32 @@ const ShaderArchivePage = () => {
   };
 
   useEffect(() => { fetchArchives(); }, []);
+
+  const handleAdd = async () => {
+    const name = newName.trim();
+    const dirs = newDirs.map(d => (d || '').trim()).filter(Boolean);
+    if (!name) { alert('Oyun adı gerekli.'); return; }
+    if (dirs.length === 0) { alert('En az bir dizin girin.'); return; }
+    setAdding(true);
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description: `${name} shader cache dizinleri`, data_json: { game_name: name, cache_dirs: dirs } })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNewName(''); setNewDirs(['']);
+        fetchArchives();
+      } else {
+        alert(data.error || 'Eklenemedi');
+      }
+    } catch {
+      alert('Bağlantı hatası');
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Bu shader dizin kaydını arşivden silmek istiyor musunuz?')) return;
@@ -62,6 +93,45 @@ const ShaderArchivePage = () => {
           className={`h-9 px-4 rounded-lg border ${panelBorder} ${sub} hover:${txt} text-sm font-semibold flex items-center gap-2`}>
           <RefreshCw size={15} className={fetching ? 'animate-spin' : ''} />Yenile
         </button>
+      </div>
+
+      {/* Dogrudan ekleme formu */}
+      <div className={`${bg} border ${panelBorder} rounded-2xl p-5`}>
+        <div className="flex items-center gap-2 mb-3">
+          <CloudUpload size={18} className="text-sky-400" />
+          <h3 className={`font-bold ${txt}`}>Yeni Kayıt Ekle</h3>
+          <span className={`text-xs ${sub}`}>oyun adı + shader cache dizin(ler)i</span>
+        </div>
+        <div className="space-y-3">
+          <input value={newName} onChange={(e) => setNewName(e.target.value)}
+            placeholder="Oyun adı — ör: Forza Horizon 5"
+            className={`w-full h-10 px-3 rounded-lg border ${panelBorder} ${dark ? 'bg-black/20' : 'bg-gray-50'} ${txt} text-sm outline-none focus:border-sky-500`} />
+          <div className="space-y-2">
+            {newDirs.map((d, i) => (
+              <div key={i} className="flex gap-2">
+                <input value={d}
+                  onChange={(e) => setNewDirs(arr => arr.map((v, j) => j === i ? e.target.value : v))}
+                  placeholder={`Dizin ${i + 1} — ör: %LocalAppData%\\ForzaHorizon5`}
+                  className={`flex-1 h-10 px-3 rounded-lg border ${panelBorder} ${dark ? 'bg-black/20' : 'bg-gray-50'} ${txt} text-sm font-mono outline-none focus:border-sky-500`} />
+                {newDirs.length > 1 && (
+                  <button onClick={() => setNewDirs(arr => arr.filter((_, j) => j !== i))}
+                    className="w-10 h-10 shrink-0 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center"><X size={15} /></button>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setNewDirs(arr => [...arr, ''])}
+              className={`h-9 px-3 rounded-lg border ${panelBorder} ${sub} hover:${txt} text-xs font-semibold flex items-center gap-1.5`}>
+              <Plus size={14} />Dizin Ekle
+            </button>
+            <button onClick={handleAdd} disabled={adding}
+              className="h-9 px-5 rounded-lg bg-sky-600 text-white text-sm font-bold flex items-center gap-2 hover:brightness-110 disabled:opacity-60 ml-auto">
+              {adding ? <Loader2 size={15} className="animate-spin" /> : <CloudUpload size={15} />}Arşive Ekle
+            </button>
+          </div>
+          <p className={`text-[11px] ${sub}`}>İpucu: Kullanıcı adı değişebileceği için <code>C:\Users\User\...</code> yerine <code>%LocalAppData%\...</code> kullanın (her PC'de kendi hesabına açılır). Aynı oyun adı varsa üzerine yazılır.</p>
+        </div>
       </div>
 
       {fetching ? (
