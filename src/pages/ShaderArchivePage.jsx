@@ -7,6 +7,7 @@ const API = '/api/mklink_archive?type=shader';
 const ShaderArchivePage = () => {
   const context = useOutletContext();
   const dark = context?.dark ?? true;
+  const isAdmin = context?.user?.role === 'admin';  // yükleme/silme yalnız admin grubu
 
   const [archives, setArchives] = useState([]);
   const [fetching, setFetching] = useState(true);
@@ -95,7 +96,8 @@ const ShaderArchivePage = () => {
         </button>
       </div>
 
-      {/* Dogrudan ekleme formu */}
+      {/* Dogrudan ekleme formu — YALNIZ admin grubu */}
+      {isAdmin && (
       <div className={`${bg} border ${panelBorder} rounded-2xl p-5`}>
         <div className="flex items-center gap-2 mb-3">
           <CloudUpload size={18} className="text-sky-400" />
@@ -133,6 +135,7 @@ const ShaderArchivePage = () => {
           <p className={`text-[11px] ${sub}`}>İpucu: Kullanıcı adı değişebileceği için <code>C:\Users\User\...</code> yerine <code>%LocalAppData%\...</code> kullanın (her PC'de kendi hesabına açılır). Aynı oyun adı varsa üzerine yazılır.</p>
         </div>
       </div>
+      )}
 
       {fetching ? (
         <div className={`flex items-center justify-center gap-2 py-16 ${sub}`}>
@@ -159,10 +162,12 @@ const ShaderArchivePage = () => {
                       {dirs.length} konum · {arch.created_at ? new Date(arch.created_at).toLocaleString('tr-TR') : ''}
                     </p>
                   </div>
-                  <button onClick={() => handleDelete(arch.id)} disabled={deletingId === arch.id}
-                    className="w-9 h-9 shrink-0 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center" title="Sil">
-                    {deletingId === arch.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-                  </button>
+                  {isAdmin && (
+                    <button onClick={() => handleDelete(arch.id)} disabled={deletingId === arch.id}
+                      className="w-9 h-9 shrink-0 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center" title="Sil">
+                      {deletingId === arch.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                    </button>
+                  )}
                 </div>
                 <div className="mt-3 space-y-1.5">
                   {dirs.map((d, i) => (

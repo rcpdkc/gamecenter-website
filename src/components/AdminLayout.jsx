@@ -29,6 +29,7 @@ const NAV_ITEMS_CAFE = [
   { to: '/superadmin/games', icon: Gamepad2, label: 'Oyunlar' },
   { to: '/superadmin/monitoring', icon: Thermometer, label: 'İzleme' },
   { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi', mobileHidden: true },
+  { to: '/superadmin/shader-archive', icon: DatabaseZap, label: 'Shader Arşivi' },
 ];
 
 const PAGE_TITLES = {
