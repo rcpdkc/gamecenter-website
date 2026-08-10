@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { DatabaseZap, Trash2, Loader2, FolderInput, RefreshCw, Plus, X, CloudUpload } from 'lucide-react';
+import { DatabaseZap, Trash2, Loader2, FolderInput, RefreshCw, Plus, X, CloudUpload, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 
 const API = '/api/mklink_archive?type=shader';
 
@@ -17,6 +17,17 @@ const ShaderArchivePage = () => {
   const [newName, setNewName] = useState('');
   const [newDirs, setNewDirs] = useState(['']);
   const [adding, setAdding] = useState(false);
+
+  // Profesyonel modal + toast (browser alert/confirm yerine)
+  const [confirmId, setConfirmId] = useState(null);   // silinecek kaydin id'si
+  const [toast, setToast] = useState(null);           // { msg, type: 'success' | 'error' }
+
+  const showToast = (msg, type = 'error') => setToast({ msg, type });
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const bg = dark ? 'bg-[#111827]' : 'bg-white';
   const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
@@ -41,8 +52,8 @@ const ShaderArchivePage = () => {
   const handleAdd = async () => {
     const name = newName.trim();
     const dirs = newDirs.map(d => (d || '').trim()).filter(Boolean);
-    if (!name) { alert('Oyun adı gerekli.'); return; }
-    if (dirs.length === 0) { alert('En az bir dizin girin.'); return; }
+    if (!name) { showToast('Oyun adı gerekli.'); return; }
+    if (dirs.length === 0) { showToast('En az bir dizin girin.'); return; }
     setAdding(true);
     try {
       const res = await fetch(API, {
@@ -53,19 +64,20 @@ const ShaderArchivePage = () => {
       const data = await res.json();
       if (data.success) {
         setNewName(''); setNewDirs(['']);
+        showToast('Kayıt arşive eklendi.', 'success');
         fetchArchives();
       } else {
-        alert(data.error || 'Eklenemedi');
+        showToast(data.error || 'Eklenemedi');
       }
     } catch {
-      alert('Bağlantı hatası');
+      showToast('Bağlantı hatası');
     } finally {
       setAdding(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Bu shader dizin kaydını arşivden silmek istiyor musunuz?')) return;
+  const doDelete = async (id) => {
+    setConfirmId(null);
     setDeletingId(id);
     try {
       const res = await fetch(API, {
@@ -74,14 +86,20 @@ const ShaderArchivePage = () => {
         body: JSON.stringify({ id })
       });
       const data = await res.json();
-      if (data.success) setArchives(prev => prev.filter(a => a.id !== id));
-      else alert(data.error || 'Silinemedi');
+      if (data.success) {
+        setArchives(prev => prev.filter(a => a.id !== id));
+        showToast('Kayıt silindi.', 'success');
+      } else {
+        showToast(data.error || 'Silinemedi');
+      }
     } catch {
-      alert('Bağlantı hatası');
+      showToast('Bağlantı hatası');
     } finally {
       setDeletingId(null);
     }
   };
+
+  const confirmTarget = archives.find(a => a.id === confirmId);
 
   return (
     <div className="space-y-5">
@@ -163,7 +181,7 @@ const ShaderArchivePage = () => {
                     </p>
                   </div>
                   {isAdmin && (
-                    <button onClick={() => handleDelete(arch.id)} disabled={deletingId === arch.id}
+                    <button onClick={() => setConfirmId(arch.id)} disabled={deletingId === arch.id}
                       className="w-9 h-9 shrink-0 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center" title="Sil">
                       {deletingId === arch.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
                     </button>
@@ -180,6 +198,51 @@ const ShaderArchivePage = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Profesyonel silme onay modalı (window.confirm yerine) */}
+      {confirmTarget && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setConfirmId(null)}>
+          <div onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-md ${bg} border ${panelBorder} rounded-2xl shadow-2xl p-6 animate-[fadeIn_.15s_ease-out]`}>
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
+                <AlertTriangle size={22} className="text-rose-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-bold text-lg ${txt}`}>Kaydı sil</h3>
+                <p className={`text-sm ${sub} mt-1`}>
+                  <b className={txt}>{confirmTarget.name}</b> shader dizin kaydını arşivden silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button onClick={() => setConfirmId(null)}
+                className={`h-10 px-5 rounded-lg border ${panelBorder} ${sub} hover:${txt} text-sm font-semibold`}>
+                Vazgeç
+              </button>
+              <button onClick={() => doDelete(confirmTarget.id)}
+                className="h-10 px-5 rounded-lg bg-rose-600 text-white text-sm font-bold flex items-center gap-2 hover:brightness-110">
+                <Trash2 size={15} />Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profesyonel toast bildirimi (alert yerine) */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[110] animate-[slideUp_.2s_ease-out]">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-semibold
+            ${toast.type === 'success'
+              ? 'bg-emerald-600 border-emerald-500 text-white'
+              : 'bg-rose-600 border-rose-500 text-white'}`}>
+            {toast.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+            {toast.msg}
+            <button onClick={() => setToast(null)} className="ml-1 opacity-70 hover:opacity-100"><X size={15} /></button>
+          </div>
         </div>
       )}
     </div>
