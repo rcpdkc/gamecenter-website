@@ -16,7 +16,6 @@ const WIKI_STRUCTURE = [
     items: [
       { id: "intro", title: "Game Center Nedir?", icon: <BookOpen size={16} /> },
       { id: "requirements", title: "Sistem Gereksinimleri", icon: <CheckCircle2 size={16} /> },
-      { id: "license", title: "Lisans ve Üyelik", icon: <Key size={16} /> },
     ]
   },
   {
@@ -216,39 +215,6 @@ const WIKI_ARTICLES = {
         <Step n="2" title="Ağ hızını ölç">Bir istemciden sunucuya büyük bir dosya kopyalayın; hız 100 MB/s altındaysa kablo/switch 1 Gbps değildir.</Step>
         <Step n="3" title="Bağlantıyı test et">İstemciden tarayıcıya <code>http://SUNUCU_IP:5174/api/health</code> yazın; <code>ok</code> yanıtı geliyorsa ağ ve portlar hazırdır.</Step>
       </ol>
-    </div>
-  ),
-
-  "license": (
-    <div className="animate-fade-in-up">
-      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
-        <Key className="text-amber-500" size={36} /> Lisans ve Üyelik Sistemi
-      </h1>
-      <p className="text-lg text-muted mb-8">
-        Game Center'a kayıt <strong>davetiye usulü</strong> çalışır: sadece size özel üretilen bir <strong>Referans Kodu</strong> (<code>GC-XXXXXXXX</code>) ile hesap açabilirsiniz. Kod, e-posta adresinize kilitlidir ve tek kullanımlıktır.
-      </p>
-
-      <ShotSlot label="Kayıt / Giriş ekranı" file="wiki_register.png" />
-
-      <h3 className="text-2xl font-bold text-white mb-3">Adım Adım: Hesap Oluşturma</h3>
-      <ol className="space-y-5 mb-8">
-        <Step n="1" title="Referans kodu al">Yetkiliden (bayi/distribütör) e-posta adresinize tanımlı <code>GC-XXXXXXXX</code> kodunu isteyin. Kod, yalnızca verilen e-posta ile eşleşir.</Step>
-        <Step n="2" title="Kayıt formunu doldur"><code>gamecenter.rcpdkc.com/register</code> adresinde ad, soyad, kafe adı, telefon, e-posta, şifre ve referans kodunu girin.</Step>
-        <Step n="3" title="Giriş yap">Kayıt onaylandıktan sonra <code>/login</code> üzerinden e-posta ve şifrenizle girin. Şifreniz sunucuda <strong>Bcrypt</strong> ile hash'lenir; düz metin saklanmaz.</Step>
-        <Step n="4" title="Sunucuyu bağla (HWID)">Yerel yönetim panelinden aynı hesapla giriş yaptığınızda, sunucunuzun donanım kimliği (HWID) hesabınıza kilitlenir. Böylece lisansınız başka bir makinede kullanılamaz.</Step>
-      </ol>
-
-      <div className="glass-panel p-6 border-l-4 border-l-amber-500 mb-8">
-        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Shield size={18} className="text-amber-400" /> HWID Kilidi Nasıl Çalışır?</h4>
-        <p className="text-sm text-gray-400 leading-relaxed">
-          Hesabınıza ilk girişte sunucunun anakart UUID'si kaydedilir. Sonraki girişlerde farklı bir HWID tespit edilirse sistem <em>"Bu hesap başka bir sunucuya kayıtlıdır"</em> hatası verir. Makine değişikliği gerektiğinde yöneticinin HWID'yi sıfırlaması gerekir.
-        </p>
-      </div>
-
-      <h3 className="text-2xl font-bold text-white mb-3">Lisans Grupları ve Süre</h3>
-      <p className="text-gray-300 mb-6 leading-relaxed">
-        Her hesap bir <strong>Lisans Grubuna</strong> (Free / Pro / Enterprise gibi) atanır. Gruplar hem <strong>yetkileri</strong> (hangi panellere erişebileceğinizi) hem de bir <strong>bitiş tarihini</strong> (<code>group_expires_at</code>) taşır. Süre dolduğunda hesap <em>"lisans süresi doldu"</em> durumuna geçer ve gelişmiş modüller kilitlenir. Grup ve süre yönetimi Bulut SuperAdmin panelinden yapılır.
-      </p>
     </div>
   ),
 

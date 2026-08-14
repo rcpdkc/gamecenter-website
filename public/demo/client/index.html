@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Masa Uygulaması Demo — GameCenter</title>
+<style>
+  :root{ --bg:#0a0b10; --panel:#12141d; --border:rgba(255,255,255,.1); --accent:#f97316; --ink:#f1f5f9; --mut:#94a3b8; }
+  *{box-sizing:border-box;} html,body{margin:0;height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    display:flex;flex-direction:column;min-height:100vh;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .top{display:flex;align-items:center;gap:16px;padding:12px 18px;border-bottom:1px solid var(--border);background:rgba(10,11,16,.85);backdrop-filter:blur(8px);}
+  .back{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--mut);border:1px solid var(--border);border-radius:10px;padding:8px 12px;transition:.15s;}
+  .back:hover{color:var(--ink);border-color:var(--accent);}
+  .brand{font-weight:800;letter-spacing:.02em;} .brand span{color:var(--mut);font-weight:500;}
+  .spacer{flex:1;}
+  .badge{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:#fbbf24;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.1);border-radius:20px;padding:5px 11px;}
+  .stagewrap{flex:1;display:flex;align-items:center;justify-content:center;padding:22px 18px 12px;overflow:hidden;}
+  .stage{position:relative;width:100%;max-width:1400px;aspect-ratio:1600/860;border-radius:14px;overflow:hidden;
+    border:1px solid var(--border);box-shadow:0 30px 80px -30px #000, 0 0 0 1px rgba(255,255,255,.03);background:#000;}
+  .stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s;}
+  .stage img.on{opacity:1;}
+  .hint{position:absolute;left:16px;bottom:14px;font-size:12px;color:#cbd5e1;background:rgba(6,8,13,.6);border:1px solid var(--border);
+    padding:6px 12px;border-radius:20px;backdrop-filter:blur(6px);}
+  .nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px 14px 26px;}
+  .nav button{font-size:13.5px;color:var(--mut);background:var(--panel);border:1px solid var(--border);border-radius:11px;
+    padding:9px 15px;cursor:pointer;transition:.15s;font-weight:600;}
+  .nav button:hover{color:var(--ink);border-color:rgba(249,115,22,.4);}
+  .nav button.active{color:#fff;background:linear-gradient(135deg,#f97316,#fbbf24);border-color:transparent;box-shadow:0 8px 24px -10px rgba(249,115,22,.7);}
+  @media (max-width:640px){ .brand span{display:none;} .hint{display:none;} }
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="back" href="/demo">&larr; Demo Seçimi</a>
+    <span class="brand">YILDIRIMNET <span>· Masa Uygulaması (Demo)</span></span>
+    <span class="spacer"></span>
+    <span class="badge">ÖRNEK EKRANLAR</span>
+    <a class="back" href="/">Siteye Dön</a>
+  </div>
+
+  <div class="stagewrap">
+    <div class="stage" id="stage">
+      <img data-k="home" src="img/home.jpg" alt="Oyun vitrini" class="on" />
+      <img data-k="yeni" src="img/yeni.jpg" alt="Yeni eklenen oyunlar" />
+      <img data-k="istatistik" src="img/istatistik.jpg" alt="Oyun istatistikleri" />
+      <img data-k="steam" src="img/steam.jpg" alt="Steam hesap havuzu" />
+      <img data-k="kayit" src="img/kayit.jpg" alt="Oyun kayıt" />
+      <img data-k="sesli" src="img/sesli.jpg" alt="Sesli sohbet" />
+      <div class="hint">Bu, müşterinin masasında gördüğü gerçek uygulamadır. Aşağıdan ekranlar arasında geçiş yapın.</div>
+    </div>
+  </div>
+
+  <div class="nav" id="nav">
+    <button data-k="home" class="active">🎮 Oyun Vitrini</button>
+    <button data-k="yeni">✨ Yeni Eklenen</button>
+    <button data-k="istatistik">📊 İstatistikler</button>
+    <button data-k="steam">🔑 Steam Hesapları</button>
+    <button data-k="kayit">💾 Oyun Kayıt</button>
+    <button data-k="sesli">🎙️ Sesli Sohbet</button>
+  </div>
+
+  <script>
+    var imgs = document.querySelectorAll('#stage img');
+    var btns = document.querySelectorAll('#nav button');
+    function show(k){
+      imgs.forEach(function(im){ im.classList.toggle('on', im.dataset.k === k); });
+      btns.forEach(function(b){ b.classList.toggle('active', b.dataset.k === k); });
+    }
+    btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.k); }); });
+  </script>
+</body>
+</html>

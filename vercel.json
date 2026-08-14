@@ -16,8 +16,16 @@
       "destination": "/demo/index.html"
     },
     {
-      "source": "/demo/(.*)",
-      "destination": "/demo/index.html"
+      "source": "/demo/panel",
+      "destination": "/demo/panel/index.html"
+    },
+    {
+      "source": "/demo/panel/(.*)",
+      "destination": "/demo/panel/index.html"
+    },
+    {
+      "source": "/demo/client",
+      "destination": "/demo/client/index.html"
     },
     {
       "source": "/(.*)",
