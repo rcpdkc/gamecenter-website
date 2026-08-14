@@ -1,41 +1,62 @@
-import { Monitor, Rocket, Gamepad2, ShieldCheck, Zap, Activity } from 'lucide-react';
+import { Monitor, Rocket, Gamepad2, ShieldCheck, Zap, Activity, Gauge, Database } from 'lucide-react';
 
 const Features = () => {
   const features = [
     {
-      title: 'Canlı Monitör (OSD) Sistemi',
-      desc: 'Tüm ağınızdaki ekranların parlaklık, kontrast ve renk ayarlarını (DDC/CI) tek bir panelden uzaktan yönetin. Müşteri rahatsız olmadan ekran ayarlarına anında müdahale edin.',
+      title: 'Canlı İzleme ve Monitör (OSD)',
+      desc: 'Tüm bilgisayarların anlık sıcaklık ve durumunu tek panelden izleyin; ekran parlaklık/kontrast/renk ayarlarını (DDC/CI) uzaktan yönetin. Isınan makineyi arıza çıkmadan yakalayın.',
       image: '/images/canlimonitör.png',
       icon: <Monitor className="text-orange-500" size={24} />,
       reverse: false
     },
     {
-      title: 'MkLink ve Gelişmiş Save Yönetimi',
-      desc: 'Oyun dosyalarını ve Save dosyalarını dinamik olarak bağlayarak (Junction) %100 sorunsuz oyun keyfi yaşatır. Bulut destekli şablon sistemi ile tüm kuralları saniyeler içinde kafenize uygulayın.',
-      image: '/images/mklink.png',
-      icon: <Gamepad2 className="text-purple-500" size={24} />,
+      title: 'İçerik Filtresi ve 5651 Yasal Kayıt',
+      desc: 'Kumar, yetişkin ve zararlı içerikleri kategori bazlı tek tıkla engelleyin; beyaz/kara liste ve kelime filtresi uygulayın. 5651 gereği tüm erişimler imzalı (değiştirilemez) olarak otomatik kayıt altına alınır.',
+      image: '/images/icerik_filtresi.png',
+      icon: <ShieldCheck className="text-blue-500" size={24} />,
       reverse: true
-    },
-    {
-      title: 'Ağ ve Trafik İzleme',
-      desc: 'Kafenizdeki tüm bilgisayarların anlık ağ kullanımlarını, indirme ve yükleme hızlarını takip edin. Darboğazları anında tespit edip çözüme kavuşturun.',
-      image: '/images/agizleme.png',
-      icon: <Activity className="text-blue-500" size={24} />,
-      reverse: false
     },
     {
       title: 'Oyun Kütüphanesi ve Kapak Yönetimi',
-      desc: 'Özel oyun menünüz için tüm oyunları ve kapak fotoğraflarını yönetin. Toplu yükleme ve otomatik isimlendirme ile saatlerce süren işlemleri dakikalara indirin.',
+      desc: 'Kapaklı, kategorili oyun vitrini müşterinin masasında şık biçimde görünür. Toplu yükleme ve bulut kapak arşivi ile saatlerce süren işlemler dakikalara iner.',
       image: '/images/oyunlar.png',
       icon: <Rocket className="text-emerald-500" size={24} />,
+      reverse: false
+    },
+    {
+      title: 'Önbellek (Shader) ile Beklemesiz Açılış',
+      desc: 'Shader derlemesini bir kez toplayıp aynı donanımdaki tüm makinelere dağıtın. Müşteri oyunu açtığında "shader hazırlanıyor" beklemesi olmadan anında oynamaya başlar.',
+      image: '/images/shader.png',
+      icon: <Zap className="text-red-500" size={24} />,
       reverse: true
     },
     {
-      title: 'Detaylı Donanım İstatistikleri',
-      desc: 'İşlemci (CPU) ve Ekran Kartı (GPU) sıcaklıkları, fan hızları ve anlık kullanımları grafiklerle izleyin. Isınan sistemlerde otomatik FPS/Güç limitlemesi uygulayarak donanımınızı koruyun.',
-      image: '/images/monitorgrafik.png',
-      icon: <Zap className="text-red-500" size={24} />,
+      title: 'Bilgisayar Başına Hız Sınırlama',
+      desc: 'Bir makine dev bir indirmeyle hattı doldurduğunda ona bireysel indirme/yükleme limiti koyun. Limit, disksiz sistemde makine yeniden başlasa bile kendiliğinden geri gelir.',
+      image: '/images/hiz_sinirlama.png',
+      icon: <Gauge className="text-purple-500" size={24} />,
       reverse: false
+    },
+    {
+      title: 'MkLink ve Gelişmiş Save Yönetimi',
+      desc: 'Oyun ve kayıt (save) dosyalarını dinamik bağlayarak (Junction) sorunsuz oyun keyfi sunar. Bulut şablon sistemiyle tüm kuralları saniyeler içinde uygularsınız; disksiz sistemde ilerleme kaybolmaz.',
+      image: '/images/mklink.png',
+      icon: <Gamepad2 className="text-orange-400" size={24} />,
+      reverse: true
+    },
+    {
+      title: 'Ağ İzleme ve Donanım İstatistikleri',
+      desc: 'Anlık ağ kullanımı, indirme/yükleme hızları ve CPU/GPU sıcaklık-yük grafiklerini izleyin. Darboğazları ve ısınan sistemleri tek bakışta tespit edin.',
+      image: '/images/agizleme.png',
+      icon: <Activity className="text-cyan-500" size={24} />,
+      reverse: false
+    },
+    {
+      title: 'Merkezî Güncelleme ve Veritabanı Yönetimi',
+      desc: 'Sunucu kendini günceller; eski sürümdeki tüm istemcileri tek yerden güncellersiniz — disksiz kafelerde makine makine dolaşmak yok. Veritabanı boyutları, disk oranı, yedekleme ve tarih bazlı temizleme tek ekranda.',
+      image: '/images/veritabani.png',
+      icon: <Database className="text-emerald-400" size={24} />,
+      reverse: true
     }
   ];
 

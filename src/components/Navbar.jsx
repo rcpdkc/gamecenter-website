@@ -10,6 +10,7 @@ const Navbar = () => {
     { name: 'Ana Sayfa', path: '/' },
     { name: 'Wiki', path: '/wiki' },
     { name: 'Galeri', path: '/gallery' },
+    { name: 'Canlı Demo', path: '/demo', hardLink: true },
     { name: 'İndir', path: 'https://github.com/rcpdkc/game-center-server/releases/tag/v.2.0.0', isExternal: true },
   ];
 
@@ -36,6 +37,10 @@ const Navbar = () => {
               {navLinks.map((link) => (
                 link.isExternal ? (
                   <a key={link.path} href={link.path} target="_blank" rel="noopener noreferrer" className={`transition-colors ${isActive(link.path)}`}>
+                    {link.name}
+                  </a>
+                ) : link.hardLink ? (
+                  <a key={link.path} href={link.path} className="transition-colors text-amber-400 hover:text-amber-300 font-semibold">
                     {link.name}
                   </a>
                 ) : (
@@ -68,19 +73,28 @@ const Navbar = () => {
         <div className="md:hidden absolute top-20 left-0 w-full bg-[#0a0b10] border-b border-white/5 py-4 px-4 flex flex-col gap-4">
           {navLinks.map((link) => (
             link.isExternal ? (
-              <a 
-                key={link.path} 
-                href={link.path} 
+              <a
+                key={link.path}
+                href={link.path}
                 target="_blank" rel="noopener noreferrer"
                 className={`block p-2 rounded-lg ${isActive(link.path)}`}
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}
               </a>
+            ) : link.hardLink ? (
+              <a
+                key={link.path}
+                href={link.path}
+                className="block p-2 rounded-lg text-amber-400 font-semibold"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
+              </a>
             ) : (
-              <Link 
-                key={link.path} 
-                to={link.path} 
+              <Link
+                key={link.path}
+                to={link.path}
                 className={`block p-2 rounded-lg ${isActive(link.path)}`}
                 onClick={() => setIsOpen(false)}
               >

@@ -67,6 +67,15 @@ const WIKI_STRUCTURE = [
     ]
   },
   {
+    section: "Genel Ayarlar",
+    items: [
+      { id: "g-update", title: "Güncelleme (Sunucu & İstemci)", icon: <RefreshCw size={16} /> },
+      { id: "g-clientview", title: "İstemci Görünüm", icon: <Monitor size={16} /> },
+      { id: "g-paths", title: "Dosya ve Yedekleme", icon: <HardDrive size={16} /> },
+      { id: "g-database", title: "Veritabanı Yönetimi", icon: <Database size={16} /> },
+    ]
+  },
+  {
     section: "Gelişmiş Sistemler",
     items: [
       { id: "mklink", title: "MkLink Otomasyonu", icon: <Activity size={16} /> },
@@ -1268,6 +1277,88 @@ const WIKI_ARTICLES = {
       </ol>
       <InfoCard icon={Database} color="amber" title="Otomatik Temizleme">
         Log veritabanı zamanla büyüyebilir. Python sunucusu, yönetici tarafından belirlenen saklama süresi dolduğunda eski kayıtları otomatik siler. Disk kullanımı FilterCenter Dashboard'daki halka grafiğinden takip edilebilir.
+      </InfoCard>
+    </div>
+  ),
+
+  /* ── GENEL AYARLAR ─────────────────────────────────────────── */
+  "g-update": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <RefreshCw className="text-orange-500" size={36}/> Güncelleme (Sunucu & İstemci)
+      </h1>
+      <p className="text-lg text-muted mb-6">
+        Genel Ayarlar &rarr; <strong>Güncelleme</strong> ekranı, hem sunucuyu hem de kafedeki tüm istemcileri tek yerden güncel tutmanızı sağlar.
+        Üç sekmeden oluşur: <strong>Sistem</strong> (sunucunun kendi güncellemesi), <strong>İstemciler</strong> (eski sürüm istemcilere güncelleme gönderme) ve <strong>Geçmiş</strong> (sürüm notları).
+      </p>
+      <Shot src="/images/guncelleme.png" label="Genel Ayarlar → Güncelleme" />
+      <InfoCard icon={Server} color="orange" title="Disksiz kafeler için büyük kolaylık">
+        Eski sürümdeki tüm istemcileri <strong>sunucudan tek tıkla</strong> güncellersiniz; makine makine dolaşmanıza gerek kalmaz.
+        İstemci güncellemesi indirilip SHA-256 ile doğrulanır, sessizce kurulur ve işlem bitince kurulum dosyaları otomatik silinir.
+      </InfoCard>
+      <ol className="space-y-4 my-6">
+        <Step n="1" title="Sistem sekmesi">Sunucu yeni sürümü kendisi indirir ve uygular.</Step>
+        <Step n="2" title="İstemciler sekmesi">Eski sürümdeki istemciler listelenir; "Güncelle" ile hepsine aynı anda gönderilir.</Step>
+        <Step n="3" title="Geçmiş sekmesi">Her sürümde neyin değiştiğini (changelog) buradan okursunuz.</Step>
+      </ol>
+    </div>
+  ),
+
+  "g-clientview": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Monitor className="text-sky-500" size={36}/> İstemci Görünüm
+      </h1>
+      <p className="text-lg text-muted mb-6">
+        Müşterinin masasında gördüğü ekranın <strong>temasını, rengini ve kapağını</strong> buradan biçimlendirir, tek kaydetmeyle
+        tüm bilgisayarlara aynı anda uygularsınız. Kafenize özel bir görünüm marka algısını güçlendirir.
+      </p>
+      <Shot src="/images/istemci_gorunum.png" label="Genel Ayarlar → İstemci Görünüm" />
+      <InfoCard icon={Settings} color="sky" title="Ortak istemci arayüzü">
+        İstemci uygulaması hem GameCenter hem de ileride CafeCenter tarafında ortak kullanıldığından, görünüm ayarları
+        <strong> Genel Ayarlar</strong> altında merkezî olarak tutulur.
+      </InfoCard>
+    </div>
+  ),
+
+  "g-paths": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <HardDrive className="text-purple-500" size={36}/> Dosya ve Yedekleme
+      </h1>
+      <p className="text-lg text-muted mb-6">
+        Her veri türünün <strong>yolu</strong> ve <strong>yedeği</strong> burada, türe göre sekmelere ayrılmış olarak yönetilir:
+        Veritabanı, Yedekler, Kapaklar, Shader Önbellek ve 5651 Log. Her sekmede hem klasör yolu hem de başka diske
+        <strong> güvenli taşıma</strong> seçeneği bir aradadır.
+      </p>
+      <Shot src="/images/dosya_yedekleme.png" label="Genel Ayarlar → Dosya ve Yedekleme" />
+      <InfoCard icon={HardDrive} color="purple" title="Güvenli taşıma">
+        "Veritabanını Taşı" özelliği, veritabanını yeni klasöre <strong>tutarlı biçimde kopyalar</strong>, doğrular ve ancak sorunsuzsa geçiş yapar.
+        Bir hata olursa taşıma iptal edilir ve eski veritabanı korunur.
+      </InfoCard>
+      <InfoCard icon={AlertTriangle} color="amber" title="En önemlisi: düzenli yedek">
+        Bir disk arızasında kafenizin tüm hafızası (üyeler, oyunlar, ayarlar, loglar) bu yedeklerde durur. Yedeklemeyi ihmal etmeyin.
+      </InfoCard>
+    </div>
+  ),
+
+  "g-database": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Database className="text-emerald-500" size={36}/> Veritabanı Yönetimi
+      </h1>
+      <p className="text-lg text-muted mb-6">
+        Sistem üç ayrı veritabanı kullanır: ana veritabanı, CafeCenter ve 5651 erişim logu.
+        Bu ekran her birinin <strong>boyutunu ve bulunduğu diske oranını</strong> gösterir; disk dolmadan önce sizi uyarır.
+      </p>
+      <Shot src="/images/veritabani.png" label="Genel Ayarlar → Veritabanı" />
+      <ol className="space-y-4 my-6">
+        <Step n="1" title="Genel Bakış">Üç veritabanının boyutu, disk kullanımı ve boş alan tek ekranda.</Step>
+        <Step n="2" title="Temizleme">Bir tarih girip eski kayıtları temizler, temizlik raporunu indirebilirsiniz.</Step>
+        <Step n="3" title="Yedekler">Alınan sistem yedeklerini buradan görüntüler ve yönetirsiniz.</Step>
+      </ol>
+      <InfoCard icon={ShieldCheck} color="green" title="5651 logları korunur">
+        Yasal zorunluluk gereği <strong>5651 erişim kayıtları temizleme ile silinmez</strong>; yalnızca geçmiş/istatistik tabloları budanır.
       </InfoCard>
     </div>
   ),
