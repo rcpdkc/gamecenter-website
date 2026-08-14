@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { FolderSync, Upload, Trash2, Loader2, FileJson, CheckCircle2 } from 'lucide-react';
+import { FolderSync, Upload, Trash2, Loader2, FileJson, CheckCircle2, Download } from 'lucide-react';
 
 const MklinkArchivePage = () => {
   const context = useOutletContext();
@@ -161,13 +161,28 @@ const MklinkArchivePage = () => {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(arch.id)}
-                  className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
-                  title="Şablonu Sil"
-                >
-                  <Trash2 size={18} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify(arch.data_json, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = `mklink_${arch.name.replace(/\s+/g,'_')}.json`; a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="p-2 rounded-lg text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
+                    title="JSON İndir"
+                  >
+                    <Download size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(arch.id)}
+                    className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                    title="Şablonu Sil"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

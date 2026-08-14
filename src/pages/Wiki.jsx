@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2, LayoutDashboard, Rss, Cloud, Cpu, Database, Save, Key, Wifi, Users, Image as ImageIcon, FolderSync, Megaphone, Gamepad2, Laptop, Network, LineChart, Star, FolderOpen, Puzzle, Link as LinkIcon, RefreshCw, Power, Ban, Plus, Edit, Download, History, Zap, CheckCircle, Crosshair, Target, Layers, HardDrive } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  BookOpen, Server, Monitor, Shield, Settings, Activity, Search, ChevronRight,
+  ChevronLeft, ChevronDown, Menu, Terminal, AlertTriangle, CheckCircle2,
+  LayoutDashboard, Rss, Cloud, Cpu, Database, Save, Key, Wifi, Users,
+  Image as ImageIcon, FolderSync, Megaphone, Gamepad2, Laptop, Network,
+  LineChart, Star, FolderOpen, Puzzle, Link as LinkIcon, RefreshCw, Power,
+  Ban, Plus, Edit, Download, History, Zap, CheckCircle, Crosshair, Target,
+  Layers, HardDrive, ShieldCheck, ShieldAlert, Globe, Gauge, ScrollText,
+  BarChart3, ListChecks, Video, Bell, FilterX, Type, Sliders, Lock
+} from 'lucide-react';
 
 const WIKI_STRUCTURE = [
   {
@@ -40,7 +49,21 @@ const WIKI_STRUCTURE = [
       { id: "mod-plugins", title: "Eklentiler", icon: <Puzzle size={16} /> },
       { id: "mod-mklinks", title: "MkLink Şablonları", icon: <LinkIcon size={16} /> },
       { id: "mod-updates", title: "Güncellemeler", icon: <RefreshCw size={16} /> },
+      { id: "mod-alerts", title: "Uyarı Geçmişi", icon: <Bell size={16} /> },
+      { id: "mod-bandwidth", title: "İstemci Bant Genişliği", icon: <Gauge size={16} /> },
       { id: "mod-filter", title: "Filtreli Oyunlar", icon: <Shield size={16} /> },
+    ]
+  },
+  {
+    section: "FilterCenter",
+    items: [
+      { id: "fc-overview", title: "FilterCenter Nedir?", icon: <ShieldCheck size={16} /> },
+      { id: "fc-dns", title: "DNS Filtresi ve Kurulum", icon: <Globe size={16} /> },
+      { id: "fc-categories", title: "Kategori Engelleme", icon: <Ban size={16} /> },
+      { id: "fc-lists", title: "Beyaz / Kara Liste", icon: <ListChecks size={16} /> },
+      { id: "fc-keywords", title: "Kelime Filtresi", icon: <Type size={16} /> },
+      { id: "fc-bandwidth", title: "Bant Genişliği Yönetimi", icon: <Sliders size={16} /> },
+      { id: "fc-logs", title: "Erişim Logları (5651)", icon: <ScrollText size={16} /> },
     ]
   },
   {
@@ -93,6 +116,20 @@ const Step = ({ n, title, children }) => (
     </div>
   </li>
 );
+
+/* Bilgi kutusu bileşeni */
+const InfoCard = ({ icon: Icon, color, title, children }) => {
+  const borders = { blue:'border-l-blue-500', amber:'border-l-amber-500', green:'border-l-emerald-500', purple:'border-l-purple-500', cyan:'border-l-cyan-500', rose:'border-l-rose-500', orange:'border-l-orange-500', teal:'border-l-teal-500', sky:'border-l-sky-500', emerald:'border-l-emerald-500', red:'border-l-red-500', yellow:'border-l-yellow-500', violet:'border-l-violet-500', indigo:'border-l-indigo-500' };
+  const iconColors = { blue:'text-blue-400', amber:'text-amber-400', green:'text-emerald-400', purple:'text-purple-400', cyan:'text-cyan-400', rose:'text-rose-400', orange:'text-orange-400', teal:'text-teal-400', sky:'text-sky-400', emerald:'text-emerald-400', red:'text-red-400', yellow:'text-yellow-400', violet:'text-violet-400', indigo:'text-indigo-400' };
+  return (
+    <div className={`glass-panel p-6 border-l-4 ${borders[color]||'border-l-blue-500'} mb-8`}>
+      <h4 className="font-bold text-white mb-2 flex items-center gap-2">
+        {Icon && <Icon size={18} className={iconColors[color]||'text-blue-400'} />}{title}
+      </h4>
+      <div className="text-sm text-gray-400 leading-relaxed">{children}</div>
+    </div>
+  );
+};
 
 const WIKI_ARTICLES = {
   /* STARTING SECTIONS */
@@ -929,12 +966,340 @@ const WIKI_ARTICLES = {
         </p>
       </div>
     </div>
-  )
+  ),
+
+  /* ── YENİ MODÜLLER ────────────────────────────────────── */
+  "mod-alerts": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Bell className="text-rose-500" size={36}/> Uyarı Geçmişi (Alerts History)
+      </h1>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Sistemde tetiklenen tüm donanım ve ağ uyarılarının kalıcı kaydını tutan arşiv ekranıdır. Canlı Monitör'deki anlık uyarılar burada tarih-saat damgasıyla saklanır; hafta başında ekranda olmayan bir ısınma olayını bile sonradan tespit edebilirsiniz.
+      </p>
+      <ShotSlot label="Uyarı Geçmişi ekranı" file="wiki_alerts.png" />
+      <h3 className="text-2xl font-bold text-white mb-3">Ne Tür Uyarılar Kaydedilir?</h3>
+      <div className="overflow-x-auto mb-8">
+        <table className="w-full text-left border-collapse text-sm">
+          <thead><tr className="bg-white/5 border-b border-white/10 text-gray-400 uppercase">
+            <th className="p-3 font-bold">Uyarı Tipi</th><th className="p-3 font-bold">Tetikleyici Koşul</th><th className="p-3 font-bold">Öncelik</th>
+          </tr></thead>
+          <tbody className="text-gray-300">
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-red-400">CPU Aşırı Isınma</td><td className="p-3">CPU Sıcaklığı ≥ 90°C</td><td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-red-500/20 text-red-400 font-bold">KRİTİK</span></td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-orange-400">GPU Aşırı Isınma</td><td className="p-3">GPU Sıcaklığı ≥ 85°C</td><td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-orange-500/20 text-orange-400 font-bold">YÜKSEK</span></td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-yellow-400">RAM Doluluk</td><td className="p-3">RAM kullanımı ≥ %95</td><td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400 font-bold">ORTA</span></td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-blue-400">Ağ Bağlantısı Kopma</td><td className="p-3">İstemci 15 sn yanıt vermezse</td><td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400 font-bold">BİLGİ</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-3">Arama ve Filtreleme</h3>
+      <ol className="space-y-5 mb-8">
+        <Step n="1" title="Arama kutusunu kullan">IP, hostname veya proses adını arama kutusuna girin; liste anlık filtrelenir.</Step>
+        <Step n="2" title="Tarihe göre filtrele">Tarih seçicisinden belirli bir günü seçin; o günkü uyarılar gösterilir.</Step>
+        <Step n="3" title="Tümünü temizle">Sağ üstteki kırmızı "Tüm Geçmişi Sil" butonuyla tüm kayıtlar veritabanından silinebilir (onay dialogu çıkar).</Step>
+      </ol>
+      <InfoCard icon={AlertTriangle} color="rose" title="Veri Saklama Süresi">
+        Uyarı geçmişi kayıtları <code>alert_history</code> tablosunda tutulur. Python sunucusu her hafta otomatik bakım yaparak 30 günden eski kayıtları siler. Bu davranış <code>Settings → Sistem</code> sekmesinden özelleştirilebilir.
+      </InfoCard>
+    </div>
+  ),
+
+  "mod-bandwidth": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Gauge className="text-sky-500" size={36}/> İstemci Bant Genişliği
+      </h1>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Kafedeki her masanın İndirme (Download) ve Yükleme (Upload) hızlarını ayrı ayrı kısıtlayabileceğiniz güçlü bir ağ yönetim aracıdır. "Masa 12 sürekli torrent çekiyor ve tüm hattı yiyor" gibi durumları saniyeler içinde çözersiniz.
+      </p>
+      <ShotSlot label="İstemci Bant Genişliği ekranı" file="wiki_bandwidth.png" />
+      <h3 className="text-2xl font-bold text-white mb-3">Nasıl Çalışır?</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        Sunucu, <code>/api/bandwidth</code> endpoint'i aracılığıyla her istemciye hız limiti bilgisi gönderir. İstemci (C# WPF uygulaması), bu limiti aldığında Windows <code>QoS Packet Scheduler</code> üzerinden kendi ağ trafiğini kısıtlar. Yani limit istemcinin kendi içinde uygulanır — switch ayarına gerek yoktur.
+      </p>
+      <h3 className="text-2xl font-bold text-white mb-3">Toplu Uygulama (Bulk Apply)</h3>
+      <div className="overflow-x-auto mb-8">
+        <table className="w-full text-left border-collapse text-sm">
+          <thead><tr className="bg-white/5 border-b border-white/10 text-gray-400 uppercase">
+            <th className="p-3 font-bold">Adım</th><th className="p-3 font-bold">İşlem</th>
+          </tr></thead>
+          <tbody className="text-gray-300">
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-sky-400">1. Seç</td><td className="p-3">Tablodaki checkbox'ları ile tek tek veya "Tümünü Seç" ile tüm masaları seçin.</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-sky-400">2. Değer Gir</td><td className="p-3">Üst kısımdaki "Toplu Uygula" paneline Download ve Upload hızını Mbps cinsinden girin.</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-sky-400">3. Uygula</td><td className="p-3">"Uygula" butonuna tıklandığında seçili masalara değerler yazılır (API'ye henüz gitmez).</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-sky-400">4. Kaydet</td><td className="p-3">Sağ üstteki "Kaydet" butonu tüm değerleri <code>/api/bandwidth</code> POST isteğiyle istemcilere bildirir.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <InfoCard icon={Gauge} color="sky" title="Sıfır (0) Girince Ne Olur?">
+        Download veya Upload alanına <code>0</code> girilmesi, o yön için sınır olmadığı anlamına gelir — istemci tam hız çalışır. Limiti devre dışı bırakmak için satırdaki Toggle (anahtar) kapatılabilir.
+      </InfoCard>
+    </div>
+  ),
+
+  /* ── FILTERCENTER ─────────────────────────────────────── */
+  "fc-overview": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <ShieldCheck className="text-emerald-500" size={36}/> FilterCenter Nedir?
+      </h1>
+      <p className="text-lg text-muted mb-6">
+        FilterCenter, Game Center'ın içerisine entegre edilmiş, kurumsal düzeyde bir <strong>ağ güvenlik ve içerik yönetim sistemidir</strong>. Tek bir kurulum gerektirmez — Game Center sunucusu kurulduğunda FilterCenter de otomatik olarak aktif hale gelir.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {[
+          { icon: Globe,       color: 'emerald', title: 'DNS Seviyesinde Filtreleme',    desc: 'Sunucu, kafe için bir DNS Proxy çalıştırır. İstemciler DNS isteklerini bu proxy üzerinden yapar; engellenen alan adlarına erişim DNS yanıtı verilmeden kesilir.' },
+          { icon: BarChart3,   color: 'blue',    title: 'Gerçek Zamanlı İstatistikler',  desc: 'Kaç DNS isteği yapıldığı, kaçı engellendiği, hangi kategorinin en çok tetiklendiği anlık grafiklerle Dashboard\'da gösterilir.' },
+          { icon: Sliders,     color: 'purple',  title: 'Bant Genişliği Kontrolü',       desc: 'Her masanın indirme/yükleme hız limitini MB/s cinsinden belirleyin. Toplu uygulama özelliğiyle 50 masaya aynı anda limit atayabilirsiniz.' },
+          { icon: ScrollText,  color: 'amber',   title: '5651 Erişim Logu',              desc: 'Türkiye\'nin 5651 sayılı İnternet Kanunu kapsamında, tüm DNS erişim kayıtları saklanır. Filtrelenen veya izin verilen her erişim loglanır ve aranabilir.' },
+        ].map((f,i) => (
+          <div key={i} className={`rounded-xl border border-${f.color}-500/20 bg-${f.color}-500/5 p-5`}>
+            <f.icon size={28} className={`text-${f.color}-400 mb-3`} />
+            <div className="font-bold text-white mb-1">{f.title}</div>
+            <div className="text-xs text-gray-400 leading-relaxed">{f.desc}</div>
+          </div>
+        ))}
+      </div>
+      <InfoCard icon={ShieldCheck} color="green" title="Kurulum Gerektirmez">
+        FilterCenter, Game Center kurulum sihirbazı ile birlikte gelir. Ek bir yazılım kurmanıza, DNS sunucusu yapılandırmanıza veya router ayarı değiştirmenize gerek yoktur. Admin Panelinden "İçerik Filtresi Etkinleştir" toggle'ını açmanız yeterlidir.
+      </InfoCard>
+    </div>
+  ),
+
+  "fc-dns": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Globe className="text-blue-500" size={36}/> DNS Filtresi ve Kurulum
+      </h1>
+      <p className="text-lg text-muted mb-8">
+        FilterCenter'ın kalbi, Game Center sunucusunda çalışan yerel DNS Proxy'sidir. İstemcilerin tüm alan adı sorguları bu proxy üzerinden geçer — böylece filtre, engeli anında ve sıfır gecikmeyle uygular.
+      </p>
+      <h3 className="text-2xl font-bold text-white mb-3">DNS Kaynak Seçenekleri</h3>
+      <div className="overflow-x-auto mb-8">
+        <table className="w-full text-left border-collapse text-sm">
+          <thead><tr className="bg-white/5 border-b border-white/10 text-gray-400 uppercase">
+            <th className="p-3 font-bold">Mod</th><th className="p-3 font-bold">Açıklama</th><th className="p-3 font-bold">Özellikler</th>
+          </tr></thead>
+          <tbody className="text-gray-300">
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-emerald-400">Kafe Sunucusu (Önerilen)</td><td className="p-3">Game Center içindeki yerleşik DNS Proxy</td><td className="p-3">Kategori filtresi, beyaz/kara liste, istatistik, kelime filtresi — tam kontrol</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-gray-400">CleanBrowsing Family</td><td className="p-3">Harici hazır DNS</td><td className="p-3">Yetişkin ve zararlı içerik engeli, beyaz/kara liste yok</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-gray-400">OpenDNS FamilyShield</td><td className="p-3">Harici hazır DNS</td><td className="p-3">Hazır kategorik koruma, özelleştirme yok</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-gray-400">Cloudflare for Families</td><td className="p-3">Harici hazır DNS</td><td className="p-3">Hızlı ve güvenilir, sınırlı kategorik kontrol</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-3">Kurulum Adımları (Kafe Sunucusu Modu)</h3>
+      <ol className="space-y-5 mb-8">
+        <Step n="1" title="Filtreyi etkinleştir">Admin Paneli → FilterCenter → Genel sekmesinde "İçerik Filtresi Etkinleştir" toggle'ını açın.</Step>
+        <Step n="2" title="DNS Proxy başlar">Game Center sunucusu otomatik olarak <code>53</code> portunda bir DNS Proxy başlatır. Router veya switch ayarı gerekmez.</Step>
+        <Step n="3" title="İstemciler bağlanır">İstemciler (C# uygulaması) DNS ayarlarını otomatik olarak sunucuya yönlendirir. Manual DNS değiştirmeye gerek yoktur.</Step>
+        <Step n="4" title="Upstream DNS seç">Filtrelenmemiş istekler hangi harici DNS sunucusuna iletileceğini seçin (varsayılan: Cloudflare 1.1.1.1).</Step>
+      </ol>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="glass-panel p-5">
+          <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Search size={16} className="text-blue-400" /> SafeSearch Zorlama</h4>
+          <p className="text-sm text-gray-400 leading-relaxed">Google, Bing ve DuckDuckGo için güvenli arama DNS seviyesinde zorlanır. Kullanıcı tarayıcı ayarlarından SafeSearch'ü kapatamazlar çünkü kural DNS yanıtında uygulanır.</p>
+        </div>
+        <div className="glass-panel p-5">
+          <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Video size={16} className="text-red-400" /> YouTube Kısıtlama</h4>
+          <p className="text-sm text-gray-400 leading-relaxed"><strong>Kapalı, Orta, Katı</strong> olmak üzere üç seviye sunulur. Katı mod, YouTube için Google'ın resmi <code>restrict.youtube.com</code> endpoint'ini zorlar; yalnızca onaylı içerik görünür.</p>
+        </div>
+      </div>
+      <InfoCard icon={Shield} color="blue" title="Filtre Baypas Engelleme">
+        Akıllı kullanıcılar VPN, DoH (DNS over HTTPS) veya Proxy servisleri kullanarak filtreyi aşmaya çalışabilir. <strong>Kategori Engelleme → Filtre Baypas</strong> seçeneğini aktifleştirdiğinizde, bu servislerin alan adları otomatik olarak blocklist'e eklenir.
+      </InfoCard>
+    </div>
+  ),
+
+  "fc-categories": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Ban className="text-rose-500" size={36}/> Kategori Engelleme
+      </h1>
+      <p className="text-lg text-muted mb-8">
+        Binlerce alan adını tek tek eklemek yerine, hazır kategori listeleri ile geniş çaplı engelleme yapın. Her kategori, sürekli güncellenen blocklist URL'lerine dayanır.
+      </p>
+      <h3 className="text-2xl font-bold text-white mb-3">Mevcut Kategoriler</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {[
+          { icon: ShieldAlert, title: 'Yetişkin İçerik',               desc: 'Pornografi ve müstehcen içerik barındıran tüm siteler.',                          cls: 'text-red-400 bg-red-500/10 border-red-500/20' },
+          { icon: Ban,         title: 'Kumar / Bahis',                  desc: 'Online bahis, kumar ve şans oyunu siteleri.',                                      cls: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
+          { icon: ShieldCheck, title: 'Zararlı Yazılım / Dolandırıcılık', desc: 'Malware, phishing ve scam siteleri.',                                          cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+          { icon: Megaphone,   title: 'Reklam / İzleyici',              desc: 'Reklam ağları ve tracking servisleri. Sayfalar daha hızlı açılır.',              cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
+          { icon: Users,       title: 'Sosyal Medya',                   desc: 'Facebook, Instagram, Twitter/X, TikTok, YouTube (isteğe bağlı).',               cls: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+          { icon: Lock,        title: 'Filtre Baypas Engelleme',        desc: 'VPN servisleri, DoH proxy\'leri ve anonymizer araçları.',                       cls: 'text-violet-400 bg-violet-500/10 border-violet-500/20' },
+        ].map((cat,i) => (
+          <div key={i} className={`rounded-xl border p-5 ${cat.cls.split(' ').slice(1).join(' ')}`}>
+            <div className="flex items-center gap-3 mb-2">
+              <cat.icon size={22} className={cat.cls.split(' ')[0]} />
+              <span className="font-bold text-white text-sm">{cat.title}</span>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">{cat.desc}</p>
+          </div>
+        ))}
+      </div>
+      <InfoCard icon={RefreshCw} color="blue" title="Otomatik Güncelleme">
+        Blocklist kaynakları Python sunucusunun günlük Cron görevi tarafından otomatik güncellenir. Manuel güncelleme için <strong>FilterCenter → Kaynaklar → "Listeyi Yenile"</strong> butonunu kullanabilirsiniz. Güncelleme sonrası engellenen domain sayısı Dashboard'da anında yansır.
+      </InfoCard>
+    </div>
+  ),
+
+  "fc-lists": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <ListChecks className="text-teal-500" size={36}/> Beyaz / Kara Liste
+      </h1>
+      <p className="text-lg text-muted mb-8">
+        Kategori filtrelerini geçersiz kılmak için manuel domain kuralları ekleyin. Beyaz liste (whitelist) her zaman kara listeden (blacklist) önceliklidir.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="glass-panel p-5 border-l-4 border-l-emerald-500">
+          <h4 className="font-bold text-white mb-3 flex items-center gap-2"><CheckCircle2 size={18} className="text-emerald-400" /> Beyaz Liste (Whitelist)</h4>
+          <p className="text-sm text-gray-400 leading-relaxed mb-3">Kategori filtresiyle engellenmesi muhtemel bir sitenin her zaman açık kalmasını sağlar. Örneğin reklam kategorisi etkinken kafeye ait bir sitenin engellenmemesi için beyaz listeye alınabilir.</p>
+          <code className="text-xs text-emerald-400 bg-black/40 px-2 py-1 rounded block">➕ ornek.com → Her zaman erişime açık</code>
+        </div>
+        <div className="glass-panel p-5 border-l-4 border-l-rose-500">
+          <h4 className="font-bold text-white mb-3 flex items-center gap-2"><Ban size={18} className="text-rose-400" /> Kara Liste (Blacklist)</h4>
+          <p className="text-sm text-gray-400 leading-relaxed mb-3">Herhangi bir kategoriye dahil olmasa dahi belirli bir siteyi her zaman engeller. Kategori filtresinden bağımsız olarak çalışır.</p>
+          <code className="text-xs text-rose-400 bg-black/40 px-2 py-1 rounded block">🚫 oyunindirme.com → Her zaman engelli</code>
+        </div>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-3">Domain Eklemek</h3>
+      <ol className="space-y-5 mb-8">
+        <Step n="1" title="Listeye git">FilterCenter → Beyaz / Kara Liste sekmesini açın.</Step>
+        <Step n="2" title="Domain gir">Metin kutusuna domain adını yazın (ör: <code>ornek.com</code>). Subdomain'ler otomatik dahil edilir.</Step>
+        <Step n="3" title="Enter veya Ekle">Enter tuşuna basın veya "Ekle" butonuna tıklayın. Kural anında DNS Proxy'ye iletilir.</Step>
+      </ol>
+      <InfoCard icon={Globe} color="teal" title="Subdomain Kapsama">
+        <code>ornek.com</code> eklendiğinde, <code>www.ornek.com</code>, <code>api.ornek.com</code>, <code>cdn.ornek.com</code> gibi tüm alt alan adları da otomatik olarak kapsama alınır.
+      </InfoCard>
+    </div>
+  ),
+
+  "fc-keywords": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Type className="text-amber-500" size={36}/> Kelime Filtresi
+      </h1>
+      <p className="text-lg text-muted mb-8">
+        Alan adı içinde belirli anahtar kelimeler geçen tüm siteleri otomatik engeller. Blocklist'lerde yer almayan ama zararlı içerik barındırabilecek siteleri bu yöntemle yakalayabilirsiniz.
+      </p>
+      <h3 className="text-2xl font-bold text-white mb-3">Nasıl Çalışır?</h3>
+      <p className="text-gray-300 mb-6 leading-relaxed">
+        DNS Proxy, gelen her sorgunun domain adını kelime filtresi listesiyle karşılaştırır. Eğer domain adı bir anahtar kelime içeriyorsa, blocklist'te olup olmadığına bakılmaksızın istek engellenir ve log kaydedilir.
+      </p>
+      <div className="bg-[#050608] border border-white/5 p-6 rounded-lg mb-8">
+        <h4 className="font-bold text-white mb-3">Örnek Kelime Filtreleri</h4>
+        <div className="flex flex-wrap gap-2">
+          {['hack', 'crack', 'porn', 'xxx', 'bet', 'casino', 'torrent', 'warez', 'keygen', 'pirate'].map(kw => (
+            <span key={kw} className="px-3 py-1.5 rounded-lg text-sm font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">{kw}</span>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 mt-3">Yukarıdaki kelimelerden biri bir domain adında geçiyorsa (ör: <code>crackyedekparca.com</code>) erişim engellenir.</p>
+      </div>
+      <ol className="space-y-5 mb-8">
+        <Step n="1" title="Kelimeyi gir">Metin kutusuna engellemek istediğiniz anahtar kelimeyi girin.</Step>
+        <Step n="2" title="Enter veya virgül ile ekle">Enter'a basın veya kelimeyi virgülle ayırarak birden fazla kelime girin. Her kelime ayrı bir chip olarak görünür.</Step>
+        <Step n="3" title="Kaydet">Değişiklikler "Filtre Ayarları" kaydet butonu ile sunucuya iletilir.</Step>
+      </ol>
+      <InfoCard icon={AlertTriangle} color="amber" title="Dikkat: Geniş Kelimeler">
+        Çok kısa veya genel kelimeler (ör: "bet", "game") meşru siteleri de engelleyebilir. Mümkün olduğunca spesifik kelimeler kullanın veya sonuçları Erişim Logları sekmesinden takip edin.
+      </InfoCard>
+    </div>
+  ),
+
+  "fc-bandwidth": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <Sliders className="text-purple-500" size={36}/> Bant Genişliği Yönetimi
+      </h1>
+      <p className="text-lg text-muted mb-8">
+        FilterCenter bünyesindeki bant genişliği modülü, her istemcinin internet hızını Mbps bazında sınırlandırır. Hem bireysel masa başına hem de toplu uygulama ile tüm kafenin trafiği yönetilir.
+      </p>
+      <ShotSlot label="Bant Genişliği Yönetimi ekranı" file="wiki_fc_bandwidth.png" />
+      <h3 className="text-2xl font-bold text-white mb-3">Kullanım Senaryoları</h3>
+      <ul className="space-y-4 mb-8 text-sm text-gray-400">
+        <li className="flex gap-3"><Zap size={18} className="text-yellow-400 shrink-0 mt-0.5" /><div><strong className="text-white">Torrent engeli:</strong> Belirli masaları 10 Mbps ile sınırlayarak ağ tıkanmasını önleyin.</div></li>
+        <li className="flex gap-3"><Zap size={18} className="text-blue-400 shrink-0 mt-0.5" /><div><strong className="text-white">VIP masalar:</strong> Ön sıradaki masalara tam hız, arka masalara kısıtlı hız tanımlayın.</div></li>
+        <li className="flex gap-3"><Zap size={18} className="text-emerald-400 shrink-0 mt-0.5" /><div><strong className="text-white">Tüm kafe kısıtlama:</strong> İnternet kotası dolmak üzereyken tüm masalara toplu 20 Mbps limit atayın.</div></li>
+      </ul>
+      <InfoCard icon={Gauge} color="purple" title="Anlık Etki">
+        Limit kaydedildiğinde istemci uygulama komutunu anında alır ve uygular. Oyuncunun aktif bağlantılarını kesmez; sadece yeni paketler limitle şekillendirilir. Oyun oynayan müşteri fark etmeden limit uygulanabilir.
+      </InfoCard>
+    </div>
+  ),
+
+  "fc-logs": (
+    <div className="animate-fade-in-up">
+      <h1 className="text-4xl font-bold text-white mb-4 border-b border-white/10 pb-4 flex items-center gap-3">
+        <ScrollText className="text-amber-500" size={36}/> Erişim Logları (5651)
+      </h1>
+      <p className="text-lg text-muted mb-8">
+        Türkiye'nin <strong>5651 sayılı İnternet Kanunu</strong> kapsamında, internet kafeler erişim kayıtlarını belirli bir süre saklamak zorundadır. FilterCenter'ın Erişim Logları modülü bu yasal yükümlülüğü otomatik olarak karşılar.
+      </p>
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 mb-8">
+        <h4 className="font-bold text-white mb-2 flex items-center gap-2"><AlertTriangle size={18} className="text-amber-400" /> 5651 Sayılı Kanun Uyumu</h4>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Türkiye'de internet kafe işleten tüm işletmeler, erişim loglarını yasal zorunluluk gereği en az <strong>6 ay</strong> saklamalıdır. FilterCenter bu kayıtları otomatik olarak <code>dns_logs</code> tablosunda tutar.
+        </p>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-3">Log Kaydında Neler Tutulur?</h3>
+      <div className="overflow-x-auto mb-8">
+        <table className="w-full text-left border-collapse text-sm">
+          <thead><tr className="bg-white/5 border-b border-white/10 text-gray-400 uppercase">
+            <th className="p-3 font-bold">Alan</th><th className="p-3 font-bold">Açıklama</th><th className="p-3 font-bold">Örnek</th>
+          </tr></thead>
+          <tbody className="text-gray-300">
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-amber-400">Zaman Damgası</td><td className="p-3">Erişim tarihi ve saati (ms hassasiyetinde)</td><td className="p-3 font-mono text-xs">2026-08-07 14:32:45</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-amber-400">İstemci IP</td><td className="p-3">Erişimi yapan bilgisayarın IP adresi</td><td className="p-3 font-mono text-xs">192.168.1.42</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-amber-400">Hostname</td><td className="p-3">Bilgisayar adı (masa adı)</td><td className="p-3 font-mono text-xs">MASA-12</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-amber-400">Alan Adı</td><td className="p-3">Erişilmek istenen web adresi</td><td className="p-3 font-mono text-xs">google.com</td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-amber-400">İşlem</td><td className="p-3">allow (izin) veya block (engel)</td><td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-red-500/20 text-red-400">block</span></td></tr>
+            <tr className="border-b border-white/5 hover:bg-white/5"><td className="p-3 font-bold text-amber-400">Kategori</td><td className="p-3">Varsa engelleme kategorisi</td><td className="p-3 font-mono text-xs">adult</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-3">Loglarda Arama ve Filtreleme</h3>
+      <ol className="space-y-5 mb-8">
+        <Step n="1" title="Domain ara">Arama kutusuna domain adını girin; ilgili tüm erişimler (izin verilen ve engellenenler) listelenir.</Step>
+        <Step n="2" title="İstemciye göre filtrele">IP veya hostname ile belirli bir masanın erişim geçmişini görün.</Step>
+        <Step n="3" title="İşleme göre filtrele">Yalnızca "engellenenler" veya "izin verilenler" olarak filtreleyin.</Step>
+        <Step n="4" title="Tarih aralığı">Belirli bir gün veya saat aralığındaki logları getirin.</Step>
+      </ol>
+      <InfoCard icon={Database} color="amber" title="Otomatik Temizleme">
+        Log veritabanı zamanla büyüyebilir. Python sunucusu, yönetici tarafından belirlenen saklama süresi dolduğunda eski kayıtları otomatik siler. Disk kullanımı FilterCenter Dashboard'daki halka grafiğinden takip edilebilir.
+      </InfoCard>
+    </div>
+  ),
 };
+
+/* Düz liste: tüm item'lar sırayla (navigasyon için) */
+const ALL_ITEMS = WIKI_STRUCTURE.flatMap(s => s.items);
 
 const Wiki = () => {
   const [activeArticle, setActiveArticle] = useState("intro");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  /* Arama — başlık eşleşmesi */
+  const filteredStructure = useMemo(() => {
+    if (!searchQuery.trim()) return WIKI_STRUCTURE;
+    const q = searchQuery.toLowerCase();
+    return WIKI_STRUCTURE
+      .map(section => ({ ...section, items: section.items.filter(item => item.title.toLowerCase().includes(q)) }))
+      .filter(section => section.items.length > 0);
+  }, [searchQuery]);
+
+  /* Önceki / Sonraki */
+  const currentIdx = ALL_ITEMS.findIndex(it => it.id === activeArticle);
+  const prevItem   = currentIdx > 0 ? ALL_ITEMS[currentIdx - 1] : null;
+  const nextItem   = currentIdx < ALL_ITEMS.length - 1 ? ALL_ITEMS[currentIdx + 1] : null;
+
+  const navigate = (id) => {
+    setActiveArticle(id);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const getArticle = (id) => WIKI_ARTICLES[id] || (
     <div className="animate-fade-in-up">
@@ -964,17 +1329,20 @@ const Wiki = () => {
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         
+        {/* Çalışan arama kutusu */}
         <div className="relative mb-8 mt-12 md:mt-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
           <input 
             type="text" 
-            placeholder="Dokümantasyonda ara..." 
+            placeholder="Dokümantasyonda ara..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-orange-500/50 transition-colors"
           />
         </div>
 
         <nav>
-          {WIKI_STRUCTURE.map((section, idx) => (
+          {filteredStructure.map((section, idx) => (
             <div key={idx} className="mb-8">
               <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">
                 {section.section}
@@ -983,10 +1351,7 @@ const Wiki = () => {
                 {section.items.map((item) => (
                   <li key={item.id}>
                     <button
-                      onClick={() => {
-                        setActiveArticle(item.id);
-                        setMobileMenuOpen(false);
-                      }}
+                      onClick={() => navigate(item.id)}
                       className={`
                         w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all text-left
                         ${activeArticle === item.id 
@@ -1001,6 +1366,12 @@ const Wiki = () => {
               </ul>
             </div>
           ))}
+          {filteredStructure.length === 0 && (
+            <div className="text-center py-8 text-gray-500 text-sm">
+              <Search size={24} className="mx-auto mb-2 opacity-40" />
+              Sonuç bulunamadı
+            </div>
+          )}
         </nav>
       </aside>
 
@@ -1017,12 +1388,31 @@ const Wiki = () => {
         <div className="w-full max-w-7xl mx-auto">
           {getArticle(activeArticle)}
           
-          <div className="mt-16 pt-8 border-t border-white/10 flex justify-between">
-            <button className="text-gray-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
-              Geri Dön
+          {/* Önceki / Sonraki Navigasyon */}
+          <div className="mt-16 pt-8 border-t border-white/10 flex justify-between items-center gap-4">
+            <button
+              onClick={() => prevItem && navigate(prevItem.id)}
+              disabled={!prevItem}
+              className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all ${
+                prevItem
+                  ? 'text-gray-300 hover:text-white hover:bg-white/5 border border-white/10 cursor-pointer'
+                  : 'text-gray-600 border border-transparent cursor-default'
+              }`}
+            >
+              <ChevronLeft size={16} />
+              {prevItem ? prevItem.title : ''}
             </button>
-            <button className="text-orange-400 hover:text-orange-300 text-sm font-bold flex items-center gap-1 transition-colors">
-              Sonraki Konu <ChevronRight size={16} />
+            <button
+              onClick={() => nextItem && navigate(nextItem.id)}
+              disabled={!nextItem}
+              className={`flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-lg transition-all ${
+                nextItem
+                  ? 'text-orange-400 hover:text-orange-300 hover:bg-orange-500/5 border border-orange-500/20 cursor-pointer'
+                  : 'text-gray-600 border border-transparent cursor-default'
+              }`}
+            >
+              {nextItem ? nextItem.title : ''}
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
