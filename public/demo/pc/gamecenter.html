@@ -107,6 +107,7 @@
   .cover{position:relative;aspect-ratio:3/4;border-radius:14px;overflow:hidden;border:1px solid var(--line2);
     display:flex;align-items:flex-end;box-shadow:0 8px 18px rgba(0,0,0,.35)}
   .cover .em{position:absolute;inset:0;display:grid;place-items:center;font-size:52px;opacity:.92}
+  .t5 img.cimg,.cover img.cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.85))}
   .g:hover .cover{border-color:var(--indigo)}
   .cover .pl{position:absolute;inset:0;display:grid;place-items:center;z-index:3;opacity:0;transition:.16s}
@@ -196,11 +197,11 @@
       <!-- Top 5 -->
       <div class="sechead center"><span class="ic">🏆</span><h3>En Popüler 5</h3></div>
       <div class="top5">
-        <div class="t5 r1"><div class="em c2">🔫</div><div class="rank">1</div><div class="nm">Valorant</div></div>
-        <div class="t5 r2"><div class="em c1">💣</div><div class="rank">2</div><div class="nm">CS2</div></div>
-        <div class="t5 r3"><div class="em c5">🏙️</div><div class="rank">3</div><div class="nm">GTA V</div></div>
-        <div class="t5"><div class="em c4">🗡️</div><div class="rank">4</div><div class="nm">League of Legends</div></div>
-        <div class="t5"><div class="em c7">🎯</div><div class="rank">5</div><div class="nm">Fortnite</div></div>
+        <div class="t5 r1"><img class="cimg" src="/covers/valorant.jpg" alt="Valorant"><div class="rank">1</div><div class="nm">Valorant</div></div>
+        <div class="t5 r2"><img class="cimg" src="/covers/counter_strike_2.jpg" alt="CS2"><div class="rank">2</div><div class="nm">CS2</div></div>
+        <div class="t5 r3"><img class="cimg" src="/covers/grand_theft_auto_v.jpg" alt="GTA V"><div class="rank">3</div><div class="nm">GTA V</div></div>
+        <div class="t5"><img class="cimg" src="/covers/league_of_legends.jpg" alt="League of Legends"><div class="rank">4</div><div class="nm">League of Legends</div></div>
+        <div class="t5"><img class="cimg" src="/covers/fortnite.jpg" alt="Fortnite"><div class="rank">5</div><div class="nm">Fortnite</div></div>
       </div>
 
       <!-- Arama -->
@@ -214,18 +215,18 @@
       </div>
 
       <div class="grid">
-        <div class="g"><div class="cover c2"><div class="em">🔫</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Valorant</div><div class="cgen"><span class="cg fps">FPS</span><span class="cg moba">Taktik</span></div></div></div></div>
-        <div class="g"><div class="cover c1"><div class="em">💣</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">CS2</div><div class="cgen"><span class="cg fps">FPS</span></div></div></div></div>
-        <div class="g"><div class="cover c4"><div class="em">🗡️</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">League of Legends</div><div class="cgen"><span class="cg moba">MOBA</span></div></div></div></div>
-        <div class="g"><div class="cover c5"><div class="em">🏙️</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">GTA V</div><div class="cgen"><span class="cg fps">Aksiyon</span></div></div></div></div>
-        <div class="g"><div class="cover c3"><div class="em">⛏️</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Minecraft</div><div class="cgen"><span class="cg rpg">Sandbox</span></div></div></div></div>
-        <div class="g"><div class="cover c6"><div class="em">🏎️</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Forza Horizon</div><div class="cgen"><span class="cg race">Yarış</span></div></div></div></div>
-        <div class="g"><div class="cover c7"><div class="em">🎯</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Fortnite</div><div class="cgen"><span class="cg br">Battle Royale</span></div></div></div></div>
-        <div class="g"><div class="cover c8"><div class="em">🐉</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Elden Ring</div><div class="cgen"><span class="cg rpg">RPG</span></div></div></div></div>
-        <div class="g"><div class="cover c5"><div class="em">⚽</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">EA FC 25</div><div class="cgen"><span class="cg spor">Spor</span></div></div></div></div>
-        <div class="g"><div class="cover c2"><div class="em">🚀</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Apex Legends</div><div class="cgen"><span class="cg br">BR</span><span class="cg fps">FPS</span></div></div></div></div>
-        <div class="g"><div class="cover c1"><div class="em">🔪</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Dead by Daylight</div><div class="cgen"><span class="cg spor">Korku</span></div></div></div></div>
-        <div class="g"><div class="cover c4"><div class="em">🧙</div><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Dota 2</div><div class="cgen"><span class="cg moba">MOBA</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/valorant.jpg" alt="Valorant"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Valorant</div><div class="cgen"><span class="cg fps">FPS</span><span class="cg moba">Taktik</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/counter_strike_2.jpg" alt="CS2"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">CS2</div><div class="cgen"><span class="cg fps">FPS</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/league_of_legends.jpg" alt="LoL"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">League of Legends</div><div class="cgen"><span class="cg moba">MOBA</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/grand_theft_auto_v.jpg" alt="GTA V"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">GTA V</div><div class="cgen"><span class="cg fps">Aksiyon</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/minecraft.png" alt="Minecraft"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Minecraft</div><div class="cgen"><span class="cg rpg">Sandbox</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/forza_horizon_5.jpg" alt="Forza Horizon 5"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Forza Horizon 5</div><div class="cgen"><span class="cg race">Yarış</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/fortnite.jpg" alt="Fortnite"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Fortnite</div><div class="cgen"><span class="cg br">Battle Royale</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/rainbow_six_siege.jpg" alt="Rainbow Six Siege"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Rainbow Six Siege</div><div class="cgen"><span class="cg fps">FPS</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/ea_sports_fc_24.jpg" alt="EA SPORTS FC"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">EA SPORTS FC</div><div class="cgen"><span class="cg spor">Spor</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/apex_legends.jpg" alt="Apex Legends"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Apex Legends</div><div class="cgen"><span class="cg br">BR</span><span class="cg fps">FPS</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/pubg_battlegrounds.jpg" alt="PUBG"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">PUBG</div><div class="cgen"><span class="cg br">Battle Royale</span></div></div></div></div>
+        <div class="g"><div class="cover"><img class="cimg" src="/covers/dota_2.png" alt="Dota 2"><div class="pl"><div>▶</div></div><div class="cinfo"><div class="cname">Dota 2</div><div class="cgen"><span class="cg moba">MOBA</span></div></div></div></div>
       </div>
     </div>
 
