@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CafeCenter Demo — GameCenter</title>
+<style>
+  :root{ --bg:#0a0b10; --panel:#12141d; --border:rgba(255,255,255,.1); --accent:#6366f1; --ink:#f1f5f9; --mut:#94a3b8; }
+  *{box-sizing:border-box;} html,body{margin:0;min-height:100%;}
+  body{background:
+      radial-gradient(60vw 40vw at 15% -10%, rgba(99,102,241,.16), transparent 60%),
+      radial-gradient(50vw 40vw at 100% 10%, rgba(249,115,22,.12), transparent 60%),
+      var(--bg);
+    color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+  a{text-decoration:none;color:inherit;}
+  .top{padding:20px 24px;}
+  .back{font-size:14px;color:var(--mut);border:1px solid var(--border);border-radius:10px;padding:8px 13px;transition:.15s;display:inline-flex;gap:8px;align-items:center;}
+  .back:hover{color:var(--ink);border-color:var(--accent);}
+  .wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 20px 70px;text-align:center;}
+  .eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+  h1{font-size:clamp(30px,5vw,52px);font-weight:850;letter-spacing:-.02em;margin:0 0 14px;}
+  h1 span{background:linear-gradient(120deg,#818cf8,#6366f1);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--mut);font-size:clamp(15px,2vw,18px);max-width:58ch;margin:0 auto 42px;line-height:1.6;}
+  .cards{display:grid;grid-template-columns:1fr;gap:22px;width:100%;max-width:1000px;}
+  @media(min-width:760px){ .cards{grid-template-columns:1fr 1fr 1fr;} }
+  .card{position:relative;display:block;background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:28px 26px;text-align:left;transition:.2s;overflow:hidden;}
+  .card:hover{transform:translateY(-4px);border-color:rgba(99,102,241,.5);box-shadow:0 30px 60px -30px rgba(0,0,0,.8);}
+  .card .ic{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);}
+  .card.orange .ic{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.28);}
+  .card.green .ic{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.28);}
+  .card h2{font-size:20px;margin:0 0 8px;font-weight:800;}
+  .card p{color:var(--mut);font-size:14px;line-height:1.6;margin:0 0 18px;}
+  .card .go{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--accent);font-size:15px;}
+  .card.orange .go{color:#fb923c;} .card.green .go{color:#34d399;}
+  .tag{position:absolute;top:18px;right:18px;font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--mut);border:1px solid var(--border);border-radius:20px;padding:4px 10px;}
+  .foot{color:var(--mut);font-size:13px;margin-top:34px;}
+</style>
+</head>
+<body>
+  <div class="top"><a class="back" href="/demo/">&larr; Demo Menüsü</a></div>
+  <div class="wrap">
+    <div class="eyebrow">CafeCenter · Kafe Yönetimi</div>
+    <h1>CafeCenter'ı <span>keşfedin</span></h1>
+    <p class="sub">Masa/oturum yönetimi, üye cüzdanı, tarife, POS, bilet ve emanet — hepsi GameCenter'ın içinde. Müşteri masasında ise modern kiosk deneyimi.</p>
+
+    <div class="cards">
+      <a class="card" href="/demo/cafecenter/welcome.html" target="_blank">
+        <span class="tag">Kiosk</span>
+        <div class="ic">☕</div>
+        <h2>Masa Karşılama Ekranı</h2>
+        <p>PC açılınca tam ekran karşılama: ücretli oturum, önödemeli paket, üye girişi ve bilet ile masa açma. Sağ altta yönetici girişi.</p>
+        <span class="go">Karşılamayı Aç →</span>
+      </a>
+
+      <a class="card green" href="/demo/cafecenter/sidebar.html" target="_blank">
+        <span class="tag">Kiosk</span>
+        <div class="ic">📊</div>
+        <h2>Oturum Barı</h2>
+        <p>Oturum açılınca ekranın sağında: kalan süre halkası, canlı ücret + sipariş dökümü, sipariş ver / teknik destek / Steam aç butonları.</p>
+        <span class="go">Oturum Barını Gör →</span>
+      </a>
+
+      <a class="card orange" href="/demo/panel/" target="_blank">
+        <span class="tag">Panel</span>
+        <div class="ic">🖥️</div>
+        <h2>Yönetim Paneli</h2>
+        <p>İşletmecinin paneli. Sol üstteki çalışma alanı seçiciden <b>CafeCenter</b>'a geçin: Terminal, Üyeler, Tarifeler, POS, Biletler, Raporlar.</p>
+        <span class="go">Paneli Aç →</span>
+      </a>
+    </div>
+
+    <div class="foot">GameCenter · Örnek/demo verilerdir, gerçek kafe verisi içermez.</div>
+  </div>
+</body>
+</html>

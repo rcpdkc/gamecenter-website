@@ -28,6 +28,22 @@
       "destination": "/demo/client/index.html"
     },
     {
+      "source": "/demo/cafecenter",
+      "destination": "/demo/cafecenter/index.html"
+    },
+    {
+      "source": "/demo/cafecenter/(.*)",
+      "destination": "/demo/cafecenter/index.html"
+    },
+    {
+      "source": "/demo/pc",
+      "destination": "/demo/pc/index.html"
+    },
+    {
+      "source": "/demo/pc/(.*)",
+      "destination": "/demo/pc/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

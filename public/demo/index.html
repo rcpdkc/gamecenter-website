@@ -30,10 +30,13 @@
   .card .ic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px;
     background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);}
   .card.blue .ic{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.28);}
+  .card.cafe .ic{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
   .card h2{font-size:22px;margin:0 0 8px;font-weight:800;}
   .card p{color:var(--mut);font-size:14.5px;line-height:1.6;margin:0 0 20px;}
   .card .go{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--accent);font-size:15px;}
   .card.blue .go{color:#60a5fa;}
+  .card.cafe .go{color:#818cf8;}
+  .card.cafe:hover{border-color:rgba(99,102,241,.5);}
   .tag{position:absolute;top:20px;right:20px;font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--mut);border:1px solid var(--border);border-radius:20px;padding:4px 10px;}
   .foot{color:var(--mut);font-size:13px;margin-top:34px;}
 </style>
@@ -53,12 +56,19 @@
         <p>İşletmecinin kullandığı panel: bilgisayar izleme, oyun kütüphanesi, içerik filtresi, hız yönetimi ve daha fazlası. Menülere tıklayın, sayfaları gezin.</p>
         <span class="go">Paneli Aç →</span>
       </a>
-      <a class="card blue" href="/demo/client/">
-        <span class="tag">Örnek ekranlar</span>
-        <div class="ic">🎮</div>
-        <h2>Masa (İstemci) Uygulaması</h2>
-        <p>Müşterinin masasında gördüğü uygulama: kapaklı oyun vitrini, yeni eklenenler, istatistikler, Steam hesap havuzu, oyun kaydı ve sesli sohbet.</p>
-        <span class="go">İstemciyi Aç →</span>
+      <a class="card blue" href="/demo/pc/">
+        <span class="tag">Windows PC · Canlı</span>
+        <div class="ic">🖥️</div>
+        <h2>Masa (İstemci) — Windows PC'de Dene</h2>
+        <p>Sanki gerçek bir kafe bilgisayarındasınız: görev çubuğundan GameCenter oyun istemcisi ve CafeCenter kiosk arasında geçin, gezin, deneyin.</p>
+        <span class="go">Windows PC'yi Aç →</span>
+      </a>
+      <a class="card cafe" href="/demo/cafecenter/">
+        <span class="tag">Yeni</span>
+        <div class="ic">☕</div>
+        <h2>CafeCenter (Kafe Yönetimi)</h2>
+        <p>Kafe modülü: masa/oturum yönetimi, üye cüzdanı, tarife, POS ve bilet — hem işletmeci paneli hem müşteri masasındaki modern kiosk deneyimi.</p>
+        <span class="go">CafeCenter'ı Aç →</span>
       </a>
     </div>
 
