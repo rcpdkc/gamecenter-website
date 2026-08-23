@@ -24,6 +24,44 @@ async function ensureSchema() {
   try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS hwid VARCHAR(255)`; } catch (_) {}
   try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS server_version VARCHAR(20)`; } catch (_) {}
   try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS clients_data JSONB DEFAULT '[]'`; } catch (_) {}
+  // Web'den "Güncel Verileri Getir": kullanıcı bayrağı kaldırır; kafe sunucusu poll'da görüp taze veri gönderir.
+  try { await sql`ALTER TABLE gamecenter_telemetry ADD COLUMN IF NOT EXISTS refresh_requested BOOLEAN DEFAULT false`; } catch (_) {}
+}
+
+// ─── Web butonu: bu kafe için taze veri iste (bayrak kaldır) ────────────────
+async function handleRequestRefresh(request, response) {
+  let { cafe_id, hwid, email } = request.body;
+  // email → users üzerinden cafe_id/hwid çöz
+  if (!cafe_id && email) {
+    const u = (await sql`SELECT cafe_id, hwid FROM users WHERE email = ${email} LIMIT 1`).rows[0];
+    if (u) { cafe_id = u.cafe_id || cafe_id; hwid = hwid || u.hwid; }
+  }
+  if (!cafe_id && hwid) {
+    const t = (await sql`SELECT cafe_id FROM gamecenter_telemetry WHERE hwid = ${hwid} LIMIT 1`).rows[0];
+    if (t) cafe_id = t.cafe_id;
+  }
+  if (!cafe_id) return response.status(400).json({ error: 'Kafe bulunamadı (cafe_id/hwid/email).' });
+  await ensureSchema();
+  await sql`
+    INSERT INTO gamecenter_telemetry (cafe_id, refresh_requested, last_updated)
+    VALUES (${cafe_id}, true, NOW())
+    ON CONFLICT (cafe_id) DO UPDATE SET refresh_requested = true
+  `;
+  return response.status(200).json({ success: true, message: 'İstek gönderildi — sunucu ~1 dk içinde güncel veriyi yollar.' });
+}
+
+// ─── Kafe sunucusu poller'ı: istek var mı? (bayrağı TEMİZLEMEZ — veri gelince temizlenir) ──
+async function handleCheckRefresh(request, response) {
+  const { cafe_id, hwid } = request.body;
+  if (!cafe_id && !hwid) return response.status(400).json({ error: 'cafe_id veya hwid gerekli.' });
+  let row;
+  if (cafe_id) {
+    row = (await sql`SELECT refresh_requested FROM gamecenter_telemetry WHERE cafe_id = ${cafe_id} LIMIT 1`).rows[0];
+  }
+  if (!row && hwid) {
+    row = (await sql`SELECT refresh_requested FROM gamecenter_telemetry WHERE hwid = ${hwid} LIMIT 1`).rows[0];
+  }
+  return response.status(200).json({ success: true, refresh: !!(row && row.refresh_requested) });
 }
 
 // ─── GET /api/telemetry ─────────────────────────────────────────────────────
@@ -100,7 +138,11 @@ async function handleGet(request, response) {
 
 // ─── POST /api/telemetry ────────────────────────────────────────────────────
 async function handlePost(request, response) {
-  const { cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email, server_version, clients_data } = request.body;
+  const { action, cafe_id, cafe_name, active_clients, hardware_stats, top_games, hwid, cloud_email, server_version, clients_data } = request.body;
+
+  // Aksiyonlar: web butonu (request_refresh) / kafe sunucusu poll'u (check_refresh)
+  if (action === 'request_refresh') return handleRequestRefresh(request, response);
+  if (action === 'check_refresh')   return handleCheckRefresh(request, response);
 
   if (!cafe_id) return response.status(400).json({ error: 'Missing cafe_id' });
 
@@ -134,6 +176,7 @@ async function handlePost(request, response) {
       top_games      = EXCLUDED.top_games,
       server_version = COALESCE(EXCLUDED.server_version, gamecenter_telemetry.server_version),
       clients_data   = EXCLUDED.clients_data,
+      refresh_requested = false,
       last_updated   = NOW();
   `;
 

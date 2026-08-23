@@ -1,5 +1,6 @@
 import { useOutletContext } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import RefreshFromCafeButton from '../components/RefreshFromCafeButton';
 import { Monitor, RefreshCw, Cpu, HardDrive, ChevronDown, ChevronUp } from 'lucide-react';
 
 const isOnline = (last_seen) => {
@@ -237,6 +238,10 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Kafe sunucusundan taze veri iste */}
+      <div className="flex justify-end">
+        <RefreshFromCafeButton user={user} dark={dark} onRefreshed={fetchData} />
+      </div>
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[

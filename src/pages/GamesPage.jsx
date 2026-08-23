@@ -1,5 +1,6 @@
 import { useOutletContext } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import RefreshFromCafeButton from '../components/RefreshFromCafeButton';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Gamepad2, TrendingUp } from 'lucide-react';
 
@@ -57,6 +58,9 @@ export default function GamesPage() {
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <RefreshFromCafeButton user={user} dark={dark} onRefreshed={() => window.location.reload()} />
+      </div>
       {/* Bar Chart */}
       <div className={`${card} border ${border} rounded-2xl p-5 sm:p-6`}>
         <div className="flex items-center gap-2 mb-5">

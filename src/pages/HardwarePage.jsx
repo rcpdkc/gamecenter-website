@@ -1,4 +1,5 @@
 import { useOutletContext } from 'react-router-dom';
+import RefreshFromCafeButton from '../components/RefreshFromCafeButton';
 import { useEffect, useState } from 'react';
 import { HardDrive, Cpu, Monitor, MemoryStick, Layers } from 'lucide-react';
 
@@ -92,6 +93,9 @@ export default function HardwarePage() {
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <RefreshFromCafeButton user={user} dark={dark} onRefreshed={() => window.location.reload()} />
+      </div>
       {/* Summary row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
