@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from './_db.js';
 
 // ─── CORS helper ───────────────────────────────────────────────────────────
 function setCors(res) {

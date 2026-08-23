@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from './_db.js';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
 export default async function handler(req, res) {

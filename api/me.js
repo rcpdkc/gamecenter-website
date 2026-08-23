@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from './_db.js';
 import { verifyToken } from './login.js';
 
 // POST /api/me         → kullanıcı profil bilgisi

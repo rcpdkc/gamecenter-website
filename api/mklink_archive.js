@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from './_db.js';
 
 // Genel arsiv endpoint'i: ?type=shader -> shader_archive tablosu, aksi halde mklink_archive.
 // (Vercel Hobby 12-fonksiyon limiti nedeniyle ayri fonksiyon yerine tek endpoint kullanilir.)

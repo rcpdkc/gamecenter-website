@@ -1,5 +1,5 @@
 import { put } from '@vercel/blob';
-import { sql } from '@vercel/postgres';
+import { sql } from './_db.js';
 import fs from 'fs';
 
 export const config = { api: { bodyParser: false } };
