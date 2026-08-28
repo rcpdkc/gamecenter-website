@@ -38,8 +38,8 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <a href="/demo" className="btn btn-primary">
-                <Play size={18} /> Canlı Demo Dene
+              <a href="/login" className="btn btn-primary">
+                <Play size={18} /> Panele Giriş
               </a>
               <a href="#features" className="btn btn-outline">
                 Özellikleri Keşfet <ChevronRight size={18} />

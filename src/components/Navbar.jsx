@@ -10,7 +10,6 @@ const Navbar = () => {
     { name: 'Ana Sayfa', path: '/' },
     { name: 'Wiki', path: '/wiki' },
     { name: 'Galeri', path: '/gallery' },
-    { name: 'Canlı Demo', path: '/demo', hardLink: true },
     { name: 'İndir', path: 'https://github.com/rcpdkc/game-center-server/releases/tag/v.2.0.0', isExternal: true },
   ];
 

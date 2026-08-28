@@ -11,44 +11,10 @@
     }
   ],
   "redirects": [
-    { "source": "/demo/cafecenter", "destination": "/demo", "permanent": false },
-    { "source": "/demo/cafecenter/(.*)", "destination": "/demo", "permanent": false },
-    { "source": "/demo/client", "destination": "/demo/pc/?app=gc", "permanent": false },
-    { "source": "/demo/client/(.*)", "destination": "/demo/pc/?app=gc", "permanent": false }
+    { "source": "/demo", "destination": "/", "permanent": false },
+    { "source": "/demo/(.*)", "destination": "/", "permanent": false }
   ],
   "rewrites": [
-    {
-      "source": "/demo",
-      "destination": "/demo/index.html"
-    },
-    {
-      "source": "/demo/panel",
-      "destination": "/demo/panel/index.html"
-    },
-    {
-      "source": "/demo/panel/(.*)",
-      "destination": "/demo/panel/index.html"
-    },
-    {
-      "source": "/demo/client",
-      "destination": "/demo/client/index.html"
-    },
-    {
-      "source": "/demo/cafecenter",
-      "destination": "/demo/cafecenter/index.html"
-    },
-    {
-      "source": "/demo/cafecenter/(.*)",
-      "destination": "/demo/cafecenter/index.html"
-    },
-    {
-      "source": "/demo/pc",
-      "destination": "/demo/pc/index.html"
-    },
-    {
-      "source": "/demo/pc/(.*)",
-      "destination": "/demo/pc/index.html"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
