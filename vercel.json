@@ -10,6 +10,12 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/demo/cafecenter", "destination": "/demo", "permanent": false },
+    { "source": "/demo/cafecenter/(.*)", "destination": "/demo", "permanent": false },
+    { "source": "/demo/client", "destination": "/demo/pc/?app=gc", "permanent": false },
+    { "source": "/demo/client/(.*)", "destination": "/demo/pc/?app=gc", "permanent": false }
+  ],
   "rewrites": [
     {
       "source": "/demo",
