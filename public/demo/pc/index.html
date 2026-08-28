@@ -59,9 +59,9 @@
   <div class="taskbar">
     <div class="tstart" title="Başlat"><div class="winlogo"><i></i><i></i><i></i><i></i></div></div>
     <div class="tapps">
-      <div class="tapp on" data-app="gc" title="GameCenter — Oyun İstemcisi"><span class="ic">🎮</span><span class="bar"></span></div>
-      <div class="tapp" data-app="welcome" title="CafeCenter — Masa Karşılama"><span class="ic">☕</span><span class="bar"></span></div>
-      <div class="tapp" data-app="session" title="CafeCenter — Oturum (masaüstü + bar)"><span class="ic">📊</span><span class="bar"></span></div>
+      <div class="tapp on" data-app="gc" title="GameCenter Client — Oyun İstemcisi"><span class="ic">🎮</span><span class="bar"></span></div>
+      <div class="tapp" data-app="welcome" title="CafeCenter Client — Masa Karşılama"><span class="ic">☕</span><span class="bar"></span></div>
+      <div class="tapp" data-app="session" title="CafeCenter Client — Oturum (masaüstü + bar)"><span class="ic">📊</span><span class="bar"></span></div>
     </div>
     <div class="ttray">
       <div class="sys"><span title="Ağ">📶</span><span title="Ses">🔊</span><span title="Pil">🔋</span></div>
@@ -83,6 +83,10 @@
     apps.forEach(function(a){ a.classList.toggle('on', a.getAttribute('data-app') === app); });
   }
   apps.forEach(function(a){ a.addEventListener('click', function(){ show(a.getAttribute('data-app')); }); });
+
+  // Deep-link: /demo/pc/?app=gc | welcome | session  (landing kartları buradan doğru uygulamayı açar)
+  var wanted = new URLSearchParams(location.search).get('app');
+  if (['gc','welcome','session'].indexOf(wanted) !== -1) show(wanted);
 
   // Canlı saat
   var months=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];

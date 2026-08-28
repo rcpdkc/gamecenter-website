@@ -5,71 +5,124 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Canlı Demo — GameCenter</title>
 <style>
-  :root{ --bg:#0a0b10; --panel:#12141d; --border:rgba(255,255,255,.1); --accent:#f97316; --ink:#f1f5f9; --mut:#94a3b8; }
+  :root{
+    --bg:#0a0b10; --panel:#12141d; --panel2:#151824; --border:rgba(255,255,255,.09);
+    --ink:#f1f5f9; --mut:#93a0b4;
+    --orange:#f97316; --indigo:#6366f1; --blue:#3b82f6;
+  }
   *{box-sizing:border-box;} html,body{margin:0;min-height:100%;}
-  body{background:
-      radial-gradient(60vw 40vw at 15% -10%, rgba(249,115,22,.16), transparent 60%),
-      radial-gradient(50vw 40vw at 100% 10%, rgba(59,130,246,.14), transparent 60%),
+  body{
+    background:
+      radial-gradient(60vw 42vw at 12% -12%, rgba(249,115,22,.15), transparent 60%),
+      radial-gradient(52vw 42vw at 100% 4%, rgba(59,130,246,.13), transparent 60%),
+      radial-gradient(46vw 40vw at 60% 120%, rgba(99,102,241,.10), transparent 60%),
       var(--bg);
     color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
     min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
   a{text-decoration:none;color:inherit;}
   .top{padding:20px 24px;}
   .back{font-size:14px;color:var(--mut);border:1px solid var(--border);border-radius:10px;padding:8px 13px;transition:.15s;display:inline-flex;gap:8px;align-items:center;}
-  .back:hover{color:var(--ink);border-color:var(--accent);}
-  .wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 20px 70px;text-align:center;}
-  .eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
-  h1{font-size:clamp(30px,5vw,52px);font-weight:850;letter-spacing:-.02em;margin:0 0 14px;}
+  .back:hover{color:var(--ink);border-color:var(--orange);}
+  .wrap{flex:1;width:100%;max-width:1060px;margin:0 auto;padding:14px 22px 80px;}
+
+  .hero{text-align:center;padding:8px 0 40px;}
+  .eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--orange);margin-bottom:14px;}
+  h1{font-size:clamp(30px,5vw,50px);font-weight:850;letter-spacing:-.02em;margin:0 0 14px;}
   h1 span{background:linear-gradient(120deg,#f97316,#fcd34d);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .sub{color:var(--mut);font-size:clamp(15px,2vw,18px);max-width:56ch;margin:0 auto 42px;line-height:1.6;}
-  .cards{display:grid;grid-template-columns:1fr;gap:22px;width:100%;max-width:900px;}
-  @media(min-width:760px){ .cards{grid-template-columns:1fr 1fr;} }
-  .card{position:relative;display:block;background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:30px 28px;text-align:left;
-    transition:.2s;overflow:hidden;}
-  .card:hover{transform:translateY(-4px);border-color:rgba(249,115,22,.45);box-shadow:0 30px 60px -30px rgba(0,0,0,.8);}
-  .card .ic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px;
-    background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);}
-  .card.blue .ic{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.28);}
-  .card.cafe .ic{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
-  .card h2{font-size:22px;margin:0 0 8px;font-weight:800;}
-  .card p{color:var(--mut);font-size:14.5px;line-height:1.6;margin:0 0 20px;}
-  .card .go{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--accent);font-size:15px;}
-  .card.blue .go{color:#60a5fa;}
-  .card.cafe .go{color:#818cf8;}
-  .card.cafe:hover{border-color:rgba(99,102,241,.5);}
-  .tag{position:absolute;top:20px;right:20px;font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--mut);border:1px solid var(--border);border-radius:20px;padding:4px 10px;}
-  .foot{color:var(--mut);font-size:13px;margin-top:34px;}
+  .sub{color:var(--mut);font-size:clamp(15px,2vw,17.5px);max-width:60ch;margin:0 auto;line-height:1.6;}
+
+  /* Bölüm başlığı */
+  .section{margin-top:8px;}
+  .section + .section{margin-top:44px;}
+  .shead{display:flex;align-items:center;gap:16px;margin:0 0 20px;}
+  .shead .lbl{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);white-space:nowrap;}
+  .shead .lbl .dot{width:9px;height:9px;border-radius:50%;}
+  .shead .lbl small{color:var(--mut);font-weight:500;letter-spacing:0;text-transform:none;font-size:13px;}
+  .shead .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+  .cards{display:grid;grid-template-columns:1fr;gap:18px;}
+  @media(min-width:720px){ .cards.c3{grid-template-columns:repeat(3,1fr);} .cards.c2{grid-template-columns:repeat(2,1fr);} }
+
+  .card{position:relative;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:24px 22px;transition:.2s;overflow:hidden;min-height:100%;}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--c);opacity:.0;transition:.2s;}
+  .card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 28px 56px -30px rgba(0,0,0,.85);}
+  .card:hover::before{opacity:.9;}
+  .card .ic{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:25px;margin-bottom:15px;
+    background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);}
+  .card h2{font-size:19px;margin:0 0 7px;font-weight:800;}
+  .card p{color:var(--mut);font-size:14px;line-height:1.58;margin:0 0 18px;flex:1;}
+  .card .go{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--c);font-size:14.5px;}
+  .card .go i{transition:transform .18s;}
+  .card:hover .go i{transform:translateX(4px);}
+  .tag{position:absolute;top:18px;right:18px;font-size:10.5px;font-family:ui-monospace,Consolas,monospace;color:var(--mut);border:1px solid var(--border);border-radius:20px;padding:4px 10px;letter-spacing:.03em;}
+
+  .gc{--c:var(--orange);} .cc{--c:var(--indigo);} .fc{--c:var(--blue);}
+
+  .foot{color:var(--mut);font-size:13px;margin-top:46px;text-align:center;}
 </style>
 </head>
 <body>
   <div class="top"><a class="back" href="/">&larr; Ana Sayfa</a></div>
   <div class="wrap">
-    <div class="eyebrow">Canlı Demo</div>
-    <h1>Neyi <span>denemek</span> istersiniz?</h1>
-    <p class="sub">Kurulum yok, giriş yok. Örnek verilerle dolu gerçek arayüzleri buradan gezebilirsiniz.</p>
+    <div class="hero">
+      <div class="eyebrow">Canlı Demo</div>
+      <h1>Neyi <span>denemek</span> istersiniz?</h1>
+      <p class="sub">Kurulum yok, giriş yok. Örnek verilerle dolu gerçek arayüzler. İşletmecinin kullandığı <b>sunucu panelleri</b> ile müşterinin masasında gördüğü <b>istemci uygulamaları</b> ayrı ayrı, tek yerden.</p>
+    </div>
 
-    <div class="cards">
-      <a class="card" href="/demo/panel/">
-        <span class="tag">Tıklanabilir</span>
-        <div class="ic">🖥️</div>
-        <h2>Yönetim Paneli</h2>
-        <p>İşletmecinin kullandığı panel: bilgisayar izleme, oyun kütüphanesi, içerik filtresi, hız yönetimi ve daha fazlası. Menülere tıklayın, sayfaları gezin.</p>
-        <span class="go">Paneli Aç →</span>
-      </a>
-      <a class="card blue" href="/demo/pc/">
-        <span class="tag">Windows PC · Canlı</span>
-        <div class="ic">🖥️</div>
-        <h2>Masa (İstemci) — Windows PC'de Dene</h2>
-        <p>Sanki gerçek bir kafe bilgisayarındasınız: görev çubuğundan GameCenter oyun istemcisi ve CafeCenter kiosk arasında geçin, gezin, deneyin.</p>
-        <span class="go">Windows PC'yi Aç →</span>
-      </a>
-      <a class="card cafe" href="/demo/cafecenter/">
-        <span class="tag">Yeni</span>
-        <div class="ic">☕</div>
-        <h2>CafeCenter (Kafe Yönetimi)</h2>
-        <p>Kafe modülü: masa/oturum yönetimi, üye cüzdanı, tarife, POS ve bilet — hem işletmeci paneli hem müşteri masasındaki modern kiosk deneyimi.</p>
-        <span class="go">CafeCenter'ı Aç →</span>
-      </a>
+    <!-- SUNUCU -->
+    <div class="section">
+      <div class="shead">
+        <span class="lbl"><span class="dot" style="background:var(--orange)"></span>Sunucu <small>· İşletmeci Yönetim Paneli</small></span>
+        <span class="rule"></span>
+      </div>
+      <div class="cards c3">
+        <a class="card gc" href="/demo/panel/">
+          <span class="tag">Panel</span>
+          <div class="ic">🎮</div>
+          <h2>GameCenter</h2>
+          <p>Oyun kütüphanesi, bilgisayar izleme (CPU/GPU sıcaklık), hız yönetimi, eklentiler ve raporlar. İşletmenin oyun tarafının kalbi.</p>
+          <span class="go">Paneli Aç <i>→</i></span>
+        </a>
+        <a class="card cc" href="/demo/panel/cafe?ws=cafecenter">
+          <span class="tag">Panel</span>
+          <div class="ic">☕</div>
+          <h2>CafeCenter</h2>
+          <p>Kafe yönetimi: masa/oturum terminali, üye cüzdanı, tarifeler, POS, biletler ve emanet. Doğrudan canlı terminalde açılır.</p>
+          <span class="go">Terminali Aç <i>→</i></span>
+        </a>
+        <a class="card fc" href="/demo/panel/filter?ws=filter">
+          <span class="tag">Panel</span>
+          <div class="ic">🛡️</div>
+          <h2>FilterCenter</h2>
+          <p>DNS içerik filtresi: kategori engelleme, beyaz/kara liste, kelime filtresi, kaynak yönetimi ve canlı istatistikler.</p>
+          <span class="go">Filtreyi Aç <i>→</i></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- İSTEMCİ -->
+    <div class="section">
+      <div class="shead">
+        <span class="lbl"><span class="dot" style="background:var(--indigo)"></span>İstemci <small>· Masadaki Windows Uygulaması</small></span>
+        <span class="rule"></span>
+      </div>
+      <div class="cards c2">
+        <a class="card gc" href="/demo/pc/?app=gc">
+          <span class="tag">Masa · Windows</span>
+          <div class="ic">🎮</div>
+          <h2>GameCenter Client</h2>
+          <p>Müşterinin masasında gördüğü oyun istemcisi: oyun vitrini, yeni eklenenler, istatistikler, Steam havuzu, kayıt ve sesli sohbet. Gerçek Windows masaüstünde deneyin.</p>
+          <span class="go">Masayı Aç <i>→</i></span>
+        </a>
+        <a class="card cc" href="/demo/pc/?app=welcome">
+          <span class="tag">Masa · Windows</span>
+          <div class="ic">☕</div>
+          <h2>CafeCenter Client</h2>
+          <p>Masa açılınca gelen tam ekran karşılama (ücretli/paketli/üye/bilet) ve oturum barı: kalan süre, canlı ücret, sipariş ve teknik destek. Kiosk deneyimi.</p>
+          <span class="go">Kiosk'u Aç <i>→</i></span>
+        </a>
+      </div>
     </div>
 
     <div class="foot">GameCenter · Örnek/demo verilerdir, gerçek kafe verisi içermez.</div>
