@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Clock, Trash2 } from 'lucide-react';
+import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Users, Trash2, Globe } from 'lucide-react';
 import { Card, CardHeader, Button, IconButton, Input, StatCard, StatGrid, Badge, EmptyState, Loading, useConfirm } from '../admin/ui';
 
 const References = () => {
   const [email, setEmail] = useState('');
+  const [maxUses, setMaxUses] = useState(1);
   const [loading, setLoading] = useState(false);
   const [refs, setRefs] = useState([]);
   const [fetching, setFetching] = useState(true);
@@ -25,17 +26,16 @@ const References = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!email) return;
     setLoading(true);
     setNewCode(null);
     try {
       const res = await fetch('/api/references', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email: email.trim() || null, max_uses: Math.max(1, parseInt(maxUses, 10) || 1) })
       });
       const data = await res.json();
-      if (data.success) { setNewCode(data.code); setEmail(''); fetchReferences(); }
+      if (data.success) { setNewCode(data.code); setEmail(''); setMaxUses(1); fetchReferences(); }
       else alert(data.error);
     } catch { alert("Hata oluştu."); }
     finally { setLoading(false); }
@@ -61,8 +61,15 @@ const References = () => {
     } catch { alert('Silme işlemi başarısız.'); }
   };
 
-  const used = refs.filter(r => r.is_used).length;
-  const pending = refs.filter(r => !r.is_used).length;
+  // Kullanım hakkı / kalan hesabı (eski kayıtlar: max_uses=1, used_count=0)
+  const usage = (r) => {
+    const max = Number.isFinite(+r.max_uses) && +r.max_uses > 0 ? +r.max_uses : 1;
+    const used = Number.isFinite(+r.used_count) ? +r.used_count : (r.is_used ? max : 0);
+    return { max, used, left: Math.max(0, max - used), done: used >= max };
+  };
+
+  const activeCount = refs.filter(r => !usage(r).done).length;
+  const slotsLeft = refs.reduce((s, r) => s + usage(r).left, 0);
 
   return (
     <div className="space-y-6">
@@ -70,8 +77,8 @@ const References = () => {
       {/* Top Stats */}
       <StatGrid cols={3}>
         <StatCard icon={Key} label="Toplam Kod" value={refs.length} tone="info" />
-        <StatCard icon={Clock} label="Bekliyor" value={pending} tone="ok" />
-        <StatCard icon={CheckCircle2} label="Kullanıldı" value={used} tone="mut" />
+        <StatCard icon={Users} label="Aktif Kod" value={activeCount} tone="ok" />
+        <StatCard icon={CheckCircle2} label="Kalan Davet Hakkı" value={slotsLeft} tone="mut" />
       </StatGrid>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -83,21 +90,39 @@ const References = () => {
             </div>
             <div>
               <h3 className="text-base font-bold" style={{ color: 'var(--a-ink)' }}>Yeni Referans Üret</h3>
-              <p className="text-xs" style={{ color: 'var(--a-mut)' }}>E-postaya özel davet kodu</p>
+              <p className="text-xs" style={{ color: 'var(--a-mut)' }}>E-posta opsiyonel · çok kişilik kod</p>
             </div>
           </div>
 
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--a-mut)' }}>Kafenin E-Posta Adresi</label>
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--a-mut)' }}>E-Posta <span style={{ opacity: 0.6, textTransform: 'none' }}>(opsiyonel)</span></label>
               <Input
                 icon={Mail}
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="kafe@mail.com"
-                required
+                placeholder="Boş = herkese açık kod"
               />
+              <p className="text-[11px] mt-1" style={{ color: 'var(--a-mut)', opacity: 0.75 }}>
+                Boş bırakılırsa kod herhangi bir e-postayla kullanılabilir.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--a-mut)' }}>Kaç Kişi Kullanabilir?</label>
+              <Input
+                icon={Users}
+                type="number"
+                min={1}
+                max={9999}
+                value={maxUses}
+                onChange={e => setMaxUses(e.target.value)}
+                placeholder="1"
+              />
+              <p className="text-[11px] mt-1" style={{ color: 'var(--a-mut)', opacity: 0.75 }}>
+                Örn. <b>5</b> → 5 kafe bu kodla üye olabilir, her kayıtta hak azalır.
+              </p>
             </div>
 
             <Button type="submit" variant="primary" className="w-full" disabled={loading}>
@@ -123,7 +148,7 @@ const References = () => {
                   {copiedId === 'new' ? <CheckCircle2 size={16} /> : <Copy size={16} />}
                 </button>
               </div>
-              <p className="text-xs mt-1" style={{ color: 'var(--a-ok)', opacity: 0.7 }}>Bu kodu kopyalayıp kafenizle paylaşın.</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--a-ok)', opacity: 0.7 }}>Bu kodu kopyalayıp kafeyle paylaşın.</p>
             </div>
           )}
         </Card>
@@ -142,29 +167,44 @@ const References = () => {
               <table className="w-full text-sm text-left">
                 <thead>
                   <tr style={{ background: 'var(--a-card2)' }}>
-                    {['E-Posta', 'Referans Kodu', 'Durum'].map(h => (
+                    {['E-Posta', 'Referans Kodu', 'Kullanım', 'Durum'].map(h => (
                       <th key={h} className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--a-mut)' }}>{h}</th>
                     ))}
                     <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--a-mut)' }}>İşlem</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {refs.map(ref => (
+                  {refs.map(ref => {
+                    const u = usage(ref);
+                    return (
                     <tr key={ref.id} className="border-t border-[var(--a-border)] hover:bg-[var(--a-card2)] transition-colors">
-                      <td className="px-6 py-3.5 font-medium" style={{ color: 'var(--a-ink)' }}>{ref.email}</td>
+                      <td className="px-6 py-3.5 font-medium" style={{ color: 'var(--a-ink)' }}>
+                        {ref.email ? ref.email : (
+                          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--a-mut)' }}>
+                            <Globe size={13} /> Herkese açık
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-3.5">
                         <code className="font-mono font-bold text-sm" style={{ color: 'var(--a-accent)' }}>{ref.code}</code>
                       </td>
                       <td className="px-6 py-3.5">
-                        {ref.is_used ? (
-                          <Badge tone="mut" dot>Kullanıldı</Badge>
+                        <span className="font-mono font-semibold" style={{ color: u.done ? 'var(--a-mut)' : 'var(--a-ink)' }}>{u.used}</span>
+                        <span className="font-mono" style={{ color: 'var(--a-mut)' }}> / {u.max}</span>
+                        {!u.done && u.max > 1 && (
+                          <span className="ml-2 text-xs" style={{ color: 'var(--a-ok)' }}>({u.left} kaldı)</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        {u.done ? (
+                          <Badge tone="mut" dot>Doldu</Badge>
                         ) : (
-                          <Badge tone="ok" dot>Bekliyor</Badge>
+                          <Badge tone="ok" dot>Aktif</Badge>
                         )}
                       </td>
                       <td className="px-6 py-3.5">
                         <div className="flex items-center justify-end gap-2">
-                          {!ref.is_used && (
+                          {!u.done && (
                             <IconButton
                               icon={copiedId === ref.id ? CheckCircle2 : Copy}
                               title="Kopyala"
@@ -182,7 +222,8 @@ const References = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

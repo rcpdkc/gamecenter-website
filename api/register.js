@@ -30,16 +30,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Verify Reference Code
+    // 0. Kolon göçü (References sayfası hiç açılmadıysa da çalışsın — idempotent)
+    try { await sql`ALTER TABLE reference_codes ALTER COLUMN email DROP NOT NULL`; } catch {}
+    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT 1`; } catch {}
+    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS used_count INT DEFAULT 0`; } catch {}
+    try { await sql`UPDATE reference_codes SET used_count = max_uses WHERE is_used = true AND used_count = 0`; } catch {}
+
+    // 1. Referans kodunu doğrula — çok-kullanımlı: kullanım hakkı bitmemiş olmalı
     const { rows: codes } = await sql`
-      SELECT * FROM reference_codes 
-      WHERE code = ${referenceCode} 
-      AND email = ${email} 
-      AND is_used = false
+      SELECT * FROM reference_codes
+      WHERE code = ${referenceCode}
+      AND used_count < max_uses
     `;
 
     if (codes.length === 0) {
-      return res.status(400).json({ error: 'Geçersiz, kullanılmış veya e-postanızla eşleşmeyen referans kodu.' });
+      return res.status(400).json({ error: 'Geçersiz veya kullanım hakkı dolmuş referans kodu.' });
+    }
+    const rc = codes[0];
+    // Kod bir e-postaya kilitliyse yalnız o e-posta kullanabilir; boş (herkese açık) ise serbest
+    if (rc.email && rc.email.trim().toLowerCase() !== String(email).trim().toLowerCase()) {
+      return res.status(400).json({ error: 'Bu referans kodu farklı bir e-posta adresine tanımlıdır.' });
     }
 
     // 2. Check if user email already exists
@@ -66,9 +76,12 @@ export default async function handler(req, res) {
       RETURNING id, email, first_name, last_name, cafe_name, cafe_id
     `;
 
-    // 5. Mark Reference Code as Used
+    // 5. Kullanım sayacını artır — hak dolunca is_used=true (geriye uyumlu)
     await sql`
-      UPDATE reference_codes SET is_used = true WHERE id = ${codes[0].id}
+      UPDATE reference_codes
+      SET used_count = used_count + 1,
+          is_used = (used_count + 1 >= max_uses)
+      WHERE id = ${rc.id}
     `;
 
     return res.status(200).json({ 
