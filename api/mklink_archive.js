@@ -57,6 +57,43 @@ export default async function handler(request, response) {
       return response.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    if (request.query && request.query.type === 'save') {
+      // ── Oyun kayit (save) DIZIN arsivi (oyun adina gore; kayit dosyalari degil) ──
+      await sql`
+        CREATE TABLE IF NOT EXISTS save_archive (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          data_json JSONB NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      if (request.method === 'GET') {
+        const { rows } = await sql`
+          SELECT id, name, description, data_json, created_at FROM save_archive
+          ORDER BY created_at DESC
+        `;
+        return response.status(200).json({ success: true, data: rows });
+      }
+      else if (request.method === 'POST') {
+        const { name, description, data_json } = request.body;
+        if (!name || !data_json) return response.status(400).json({ error: 'Isim ve veri zorunludur.' });
+        await sql`DELETE FROM save_archive WHERE LOWER(name) = LOWER(${name})`;
+        await sql`
+          INSERT INTO save_archive (name, description, data_json)
+          VALUES (${name}, ${description || null}, ${data_json})
+        `;
+        return response.status(200).json({ success: true, message: 'Kayit dizinleri arsive eklendi.' });
+      }
+      else if (request.method === 'DELETE') {
+        const { id } = request.body;
+        if (!id) return response.status(400).json({ error: 'ID zorunludur.' });
+        await sql`DELETE FROM save_archive WHERE id = ${id}`;
+        return response.status(200).json({ success: true, message: 'Kayit arsivden silindi.' });
+      }
+      return response.status(405).json({ error: 'Method Not Allowed' });
+    }
+
     // ── MkLink sablon arsivi (varsayilan) ──
     await sql`
       CREATE TABLE IF NOT EXISTS mklink_archive (
