@@ -9,26 +9,57 @@ const PRESET_COLORS = [
   '#84cc16', '#64748b'
 ];
 
+// Yerel panelin (web_admin) tüm sayfaları — admin'in eriştiği modüllerin tamamı.
+// Workspace başlıklarıyla gruplanır. id şeması yerel route'larla hizalıdır.
 const LOCAL_MODULES = [
-  { id: '/clients', label: 'Bilgisayarlar' },
-  { id: '/monitor', label: 'Canlı Monitör' },
-  { id: '/monitortakip', label: 'Monitör OSD' },
-  { id: '/network', label: 'Ağ İzleme' },
-  { id: '/games', label: 'Oyunlar' },
-  { id: '/favorites', label: 'Favori Oyunlar' },
-  { id: '/users', label: 'Kullanıcılar' },
-  { id: '/saves', label: 'Oyun Kayıt' },
-  { id: '/definitions', label: 'Tanımlamalar' },
-  { id: '/plugins', label: 'Eklentiler' },
-  { id: '/mklinks', label: 'MkLink Şablonları' },
-  { id: '/updates', label: 'Guncellemeler' },
-  { id: '/filters', label: 'Filtreli Oyunlar' },
-  { id: '/alerts', label: 'Disk Uyarıları' },
-  { id: '/steam', label: 'Oyun Hesapları' },
-  { id: '/logs', label: 'Loglar' },
-  { id: '/requests', label: 'İstek / Öneri' },
-  { id: '/settings', label: 'Ayarlar' }
+  // GameCenter / SystemCenter
+  { id: '/', label: 'Panel', group: 'GameCenter' },
+  { id: '/clients', label: 'Bilgisayarlar', group: 'GameCenter' },
+  { id: '/monitor', label: 'Canlı Monitör', group: 'GameCenter' },
+  { id: '/monitortakip', label: 'Monitör OSD', group: 'GameCenter' },
+  { id: '/network', label: 'Ağ İzleme', group: 'GameCenter' },
+  { id: '/games', label: 'Oyunlar', group: 'GameCenter' },
+  { id: '/favorites', label: 'Favori Oyunlar', group: 'GameCenter' },
+  { id: '/saves', label: 'Oyun Kayıt', group: 'GameCenter' },
+  { id: '/definitions', label: 'Tanımlamalar', group: 'GameCenter' },
+  { id: '/plugins', label: 'Eklentiler', group: 'GameCenter' },
+  { id: '/mklinks', label: 'MkLink Şablonları', group: 'GameCenter' },
+  { id: '/onbellek', label: 'Önbellek Kayıt', group: 'GameCenter' },
+  { id: '/updates', label: 'Güncellemeler', group: 'GameCenter' },
+  { id: '/filters', label: 'Filtreli Oyunlar', group: 'GameCenter' },
+  { id: '/alerts', label: 'Disk Uyarıları', group: 'GameCenter' },
+  { id: '/steam', label: 'Oyun Hesapları', group: 'GameCenter' },
+  { id: '/logs', label: 'Loglar', group: 'GameCenter' },
+  { id: '/requests', label: 'İstek / Öneri', group: 'GameCenter' },
+  { id: '/serverstatus', label: 'Sunucu Durumu', group: 'GameCenter' },
+  // CafeCenter
+  { id: '/cafe', label: 'Terminal', group: 'CafeCenter' },
+  { id: '/cafe/members', label: 'Üyeler', group: 'CafeCenter' },
+  { id: '/cafe/tariffs', label: 'Tarifeler', group: 'CafeCenter' },
+  { id: '/cafe/pos', label: 'POS / Satış', group: 'CafeCenter' },
+  { id: '/cafe/tickets', label: 'Biletler', group: 'CafeCenter' },
+  { id: '/cafe/escrow', label: 'Emanet', group: 'CafeCenter' },
+  { id: '/cafe/reports', label: 'Raporlar', group: 'CafeCenter' },
+  { id: '/cafe/settings', label: 'CafeCenter Ayarları', group: 'CafeCenter' },
+  // FilterCenter
+  { id: '/filter', label: 'Genel Bakış', group: 'FilterCenter' },
+  { id: '/content-filter', label: 'İçerik Filtresi', group: 'FilterCenter' },
+  { id: '/bandwidth', label: 'Hız Sınırlama', group: 'FilterCenter' },
+  { id: '/access-logs', label: 'Erişim Kayıtları', group: 'FilterCenter' },
+  // Genel Ayarlar
+  { id: '/global/update', label: 'Güncelleme', group: 'Genel Ayarlar' },
+  { id: '/settings', label: 'Sistem Ayarları', group: 'Genel Ayarlar' },
+  { id: '/global/database', label: 'Veritabanı', group: 'Genel Ayarlar' },
+  { id: '/global/cloud-backup', label: 'Bulut Yedek', group: 'Genel Ayarlar' },
+  { id: '/global/paths', label: 'Dosya ve Yedekleme', group: 'Genel Ayarlar' },
+  { id: '/global/client-view', label: 'GameCenter Görünüm', group: 'Genel Ayarlar' },
+  { id: '/global/client-mode', label: 'İstemci Modu', group: 'Genel Ayarlar' },
+  { id: '/global/temperature', label: 'Sıcaklık Ölçümü', group: 'Genel Ayarlar' },
+  { id: '/global/staff', label: 'Personel & Yetkiler', group: 'Genel Ayarlar' },
 ];
+
+// Workspace görünüm sırası (başlıklar için)
+const MODULE_GROUPS = ['GameCenter', 'CafeCenter', 'FilterCenter', 'Genel Ayarlar'];
 
 const labelCls = 'block text-xs font-semibold uppercase tracking-wider mb-2';
 const fieldStyle = { background: 'var(--a-card2)', borderColor: 'var(--a-border)', color: 'var(--a-ink)' };
@@ -136,27 +167,54 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
               {permissions.length === LOCAL_MODULES.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
             </button>
           </div>
-          <div className="border rounded-xl p-4 flex-1 overflow-y-auto h-[380px] grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 shadow-inner"
+          <div className="border rounded-xl p-4 flex-1 overflow-y-auto h-[380px] shadow-inner space-y-4"
             style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)' }}>
-            {LOCAL_MODULES.map(mod => {
-              const isChecked = permissions.includes(mod.id);
+            {MODULE_GROUPS.map(gname => {
+              const mods = LOCAL_MODULES.filter(m => m.group === gname);
+              if (!mods.length) return null;
+              const ids = mods.map(m => m.id);
+              const selCount = mods.filter(m => permissions.includes(m.id)).length;
+              const allSel = selCount === mods.length;
               return (
-                <label key={mod.id} className="flex items-center gap-3 cursor-pointer p-2 rounded-lg transition-all hover:bg-[var(--a-card)]"
-                  style={isChecked ? { background: 'var(--a-accent-soft)' } : undefined}>
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={(e) => {
-                       if (e.target.checked) setPermissions([...permissions, mod.id]);
-                       else setPermissions(permissions.filter(p => p !== mod.id));
-                    }}
-                    className="w-4 h-4 cursor-pointer"
-                    style={{ accentColor: 'var(--a-accent)' }}
-                  />
-                  <span className="text-sm font-medium transition-colors select-none" style={{ color: isChecked ? 'var(--a-ink)' : 'var(--a-mut)' }}>
-                    {mod.label}
-                  </span>
-                </label>
+                <div key={gname}>
+                  <div className="flex items-center justify-between mb-2 sticky top-0 z-10 py-1" style={{ background: 'var(--a-card2)' }}>
+                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--a-accent)' }}>{gname}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (allSel) setPermissions(permissions.filter(p => !ids.includes(p)));
+                        else setPermissions([...new Set([...permissions, ...ids])]);
+                      }}
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-colors"
+                      style={{ color: 'var(--a-mut)', borderColor: 'var(--a-border)' }}
+                    >
+                      {allSel ? 'Kaldır' : 'Tümü'} ({selCount}/{mods.length})
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    {mods.map(mod => {
+                      const isChecked = permissions.includes(mod.id);
+                      return (
+                        <label key={mod.id} className="flex items-center gap-3 cursor-pointer p-2 rounded-lg transition-all hover:bg-[var(--a-card)]"
+                          style={isChecked ? { background: 'var(--a-accent-soft)' } : undefined}>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                               if (e.target.checked) setPermissions([...permissions, mod.id]);
+                               else setPermissions(permissions.filter(p => p !== mod.id));
+                            }}
+                            className="w-4 h-4 cursor-pointer"
+                            style={{ accentColor: 'var(--a-accent)' }}
+                          />
+                          <span className="text-sm font-medium transition-colors select-none" style={{ color: isChecked ? 'var(--a-ink)' : 'var(--a-mut)' }}>
+                            {mod.label}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
