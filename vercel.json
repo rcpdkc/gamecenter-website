@@ -15,6 +15,11 @@
     { "source": "/demo/(.*)", "destination": "/", "permanent": false }
   ],
   "rewrites": [
+    { "source": "/api/gdrive-oauth", "destination": "/api/cloud?_svc=gdrive" },
+    { "source": "/api/gdrive-callback", "destination": "/api/cloud?_svc=gdrive-callback" },
+    { "source": "/api/game-status", "destination": "/api/cloud?_svc=gamestatus" },
+    { "source": "/api/announcements", "destination": "/api/cloud?_svc=announcements" },
+    { "source": "/api/covers", "destination": "/api/cloud?_svc=covers" },
     {
       "source": "/(.*)",
       "destination": "/index.html"
