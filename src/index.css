@@ -27,6 +27,27 @@
   --font-display: 'Outfit', sans-serif;
 }
 
+/* ── CLOUD ADMIN — Supabase tarzı token scope (yalnız /superadmin; public site ETKİLENMEZ) ── */
+.gc-admin{
+  --a-bg:#fbfbfb; --a-bg2:#f4f4f5; --a-sidebar:#ffffff; --a-card:#ffffff; --a-card2:#f6f6f7; --a-border:#e7e7e9; --a-border2:#dcdce0;
+  --a-accent:#3ecf8e; --a-accent-d:#2fb579; --a-accent-soft:rgba(62,207,142,.12);
+  --a-ink:#18181b; --a-ink2:#3f3f46; --a-mut:#6b7280; --a-mut2:#9ca3af;
+  --a-ok:#059669; --a-warn:#d97706; --a-danger:#dc2626; --a-info:#0ea5e9;
+  --a-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px -12px rgba(0,0,0,.12);
+  font-family:'Inter',system-ui,sans-serif;
+}
+.gc-admin.dark{
+  --a-bg:#131315; --a-bg2:#0e0e10; --a-sidebar:#171719; --a-card:#1c1c1f; --a-card2:#242428; --a-border:#2a2a2e; --a-border2:#35353c;
+  --a-accent:#3ecf8e; --a-accent-d:#34b27b; --a-accent-soft:rgba(62,207,142,.14);
+  --a-ink:#ededed; --a-ink2:#c9c9cf; --a-mut:#8a8a92; --a-mut2:#5f5f68;
+  --a-ok:#10b981; --a-warn:#f59e0b; --a-danger:#f43f5e; --a-info:#38bdf8;
+  --a-shadow:0 2px 10px rgba(0,0,0,.35);
+}
+.gc-admin h1,.gc-admin h2,.gc-admin h3,.gc-admin h4,.gc-admin h5,.gc-admin h6{font-family:'Inter',system-ui,sans-serif;}
+.gc-admin ::-webkit-scrollbar{width:8px;height:8px;}
+.gc-admin ::-webkit-scrollbar-thumb{background:var(--a-border2);border-radius:8px;}
+.gc-admin ::-webkit-scrollbar-track{background:transparent;}
+
 * {
   box-sizing: border-box;
   margin: 0;

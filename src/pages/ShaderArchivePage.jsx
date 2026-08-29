@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { DatabaseZap, Trash2, Loader2, FolderInput, RefreshCw, Plus, X, CloudUpload, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { DatabaseZap, Trash2, Loader2, FolderInput, RefreshCw, Plus, X, CloudUpload } from 'lucide-react';
+import { Card, CardHeader, Button, Input, EmptyState, Loading, Toolbar, useToast, useConfirm } from '../admin/ui';
 
 const API = '/api/mklink_archive?type=shader';
 
 const ShaderArchivePage = () => {
   const context = useOutletContext();
-  const dark = context?.dark ?? true;
   const isAdmin = context?.user?.role === 'admin';  // yükleme/silme yalnız admin grubu
 
   const [archives, setArchives] = useState([]);
@@ -18,21 +18,8 @@ const ShaderArchivePage = () => {
   const [newDirs, setNewDirs] = useState(['']);
   const [adding, setAdding] = useState(false);
 
-  // Profesyonel modal + toast (browser alert/confirm yerine)
-  const [confirmId, setConfirmId] = useState(null);   // silinecek kaydin id'si
-  const [toast, setToast] = useState(null);           // { msg, type: 'success' | 'error' }
-
-  const showToast = (msg, type = 'error') => setToast({ msg, type });
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3200);
-    return () => clearTimeout(t);
-  }, [toast]);
-
-  const bg = dark ? 'bg-[#111827]' : 'bg-white';
-  const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
-  const txt = dark ? 'text-white' : 'text-gray-900';
-  const sub = dark ? 'text-gray-500' : 'text-gray-400';
+  const { push } = useToast();
+  const { confirm, confirmNode } = useConfirm();
 
   const fetchArchives = async () => {
     setFetching(true);
@@ -52,8 +39,8 @@ const ShaderArchivePage = () => {
   const handleAdd = async () => {
     const name = newName.trim();
     const dirs = newDirs.map(d => (d || '').trim()).filter(Boolean);
-    if (!name) { showToast('Oyun adı gerekli.'); return; }
-    if (dirs.length === 0) { showToast('En az bir dizin girin.'); return; }
+    if (!name) { push('Oyun adı gerekli.', 'danger'); return; }
+    if (dirs.length === 0) { push('En az bir dizin girin.', 'danger'); return; }
     setAdding(true);
     try {
       const res = await fetch(API, {
@@ -64,20 +51,19 @@ const ShaderArchivePage = () => {
       const data = await res.json();
       if (data.success) {
         setNewName(''); setNewDirs(['']);
-        showToast('Kayıt arşive eklendi.', 'success');
+        push('Kayıt arşive eklendi.', 'ok');
         fetchArchives();
       } else {
-        showToast(data.error || 'Eklenemedi');
+        push(data.error || 'Eklenemedi', 'danger');
       }
     } catch {
-      showToast('Bağlantı hatası');
+      push('Bağlantı hatası', 'danger');
     } finally {
       setAdding(false);
     }
   };
 
   const doDelete = async (id) => {
-    setConfirmId(null);
     setDeletingId(id);
     try {
       const res = await fetch(API, {
@@ -88,163 +74,121 @@ const ShaderArchivePage = () => {
       const data = await res.json();
       if (data.success) {
         setArchives(prev => prev.filter(a => a.id !== id));
-        showToast('Kayıt silindi.', 'success');
+        push('Kayıt silindi.', 'ok');
       } else {
-        showToast(data.error || 'Silinemedi');
+        push(data.error || 'Silinemedi', 'danger');
       }
     } catch {
-      showToast('Bağlantı hatası');
+      push('Bağlantı hatası', 'danger');
     } finally {
       setDeletingId(null);
     }
   };
 
-  const confirmTarget = archives.find(a => a.id === confirmId);
+  const askDelete = async (arch) => {
+    const ok = await confirm({
+      title: 'Kaydı sil',
+      message: `${arch.name} shader dizin kaydını arşivden silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
+      tone: 'danger',
+      confirmLabel: 'Sil',
+    });
+    if (ok) doDelete(arch.id);
+  };
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className={`text-sm ${sub}`}>
-          Oyun adına göre shader cache <b>dizin yolları</b> (cache dosyaları değil). Kafeler bu yolları
-          "Buluttan Getir" ile çeker. Toplam: <b className={txt}>{archives.length}</b>
-        </p>
-        <button onClick={fetchArchives}
-          className={`h-9 px-4 rounded-lg border ${panelBorder} ${sub} hover:${txt} text-sm font-semibold flex items-center gap-2`}>
-          <RefreshCw size={15} className={fetching ? 'animate-spin' : ''} />Yenile
-        </button>
-      </div>
+      <Toolbar>
+        <span className="text-sm" style={{ color: 'var(--a-mut)' }}>
+          Oyun adına göre shader cache dizin yolları · Toplam: <b style={{ color: 'var(--a-ink)' }}>{archives.length}</b>
+        </span>
+        <div className="ml-auto">
+          <Button variant="ghost" onClick={fetchArchives}>
+            <RefreshCw size={15} className={fetching ? 'animate-spin' : ''} />Yenile
+          </Button>
+        </div>
+      </Toolbar>
 
       {/* Dogrudan ekleme formu — YALNIZ admin grubu */}
       {isAdmin && (
-      <div className={`${bg} border ${panelBorder} rounded-2xl p-5`}>
-        <div className="flex items-center gap-2 mb-3">
-          <CloudUpload size={18} className="text-sky-400" />
-          <h3 className={`font-bold ${txt}`}>Yeni Kayıt Ekle</h3>
-          <span className={`text-xs ${sub}`}>oyun adı + shader cache dizin(ler)i</span>
-        </div>
-        <div className="space-y-3">
-          <input value={newName} onChange={(e) => setNewName(e.target.value)}
-            placeholder="Oyun adı — ör: Forza Horizon 5"
-            className={`w-full h-10 px-3 rounded-lg border ${panelBorder} ${dark ? 'bg-black/20' : 'bg-gray-50'} ${txt} text-sm outline-none focus:border-sky-500`} />
-          <div className="space-y-2">
-            {newDirs.map((d, i) => (
-              <div key={i} className="flex gap-2">
-                <input value={d}
-                  onChange={(e) => setNewDirs(arr => arr.map((v, j) => j === i ? e.target.value : v))}
-                  placeholder={`Dizin ${i + 1} — ör: %LocalAppData%\\ForzaHorizon5`}
-                  className={`flex-1 h-10 px-3 rounded-lg border ${panelBorder} ${dark ? 'bg-black/20' : 'bg-gray-50'} ${txt} text-sm font-mono outline-none focus:border-sky-500`} />
-                {newDirs.length > 1 && (
-                  <button onClick={() => setNewDirs(arr => arr.filter((_, j) => j !== i))}
-                    className="w-10 h-10 shrink-0 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center"><X size={15} /></button>
-                )}
-              </div>
-            ))}
+        <Card>
+          <CardHeader title="Yeni Kayıt Ekle" subtitle="oyun adı + shader cache dizin(ler)i" icon={CloudUpload} />
+          <div className="p-5 space-y-3">
+            <Input value={newName} onChange={(e) => setNewName(e.target.value)}
+              placeholder="Oyun adı — ör: Forza Horizon 5" />
+            <div className="space-y-2">
+              {newDirs.map((d, i) => (
+                <div key={i} className="flex gap-2">
+                  <input value={d}
+                    onChange={(e) => setNewDirs(arr => arr.map((v, j) => j === i ? e.target.value : v))}
+                    placeholder={`Dizin ${i + 1} — ör: %LocalAppData%\\ForzaHorizon5`}
+                    className="flex-1 h-9 px-3 rounded-lg border text-[13px] font-mono outline-none transition-colors"
+                    style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)', color: 'var(--a-ink)' }} />
+                  {newDirs.length > 1 && (
+                    <button onClick={() => setNewDirs(arr => arr.filter((_, j) => j !== i))}
+                      className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-colors hover:brightness-110"
+                      style={{ background: 'color-mix(in srgb, var(--a-danger) 15%, transparent)', color: 'var(--a-danger)' }}><X size={15} /></button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" icon={Plus} onClick={() => setNewDirs(arr => [...arr, ''])}>Dizin Ekle</Button>
+              <Button onClick={handleAdd} disabled={adding} className="ml-auto" style={{ background: 'var(--a-info)', color: '#fff' }}>
+                {adding ? <Loader2 size={15} className="animate-spin" /> : <CloudUpload size={15} />}Arşive Ekle
+              </Button>
+            </div>
+            <p className="text-[11px]" style={{ color: 'var(--a-mut)' }}>İpucu: Kullanıcı adı değişebileceği için <code>C:\Users\User\...</code> yerine <code>%LocalAppData%\...</code> kullanın (her PC'de kendi hesabına açılır). Aynı oyun adı varsa üzerine yazılır.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setNewDirs(arr => [...arr, ''])}
-              className={`h-9 px-3 rounded-lg border ${panelBorder} ${sub} hover:${txt} text-xs font-semibold flex items-center gap-1.5`}>
-              <Plus size={14} />Dizin Ekle
-            </button>
-            <button onClick={handleAdd} disabled={adding}
-              className="h-9 px-5 rounded-lg bg-sky-600 text-white text-sm font-bold flex items-center gap-2 hover:brightness-110 disabled:opacity-60 ml-auto">
-              {adding ? <Loader2 size={15} className="animate-spin" /> : <CloudUpload size={15} />}Arşive Ekle
-            </button>
-          </div>
-          <p className={`text-[11px] ${sub}`}>İpucu: Kullanıcı adı değişebileceği için <code>C:\Users\User\...</code> yerine <code>%LocalAppData%\...</code> kullanın (her PC'de kendi hesabına açılır). Aynı oyun adı varsa üzerine yazılır.</p>
-        </div>
-      </div>
+        </Card>
       )}
 
       {fetching ? (
-        <div className={`flex items-center justify-center gap-2 py-16 ${sub}`}>
-          <Loader2 size={18} className="animate-spin" />Yükleniyor…
-        </div>
+        <Loading label="Yükleniyor…" />
       ) : archives.length === 0 ? (
-        <div className={`${bg} border ${panelBorder} rounded-2xl py-16 text-center ${sub}`}>
-          <DatabaseZap size={40} className="mx-auto mb-3 opacity-40" />
-          Arşivde henüz shader dizin kaydı yok. Kafeler "Buluta Yükle" ile ekledikçe burada görünür.
-        </div>
+        <Card>
+          <EmptyState icon={DatabaseZap}
+            title="Arşivde henüz shader dizin kaydı yok."
+            hint={'Kafeler "Buluta Yükle" ile ekledikçe burada görünür.'} />
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {archives.map(arch => {
             const dirs = arch?.data_json?.cache_dirs || [];
             return (
-              <div key={arch.id} className={`${bg} border ${panelBorder} rounded-2xl p-5`}>
+              <Card key={arch.id} className="p-5">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center shrink-0">
-                    <DatabaseZap size={18} className="text-sky-400" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'color-mix(in srgb, var(--a-info) 15%, transparent)' }}>
+                    <DatabaseZap size={18} style={{ color: 'var(--a-info)' }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold ${txt} truncate`}>{arch.name}</h3>
-                    <p className={`text-xs ${sub} mt-0.5`}>
+                    <h3 className="font-bold truncate" style={{ color: 'var(--a-ink)' }}>{arch.name}</h3>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--a-mut)' }}>
                       {dirs.length} konum · {arch.created_at ? new Date(arch.created_at).toLocaleString('tr-TR') : ''}
                     </p>
                   </div>
                   {isAdmin && (
-                    <button onClick={() => setConfirmId(arch.id)} disabled={deletingId === arch.id}
-                      className="w-9 h-9 shrink-0 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center" title="Sil">
+                    <button onClick={() => askDelete(arch)} disabled={deletingId === arch.id}
+                      className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-colors hover:brightness-110 disabled:opacity-60"
+                      style={{ background: 'color-mix(in srgb, var(--a-danger) 15%, transparent)', color: 'var(--a-danger)' }} title="Sil">
                       {deletingId === arch.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
                     </button>
                   )}
                 </div>
                 <div className="mt-3 space-y-1.5">
                   {dirs.map((d, i) => (
-                    <div key={i} className={`flex items-center gap-2 text-xs ${sub} font-mono break-all`}>
-                      <FolderInput size={13} className="shrink-0 text-sky-400/70" />{d}
+                    <div key={i} className="flex items-center gap-2 text-xs font-mono break-all" style={{ color: 'var(--a-mut)' }}>
+                      <FolderInput size={13} className="shrink-0" style={{ color: 'var(--a-info)' }} />{d}
                     </div>
                   ))}
-                  {dirs.length === 0 && <div className={`text-xs ${sub} italic`}>Dizin yok</div>}
+                  {dirs.length === 0 && <div className="text-xs italic" style={{ color: 'var(--a-mut)' }}>Dizin yok</div>}
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
       )}
 
-      {/* Profesyonel silme onay modalı (window.confirm yerine) */}
-      {confirmTarget && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setConfirmId(null)}>
-          <div onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-md ${bg} border ${panelBorder} rounded-2xl shadow-2xl p-6 animate-[fadeIn_.15s_ease-out]`}>
-            <div className="flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
-                <AlertTriangle size={22} className="text-rose-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`font-bold text-lg ${txt}`}>Kaydı sil</h3>
-                <p className={`text-sm ${sub} mt-1`}>
-                  <b className={txt}>{confirmTarget.name}</b> shader dizin kaydını arşivden silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2 mt-6">
-              <button onClick={() => setConfirmId(null)}
-                className={`h-10 px-5 rounded-lg border ${panelBorder} ${sub} hover:${txt} text-sm font-semibold`}>
-                Vazgeç
-              </button>
-              <button onClick={() => doDelete(confirmTarget.id)}
-                className="h-10 px-5 rounded-lg bg-rose-600 text-white text-sm font-bold flex items-center gap-2 hover:brightness-110">
-                <Trash2 size={15} />Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Profesyonel toast bildirimi (alert yerine) */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-[110] animate-[slideUp_.2s_ease-out]">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-semibold
-            ${toast.type === 'success'
-              ? 'bg-emerald-600 border-emerald-500 text-white'
-              : 'bg-rose-600 border-rose-500 text-white'}`}>
-            {toast.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-            {toast.msg}
-            <button onClick={() => setToast(null)} className="ml-1 opacity-70 hover:opacity-100"><X size={15} /></button>
-          </div>
-        </div>
-      )}
+      {confirmNode}
     </div>
   );
 };

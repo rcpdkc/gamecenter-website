@@ -1,323 +1,194 @@
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
-import { useRef } from 'react';
-import { 
-  LayoutDashboard, Server, Settings, LogOut, Activity, Key, Users, Layers, Image, Megaphone, FolderSync,
-  ChevronLeft, ChevronRight, Sun, Moon, Bell, Menu, ScrollText, Cpu, HardDrive, Gamepad2, Thermometer, MonitorDot, DatabaseZap
+import { useRef, useEffect, useState, createContext } from 'react';
+import { ToastProvider } from '../admin/ui';
+import {
+  LayoutDashboard, Server, Settings, LogOut, Key, Users, Layers, Image, Megaphone, FolderSync,
+  Sun, Moon, Bell, Menu, ScrollText, HardDrive, Gamepad2, Thermometer, MonitorDot, DatabaseZap,
 } from 'lucide-react';
-import { useEffect, useState, createContext, useContext } from 'react';
 
-// Theme Context
 export const ThemeContext = createContext({ dark: true, toggleTheme: () => {} });
 
-const NAV_ITEMS_ADMIN = [
-  { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { to: '/superadmin/users', icon: Users, label: 'Kullanıcılar' },
-  { to: '/superadmin/groups', icon: Layers, label: 'Gruplar' },
-  { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi' },
-  { to: '/superadmin/mklink-archive', icon: FolderSync, label: 'Mklink Arşivi' },
-  { to: '/superadmin/shader-archive', icon: DatabaseZap, label: 'Shader Arşivi' },
-  { to: '/superadmin/references', icon: Key, label: 'Referans & Davet' },
-  { to: '/superadmin/announcements', icon: Megaphone, label: 'Duyurular' },
-  { to: '/superadmin/logs', icon: ScrollText, label: 'Loglar' },
-  { to: '/superadmin/settings', icon: Settings, label: 'Ayarlar' },
+// ── İki-raylı gruplar (ikon rayı = bölüm, panel = bölümün öğeleri) ──
+const SECTIONS_ADMIN = [
+  { id: 'genel', label: 'Genel', icon: LayoutDashboard, items: [['/superadmin', 'Dashboard', LayoutDashboard]] },
+  { id: 'yonetim', label: 'Yönetim', icon: Users, items: [
+    ['/superadmin/users', 'Kullanıcılar', Users], ['/superadmin/groups', 'Gruplar', Layers], ['/superadmin/references', 'Referans & Davet', Key],
+  ] },
+  { id: 'icerik', label: 'İçerik', icon: Image, items: [
+    ['/superadmin/covers', 'Cover Yönetimi', Image], ['/superadmin/mklink-archive', 'Mklink Arşivi', FolderSync], ['/superadmin/shader-archive', 'Shader Arşivi', DatabaseZap],
+  ] },
+  { id: 'sistem', label: 'Sistem', icon: Settings, items: [
+    ['/superadmin/announcements', 'Duyurular', Megaphone], ['/superadmin/logs', 'Loglar', ScrollText], ['/superadmin/settings', 'Ayarlar', Settings],
+  ] },
 ];
-
-const NAV_ITEMS_CAFE = [
-  { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { to: '/superadmin/clients', icon: MonitorDot, label: 'Bilgisayarlar' },
-  { to: '/superadmin/hardware', icon: HardDrive, label: 'Donanım' },
-  { to: '/superadmin/games', icon: Gamepad2, label: 'Oyunlar' },
-  { to: '/superadmin/monitoring', icon: Thermometer, label: 'İzleme' },
-  { to: '/superadmin/covers', icon: Image, label: 'Cover Yönetimi', mobileHidden: true },
-  { to: '/superadmin/shader-archive', icon: DatabaseZap, label: 'Shader Arşivi' },
+const SECTIONS_CAFE = [
+  { id: 'genel', label: 'Genel', icon: LayoutDashboard, items: [['/superadmin', 'Dashboard', LayoutDashboard]] },
+  { id: 'izleme', label: 'İzleme', icon: MonitorDot, items: [
+    ['/superadmin/clients', 'Bilgisayarlar', MonitorDot], ['/superadmin/hardware', 'Donanım', HardDrive], ['/superadmin/monitoring', 'İzleme', Thermometer], ['/superadmin/games', 'Oyunlar', Gamepad2],
+  ] },
+  { id: 'icerik', label: 'İçerik', icon: Image, items: [
+    ['/superadmin/covers', 'Cover Yönetimi', Image], ['/superadmin/shader-archive', 'Shader Arşivi', DatabaseZap],
+  ] },
 ];
-
-const PAGE_TITLES = {
-  '/superadmin': { title: 'Dashboard', subtitle: 'Tüm Game Center şubelerinin genel görünümü' },
-  '/superadmin/users': { title: 'Kullanıcı Yönetimi', subtitle: 'Kafe üyeleri ve grup yönetimi' },
-  '/superadmin/groups': { title: 'Gruplar', subtitle: 'Üyelik gruplarını oluşturun ve yönetin' },
-  '/superadmin/covers': { title: 'Cover Yönetimi', subtitle: 'Oyun kapaklarını yönetin ve onaylayın' },
-  '/superadmin/mklink-archive': { title: 'Mklink Arşivi', subtitle: 'Global MkLink şablonlarını yönetin' },
-  '/superadmin/shader-archive': { title: 'Shader Arşivi', subtitle: 'Oyun bazlı shader cache dizin yollarını yönetin (listele/sil)' },
-  '/superadmin/references': { title: 'Referans & Davet', subtitle: 'Kafe davet kodları ve kayıt yönetimi' },
-  '/superadmin/announcements': { title: 'Global Duyurular', subtitle: 'Tüm kafelere sistem bildirimleri gönderin' },
-  '/superadmin/logs': { title: 'Sistem Logları', subtitle: 'Giriş, şifre sıfırlama ve güvenlik olayları' },
-  '/superadmin/settings': { title: 'Ayarlar', subtitle: 'Sistem tercihleri ve yapılandırma' },
-  '/superadmin/hardware': { title: 'Donanım Envanteri', subtitle: 'GPU, CPU ve sistem donanım bilgileri' },
-  '/superadmin/games': { title: 'Oyun İstatistikleri', subtitle: 'En çok oynanan oyunlar ve tıklama analizi' },
-  '/superadmin/monitoring': { title: 'Sistem İzleme', subtitle: 'CPU ve GPU sıcaklık takibi' },
-  '/superadmin/clients': { title: 'Bilgisayarlar', subtitle: 'Kafedeki tüm PC’lerin canlı donanım ve durum bilgisi' },
+const SECTION_LABEL = { genel: 'Genel', yonetim: 'Yönetim', icerik: 'İçerik', sistem: 'Sistem', izleme: 'İzleme' };
+const TITLES = {
+  '/superadmin': 'Dashboard', '/superadmin/users': 'Kullanıcılar', '/superadmin/groups': 'Gruplar',
+  '/superadmin/references': 'Referans & Davet', '/superadmin/covers': 'Cover Yönetimi', '/superadmin/mklink-archive': 'Mklink Arşivi',
+  '/superadmin/shader-archive': 'Shader Arşivi', '/superadmin/announcements': 'Duyurular', '/superadmin/logs': 'Loglar',
+  '/superadmin/settings': 'Ayarlar', '/superadmin/clients': 'Bilgisayarlar', '/superadmin/hardware': 'Donanım',
+  '/superadmin/games': 'Oyunlar', '/superadmin/monitoring': 'İzleme',
 };
+
+const isItemActive = (to, pathname) => to === '/superadmin' ? pathname === '/superadmin' : pathname === to || pathname.startsWith(to + '/');
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [sessionInfo, setSessionInfo] = useState(null); // { expiresAt, remainingLabel }
+  const [sessionInfo, setSessionInfo] = useState(null);
   const autoLogoutTimer = useRef(null);
 
   const doLogout = (reason) => {
-    localStorage.removeItem('gc_admin_token');
-    localStorage.removeItem('gc_user');
-    localStorage.removeItem('gc_expires_at');
-    sessionStorage.removeItem('gc_admin_token');
-    sessionStorage.removeItem('gc_user');
-    sessionStorage.removeItem('gc_expires_at');
+    ['gc_admin_token', 'gc_user', 'gc_expires_at'].forEach((k) => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
     if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current);
     navigate('/login', { state: { reason } });
   };
 
   useEffect(() => {
-    const storage = localStorage.getItem('gc_admin_token') || sessionStorage.getItem('gc_admin_token') ? (localStorage.getItem('gc_admin_token') ? localStorage : sessionStorage) : localStorage;
+    const storage = (localStorage.getItem('gc_admin_token') || sessionStorage.getItem('gc_admin_token'))
+      ? (localStorage.getItem('gc_admin_token') ? localStorage : sessionStorage) : localStorage;
     const token = storage.getItem('gc_admin_token');
     const storedUser = storage.getItem('gc_user');
     const expiresAt = parseInt(storage.getItem('gc_expires_at') || '0', 10);
-
     if (!token || !storedUser) { setIsAuthenticated(false); return; }
-
-    // Hızlı expiry ön kontrolü (API çağırmadan)
-    if (expiresAt && Date.now() > expiresAt) {
-      doLogout('expired');
-      return;
-    }
-
+    if (expiresAt && Date.now() > expiresAt) { doLogout('expired'); return; }
     setUser(JSON.parse(storedUser));
 
-    // Sunucu tarafında token doğrulama
-    fetch('/api/login?action=verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ token }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (!data.success) {
-          // Token geçersiz veya süresi dolmuş
-          doLogout(data.code === 'TOKEN_EXPIRED' ? 'expired' : 'invalid');
-        } else {
-          // Güncel kullanıcı bilgisini yaz
-          setUser(data.user);
-          const storage = localStorage.getItem('gc_admin_token') ? localStorage : sessionStorage;
-          storage.setItem('gc_user', JSON.stringify(data.user));
-
-          // Otomatik logout zamanlayıcısı
-          if (data.expires_at) {
-            const msLeft = data.expires_at - Date.now();
-            const hLeft = Math.floor(msLeft / 3600000);
-            const mLeft = Math.floor((msLeft % 3600000) / 60000);
-            setSessionInfo({ expiresAt: data.expires_at, remainingLabel: `${hLeft}s ${mLeft}dk` });
-
-            if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current);
-            autoLogoutTimer.current = setTimeout(() => doLogout('expired'), Math.max(0, msLeft));
-          }
+    fetch('/api/login?action=verify', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ token }) })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.success) { doLogout(data.code === 'TOKEN_EXPIRED' ? 'expired' : 'invalid'); return; }
+        setUser(data.user);
+        const st = localStorage.getItem('gc_admin_token') ? localStorage : sessionStorage;
+        st.setItem('gc_user', JSON.stringify(data.user));
+        if (data.expires_at) {
+          const msLeft = data.expires_at - Date.now();
+          const hLeft = Math.floor(msLeft / 3600000), mLeft = Math.floor((msLeft % 3600000) / 60000);
+          setSessionInfo({ remainingLabel: `${hLeft}s ${mLeft}dk` });
+          if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current);
+          autoLogoutTimer.current = setTimeout(() => doLogout('expired'), Math.max(0, msLeft));
         }
       })
-      .catch(() => {
-        // Ağ hatası — offline olabilir, sessizce geç
-      });
+      .catch(() => {});
 
     const savedTheme = localStorage.getItem('gc_admin_theme');
     if (savedTheme) setDark(savedTheme === 'dark');
-
     return () => { if (autoLogoutTimer.current) clearTimeout(autoLogoutTimer.current); };
   }, []);
 
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    localStorage.setItem('gc_admin_theme', next ? 'dark' : 'light');
-  };
-
-  const handleLogout = () => doLogout('manual');
+  const toggleTheme = () => { const n = !dark; setDark(n); localStorage.setItem('gc_admin_theme', n ? 'dark' : 'light'); };
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-
-  // user henüz localStorage'dan yüklenmemişse spinner göster
-  // (direkt URL erişiminde Outlet'in null user ile render edilmesini engeller)
   if (!user) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#080a0f]">
-      <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+    <div className={`gc-admin ${dark ? 'dark' : ''} flex items-center justify-center min-h-screen`} style={{ background: 'var(--a-bg)' }}>
+      <div className="w-10 h-10 rounded-full animate-spin" style={{ border: '4px solid var(--a-border2)', borderTopColor: 'var(--a-accent)' }} />
     </div>
   );
 
-  const currentPage = PAGE_TITLES[location.pathname] || { title: 'Yönetim Paneli', subtitle: '' };
-
-  // Theme classes
-  const bg = dark ? 'bg-[#080a0f]' : 'bg-gray-50';
-  const sidebar = dark ? 'bg-[#0d0f1a] border-white/5' : 'bg-white border-gray-200';
-  const topbar = dark ? 'bg-[#0d0f1a]/80 border-white/5' : 'bg-white/80 border-gray-200';
-  const txt = dark ? 'text-gray-100' : 'text-gray-900';
-  const muted = dark ? 'text-gray-500' : 'text-gray-400';
-  const navActive = dark
-    ? 'bg-orange-500/15 text-orange-400 border-l-2 border-orange-500'
-    : 'bg-orange-50 text-orange-600 border-l-2 border-orange-500';
-  const navIdle = dark
-    ? 'text-gray-500 hover:text-gray-200 hover:bg-white/5'
-    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100';
-
-  const isActive = (item) => item.exact
-    ? location.pathname === item.to
-    : location.pathname.startsWith(item.to) && !item.exact || location.pathname === item.to;
+  const sections = user.role === 'admin' ? SECTIONS_ADMIN : SECTIONS_CAFE;
+  const activeSection = sections.find((s) => s.items.some(([to]) => isItemActive(to, location.pathname))) || sections[0];
+  const title = TITLES[location.pathname] || 'Yönetim Paneli';
+  const initials = user.role === 'admin' ? 'SA' : (user.cafe_name || 'C').substring(0, 2).toUpperCase();
 
   return (
     <ThemeContext.Provider value={{ dark, toggleTheme }}>
-      <div className={`flex min-h-screen font-sans transition-colors duration-300 ${bg} ${txt}`}>
+      <div className={`gc-admin ${dark ? 'dark' : ''} flex min-h-screen`} style={{ background: 'var(--a-bg)', color: 'var(--a-ink)' }}>
 
-        {/* MOBILE OVERLAY */}
-        {mobileOpen && (
-          <div className="fixed inset-0 bg-black/60 z-30 md:hidden" onClick={() => setMobileOpen(false)} />
-        )}
+        {mobileOpen && <div className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm" onClick={() => setMobileOpen(false)} />}
 
-        {/* SIDEBAR */}
-        <aside className={`
-          fixed top-0 left-0 h-full z-40 flex flex-col border-r transition-all duration-300 ease-in-out
-          ${sidebar}
-          ${collapsed ? 'w-[72px]' : 'w-64'}
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        `}>
-          {/* Logo */}
-          <div className={`h-16 flex items-center border-b ${dark ? 'border-white/5' : 'border-gray-200'} px-4 shrink-0`}>
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(249,115,22,0.35)]">
-                <Server size={18} className="text-white" />
-              </div>
-              {!collapsed && (
-                <span className="font-bold text-lg whitespace-nowrap overflow-hidden">
-                  <span className={dark ? 'text-white' : 'text-gray-900'}>Cloud</span>
-                  <span className="text-orange-500"> Admin</span>
-                </span>
-              )}
+        {/* ── SIDEBAR (iki ray) ── */}
+        <aside className={`fixed top-0 left-0 h-full z-40 flex transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+          {/* Ray (ikon) */}
+          <div className="w-[62px] h-full flex flex-col items-center py-3 gap-1 border-r" style={{ background: 'var(--a-sidebar)', borderColor: 'var(--a-border)' }}>
+            <div className="w-9 h-9 rounded-xl grid place-items-center mb-2 shrink-0" style={{ background: 'var(--a-accent)' }}>
+              <Server size={18} style={{ color: '#04170e' }} />
             </div>
-          </div>
-
-          {/* Nav */}
-          <nav className="flex-1 py-4 overflow-y-auto">
-            {(user?.role === 'admin' ? NAV_ITEMS_ADMIN : NAV_ITEMS_CAFE).map((item) => {
-              const active = item.exact ? location.pathname === item.to : location.pathname === item.to || (item.to !== '/superadmin' && location.pathname.startsWith(item.to));
+            {sections.map((s) => {
+              const on = activeSection.id === s.id;
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileOpen(false)}
-                  title={collapsed ? item.label : ''}
-                  className={`
-                    flex items-center gap-3 mx-3 my-0.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
-                    ${active ? navActive : navIdle}
-                    ${collapsed ? 'justify-center' : ''}
-                    ${item.mobileHidden ? 'hidden md:flex' : ''}
-                  `}
-                >
-                  <item.icon size={18} className="shrink-0" />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                <Link key={s.id} to={s.items[0][0]} title={s.label} onClick={() => setMobileOpen(false)}
+                  className="relative w-10 h-10 rounded-xl grid place-items-center transition-colors"
+                  style={on ? { background: 'var(--a-accent-soft)' } : {}}>
+                  {on && <span className="absolute left-[-11px] top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full" style={{ background: 'var(--a-accent)' }} />}
+                  <s.icon size={19} style={{ color: on ? 'var(--a-accent)' : 'var(--a-mut)' }} />
                 </Link>
               );
             })}
-          </nav>
-
-          {/* Bottom actions */}
-          <div className={`p-3 border-t ${dark ? 'border-white/5' : 'border-gray-200'} space-y-1 shrink-0`}>
-            <button
-              onClick={handleLogout}
-              title={collapsed ? 'Çıkış Yap' : ''}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                text-red-400 hover:text-red-300 hover:bg-red-500/10
-                ${collapsed ? 'justify-center' : ''}
-              `}
-            >
-              <LogOut size={18} className="shrink-0" />
-              {!collapsed && <span>Çıkış Yap</span>}
-            </button>
-          </div>
-
-          {/* Collapse toggle (desktop only) */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={`
-              hidden md:flex absolute -right-3.5 top-20 z-50 w-7 h-7 rounded-full items-center justify-center shadow-lg border transition-colors
-              ${dark ? 'bg-[#0d0f1a] border-white/10 text-gray-400 hover:text-white' : 'bg-white border-gray-200 text-gray-500 hover:text-gray-900'}
-            `}
-          >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
-        </aside>
-
-        {/* MAIN CONTENT */}
-        <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-[72px]' : 'md:ml-64'}`}>
-
-          {/* TOPBAR */}
-          <header className={`
-            sticky top-0 z-20 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-6 border-b
-            backdrop-blur-xl transition-colors ${topbar}
-          `}>
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-              {/* Mobile hamburger */}
-              <button
-                className={`md:hidden p-1.5 sm:p-2 rounded-lg shrink-0 ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu size={20} />
+            <div className="mt-auto flex flex-col items-center gap-1">
+              <button onClick={toggleTheme} title="Tema" className="w-10 h-10 rounded-xl grid place-items-center hover:bg-[var(--a-card2)]" style={{ color: 'var(--a-mut)' }}>
+                {dark ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-
-              {/* Page Title in Header */}
+              <button onClick={() => doLogout('manual')} title="Çıkış" className="w-10 h-10 rounded-xl grid place-items-center hover:bg-[var(--a-card2)]" style={{ color: 'var(--a-danger)' }}>
+                <LogOut size={18} />
+              </button>
+            </div>
+          </div>
+          {/* Panel (öğeler) */}
+          <div className="w-[196px] h-full flex flex-col border-r" style={{ background: 'var(--a-sidebar)', borderColor: 'var(--a-border)' }}>
+            <div className="h-[52px] flex items-center px-4 shrink-0 border-b" style={{ borderColor: 'var(--a-border)' }}>
+              <span className="font-extrabold text-[15px]" style={{ color: 'var(--a-ink)' }}>Cloud<span style={{ color: 'var(--a-accent)' }}> Admin</span></span>
+            </div>
+            <div className="flex-1 overflow-y-auto py-3 px-2.5">
+              <div className="px-2 pb-1.5 text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--a-mut2)' }}>{SECTION_LABEL[activeSection.id]}</div>
+              {activeSection.items.map(([to, label, Icon]) => {
+                const on = isItemActive(to, location.pathname);
+                return (
+                  <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                    className="relative flex items-center gap-2.5 h-9 px-2.5 rounded-lg text-[13px] font-medium transition-colors mb-0.5"
+                    style={on ? { background: 'var(--a-card2)', color: 'var(--a-ink)' } : { color: 'var(--a-mut)' }}>
+                    {on && <span className="absolute left-0.5 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full" style={{ background: 'var(--a-accent)' }} />}
+                    <Icon size={16} style={{ color: on ? 'var(--a-accent)' : 'var(--a-mut)' }} />
+                    <span className="truncate">{label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="p-3 border-t flex items-center gap-2.5" style={{ borderColor: 'var(--a-border)' }}>
+              <div className="w-8 h-8 rounded-lg grid place-items-center font-bold text-xs shrink-0" style={{ background: 'var(--a-accent)', color: '#04170e' }}>{initials}</div>
               <div className="min-w-0">
-                <h1 className={`text-sm sm:text-lg font-bold leading-none truncate ${dark ? 'text-white' : 'text-gray-900'}`}>
-                  {currentPage.title}
-                </h1>
-                {currentPage.subtitle && (
-                  <p className={`text-xs mt-0.5 ${muted} hidden sm:block truncate`}>{currentPage.subtitle}</p>
-                )}
+                <div className="text-xs font-semibold truncate" style={{ color: 'var(--a-ink)' }}>{user.role === 'admin' ? 'Super Admin' : user.cafe_name}</div>
+                <div className="text-[10px] truncate" style={{ color: 'var(--a-mut)' }}>{user.role === 'admin' ? 'admin' : user.first_name}</div>
               </div>
             </div>
+          </div>
+        </aside>
 
-            {/* Right side actions */}
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className={`p-1.5 sm:p-2 rounded-xl transition-all ${dark ? 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/10' : 'text-gray-500 hover:text-orange-500 hover:bg-orange-50'}`}
-                title="Tema Değiştir"
-              >
-                {dark ? <Sun size={16} /> : <Moon size={16} />}
+        {/* ── MAIN ── */}
+        <div className="flex-1 flex flex-col min-h-screen min-w-0 md:ml-[258px]">
+          <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-4 sm:px-6 border-b backdrop-blur-xl"
+            style={{ background: 'color-mix(in srgb, var(--a-sidebar) 80%, transparent)', borderColor: 'var(--a-border)' }}>
+            <div className="flex items-center gap-3 min-w-0">
+              <button className="md:hidden p-1.5 rounded-lg" style={{ color: 'var(--a-mut)' }} onClick={() => setMobileOpen(true)}><Menu size={20} /></button>
+              <h1 className="text-base font-bold truncate" style={{ color: 'var(--a-ink)' }}>{title}</h1>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button className="relative w-9 h-9 grid place-items-center rounded-lg hover:bg-[var(--a-card2)]" style={{ color: 'var(--a-mut)' }}>
+                <Bell size={16} /><span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--a-accent)' }} />
               </button>
-
-              {/* Notifications */}
-              <button className={`relative p-1.5 sm:p-2 rounded-xl transition-all ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}>
-                <Bell size={16} />
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-              </button>
-
-              {/* Kalan oturum süresi */}
               {sessionInfo && (
-                <div className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs ${
-                  dark ? 'bg-white/5 text-gray-500' : 'bg-gray-100 text-gray-400'
-                }`} title="Oturum bitiş süresi">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {sessionInfo.remainingLabel}
-                </div>
-              )}
-
-              {/* Avatar */}
-              {user && (
-                <div className="ml-1 flex items-center gap-2 sm:gap-2.5 pl-2 sm:pl-3 border-l border-white/10">
-                  <div className="text-right hidden lg:block">
-                    <p className={`text-sm font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>{user.role === 'admin' ? 'Super Admin' : user.cafe_name}</p>
-                    <p className={`text-xs ${muted}`}>{user.role === 'admin' ? 'admin' : user.first_name}</p>
-                  </div>
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center font-bold text-white text-xs sm:text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                    {user.role === 'admin' ? 'SA' : (user.cafe_name || 'C').substring(0,2).toUpperCase()}
-                  </div>
+                <div className="hidden lg:flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-xs" style={{ background: 'var(--a-card2)', color: 'var(--a-mut)' }} title="Oturum bitişi">
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--a-ok)' }} />{sessionInfo.remainingLabel}
                 </div>
               )}
             </div>
           </header>
-
-          {/* PAGE CONTENT */}
-          <main className={`flex-1 overflow-y-auto p-6 md:p-8 ${bg}`}>
-            <Outlet context={{ dark, user }} />
+          <main className="flex-1 overflow-y-auto p-5 sm:p-7" style={{ background: 'var(--a-bg)' }}>
+            <ToastProvider>
+              <Outlet context={{ dark, user }} />
+            </ToastProvider>
           </main>
         </div>
       </div>

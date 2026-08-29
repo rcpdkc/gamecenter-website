@@ -1,20 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { FolderSync, Upload, Trash2, Loader2, FileJson, CheckCircle2, Download } from 'lucide-react';
+import { Card, CardHeader, Button, IconButton, Badge, EmptyState, Loading, useToast, useConfirm } from '../admin/ui';
 
 const MklinkArchivePage = () => {
-  const context = useOutletContext();
-  const dark = context?.dark ?? true;
-  
   const [archives, setArchives] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
-
-  const bg = dark ? 'bg-[#111827]' : 'bg-white';
-  const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
-  const txt = dark ? 'text-white' : 'text-gray-900';
-  const sub = dark ? 'text-gray-500' : 'text-gray-400';
+  const { push } = useToast();
+  const { confirm, confirmNode } = useConfirm();
 
   const fetchArchives = async () => {
     setFetching(true);
@@ -41,10 +35,10 @@ const MklinkArchivePage = () => {
     reader.onload = async (event) => {
       try {
         const json = JSON.parse(event.target.result);
-        
+
         // Validation basic
         if (!json.name || !json.items) {
-          alert('Geçersiz şablon dosyası! name ve items alanları bulunamadı.');
+          push('Geçersiz şablon dosyası! name ve items alanları bulunamadı.', 'danger');
           return;
         }
 
@@ -62,12 +56,12 @@ const MklinkArchivePage = () => {
         const data = await res.json();
         if (data.success) {
           fetchArchives();
-          alert('Şablon başarıyla arşive yüklendi!');
+          push('Şablon başarıyla arşive yüklendi!', 'ok');
         } else {
-          alert(data.error);
+          push(data.error, 'danger');
         }
       } catch (err) {
-        alert('Dosya okunurken bir hata oluştu. Geçerli bir JSON dosyası seçtiğinizden emin olun.');
+        push('Dosya okunurken bir hata oluştu. Geçerli bir JSON dosyası seçtiğinizden emin olun.', 'danger');
       } finally {
         setUploading(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -77,8 +71,9 @@ const MklinkArchivePage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Bu şablonu arşivden silmek istediğinize emin misiniz?')) return;
-    
+    const ok = await confirm({ title: 'Şablonu sil', message: 'Bu şablonu arşivden silmek istediğinize emin misiniz?', tone: 'danger', confirmLabel: 'Sil' });
+    if (!ok) return;
+
     try {
       const res = await fetch('/api/mklink_archive', {
         method: 'DELETE',
@@ -89,80 +84,58 @@ const MklinkArchivePage = () => {
       if (data.success) {
         fetchArchives();
       } else {
-        alert(data.error);
+        push(data.error, 'danger');
       }
     } catch (err) {
-      alert('Silinemedi.');
+      push('Silinemedi.', 'danger');
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className={`text-2xl font-black ${txt} tracking-tight`}>Mklink Arşivi</h1>
-          <p className={`text-sm ${sub} mt-1`}>Kafelerin tek tıkla indirebileceği Global MkLink şablonlarını yönetin.</p>
-        </div>
-        <div>
-          <input 
-            type="file" 
-            accept=".json" 
-            ref={fileInputRef} 
-            onChange={handleFileUpload} 
-            className="hidden" 
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:from-orange-400 hover:to-orange-500 transition-all disabled:opacity-50"
-          >
-            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            JSON Şablon Yükle
-          </button>
-        </div>
-      </div>
-
-      <div className={`${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm`}>
-        <div className={`px-6 py-4 border-b ${panelBorder} flex items-center gap-3`}>
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-            <FolderSync size={20} className="text-orange-500" />
-          </div>
-          <div>
-            <h3 className={`text-base font-bold ${txt}`}>Arşivdeki Şablonlar</h3>
-            <p className={`text-xs ${sub} mt-0.5`}>Sisteme yüklenmiş ve kafelere açık olan tüm şablonlar.</p>
-          </div>
-        </div>
+      <Card>
+        <CardHeader
+          title="Arşivdeki Şablonlar"
+          subtitle="Sisteme yüklenmiş ve kafelere açık olan tüm şablonlar."
+          icon={FolderSync}
+          right={
+            <>
+              <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+              <Button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                JSON Şablon Yükle
+              </Button>
+            </>
+          }
+        />
 
         {fetching ? (
-          <div className="flex justify-center py-16"><Loader2 className="animate-spin text-orange-500" /></div>
+          <Loading />
         ) : archives.length === 0 ? (
-          <div className={`py-16 text-center ${sub} text-sm`}>
-            <FileJson size={36} className="mx-auto mb-3 opacity-30" />
-            <p>Arşivde henüz hiç şablon yok.</p>
-          </div>
+          <EmptyState icon={FileJson} title="Arşivde henüz hiç şablon yok." />
         ) : (
-          <div className={`divide-y ${dark ? 'divide-white/5' : 'divide-gray-100'}`}>
+          <div className="divide-y divide-[var(--a-border)]">
             {archives.map(arch => (
-              <div key={arch.id} className="p-4 px-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+              <div key={arch.id} className="p-4 px-6 flex items-center justify-between transition-colors hover:bg-[var(--a-card2)]">
                 <div className="flex items-start gap-4">
                   <div className="mt-1">
-                    <CheckCircle2 size={20} className="text-green-500" />
+                    <CheckCircle2 size={20} style={{ color: 'var(--a-ok)' }} />
                   </div>
                   <div>
-                    <h4 className={`font-semibold ${txt}`}>{arch.name}</h4>
-                    <p className={`text-xs ${sub} mt-1 max-w-xl`}>{arch.description}</p>
+                    <h4 className="font-semibold" style={{ color: 'var(--a-ink)' }}>{arch.name}</h4>
+                    <p className="text-xs mt-1 max-w-xl" style={{ color: 'var(--a-mut)' }}>{arch.description}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-md ${dark ? 'bg-white/10' : 'bg-gray-100'}`}>
-                        {arch.data_json.items?.length || 0} Kural
-                      </span>
-                      <span className={`text-[10px] text-gray-500`}>
+                      <Badge tone="mut">{arch.data_json.items?.length || 0} Kural</Badge>
+                      <span className="text-[10px]" style={{ color: 'var(--a-mut2)' }}>
                         Yüklendi: {new Date(arch.created_at).toLocaleString('tr-TR')}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
+                <div className="flex items-center gap-1">
+                  <IconButton
+                    icon={Download}
+                    title="JSON İndir"
                     onClick={() => {
                       const blob = new Blob([JSON.stringify(arch.data_json, null, 2)], { type: 'application/json' });
                       const url = URL.createObjectURL(blob);
@@ -170,24 +143,22 @@ const MklinkArchivePage = () => {
                       a.href = url; a.download = `mklink_${arch.name.replace(/\s+/g,'_')}.json`; a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="p-2 rounded-lg text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors"
-                    title="JSON İndir"
-                  >
-                    <Download size={18} />
-                  </button>
+                  />
                   <button
                     onClick={() => handleDelete(arch.id)}
-                    className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                    className="w-8 h-8 grid place-items-center rounded-lg transition-colors hover:bg-[var(--a-card2)]"
+                    style={{ color: 'var(--a-danger)' }}
                     title="Şablonu Sil"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
+      {confirmNode}
     </div>
   );
 };

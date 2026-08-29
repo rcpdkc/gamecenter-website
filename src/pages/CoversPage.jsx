@@ -1,22 +1,20 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Clock, Eye, Download, Edit2, Check, Copy, Search } from 'lucide-react';
+import { Image, Upload, CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Eye, Edit2, Check, Copy } from 'lucide-react';
+import { Card, CardHeader, Button, IconButton, SearchInput, Badge, Modal, EmptyState, ProgressBar, SegFilter, Toolbar, Loading, useConfirm } from '../admin/ui';
 
 const STATUS_CONFIG = {
-  pending:  { label: 'Bekliyor',    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
-  approved: { label: 'Onaylandı',   color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  rejected: { label: 'Reddedildi',  color: 'bg-red-500/10 text-red-400 border-red-500/20' },
-  isimsizler: { label: 'İsimsiz/Karışık', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+  pending:    { label: 'Bekliyor',        tone: 'warn' },
+  approved:   { label: 'Onaylandı',       tone: 'ok' },
+  rejected:   { label: 'Reddedildi',      tone: 'danger' },
+  isimsizler: { label: 'İsimsiz/Karışık', tone: 'info' },
 };
 
 const StatusBadge = ({ status }) => {
   const s = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
-  return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${s.color}`}>{s.label}</span>;
+  return <Badge tone={s.tone}>{s.label}</Badge>;
 };
 
 const CoversPage = () => {
-  const context = useOutletContext() || {};
-  const dark = context.dark !== undefined ? context.dark : true;
   const [covers, setCovers] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -30,7 +28,7 @@ const CoversPage = () => {
   // Editing State
   const [editingCoverId, setEditingCoverId] = useState(null);
   const [editGameName, setEditGameName] = useState('');
-  
+
   // Duplicate Detection State
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,12 +36,7 @@ const CoversPage = () => {
 
   const fileRef = useRef(null);
   const user = (() => { try { return JSON.parse(localStorage.getItem('gc_user') || '{}'); } catch { return {}; } })();
-
-  const bg = dark ? 'bg-[#111827]' : 'bg-white';
-  const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
-  const txt = dark ? 'text-white' : 'text-gray-900';
-  const sub = dark ? 'text-gray-500' : 'text-gray-400';
-  const inputBg = dark ? 'bg-white/5 border-white/10 text-white placeholder:text-gray-600' : 'bg-gray-50 border-gray-200 text-gray-900';
+  const { confirm, confirmNode } = useConfirm();
 
   const fetchCovers = async () => {
     setFetching(true);
@@ -62,17 +55,19 @@ const CoversPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Bu cover\'ı silmek istediğinize emin misiniz?')) return;
+    const ok = await confirm({ title: 'Cover sil', message: 'Bu cover\'ı silmek istediğinize emin misiniz?', tone: 'danger', confirmLabel: 'Sil' });
+    if (!ok) return;
     setCovers(prev => prev.filter(c => c.id !== id));
     await fetch('/api/covers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`${selectedCovers.length} adet görseli silmek istediğinize emin misiniz?`)) return;
+    const ok = await confirm({ title: 'Görselleri sil', message: `${selectedCovers.length} adet görseli silmek istediğinize emin misiniz?`, tone: 'danger', confirmLabel: 'Sil' });
+    if (!ok) return;
     const idsToDelete = [...selectedCovers];
     setSelectedCovers([]);
     setCovers(prev => prev.filter(c => !idsToDelete.includes(c.id)));
-    await Promise.all(idsToDelete.map(id => 
+    await Promise.all(idsToDelete.map(id =>
       fetch('/api/covers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
     ));
   };
@@ -80,22 +75,22 @@ const CoversPage = () => {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!uploadForm.files || uploadForm.files.length === 0) return;
-    
+
     cancelUploadRef.current = false;
     const filesArray = Array.from(uploadForm.files);
     setUploading(true);
     setUploadProgress({ active: true, total: filesArray.length, current: 0, success: 0, fail: 0 });
     setUploadLogs([]);
-    
+
     let sCount = 0;
     let fCount = 0;
-    
+
     for (let i = 0; i < filesArray.length; i++) {
       if (cancelUploadRef.current) {
         setUploadLogs(prev => [...prev, "🛑 Yükleme işlemi kullanıcı tarafından iptal edildi!"]);
         break;
       }
-      
+
       const f = filesArray[i];
 
       // Vercel Serverless Function Limit Check (4.5 MB)
@@ -113,7 +108,7 @@ const CoversPage = () => {
       fd.append('uploaded_by_id', user.id || '');
       fd.append('uploaded_by_role', user.role || 'cafe');
       fd.append('cafe_id', user.cafe_id || '');
-      
+
       try {
         const res = await fetch('/api/upload_cover', { method: 'POST', body: fd });
         let data;
@@ -122,7 +117,7 @@ const CoversPage = () => {
         } catch (parseError) {
           throw new Error(res.status === 413 ? 'Dosya çok büyük (413)' : `Sunucu Hatası: ${res.statusText}`);
         }
-        
+
         if (data.success) {
           sCount++;
           if (data.skipped) {
@@ -138,14 +133,14 @@ const CoversPage = () => {
         fCount++;
         setUploadLogs(prev => [...prev, `❌ ${f.name} - Ağ Hatası: ${err.message}`]);
       }
-      
+
       setUploadProgress(prev => ({ ...prev, current: i + 1, success: sCount, fail: fCount }));
     }
-    
-    setUploadForm({ game_name: '', files: null }); 
-    if (fileRef.current) fileRef.current.value = ''; 
-    fetchCovers(); 
-    
+
+    setUploadForm({ game_name: '', files: null });
+    if (fileRef.current) fileRef.current.value = '';
+    fetchCovers();
+
     setUploading(false);
     // Hide active bar after 5 seconds of finish, but keep logs visible until next upload.
     setTimeout(() => {
@@ -166,30 +161,38 @@ const CoversPage = () => {
   };
 
   const isMessy = (name) => /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(name) || name.length < 3;
-  
-  const baseFiltered = filter === 'all' ? covers 
-                 : filter === 'isimsizler' ? covers.filter(c => isMessy(c.game_name)) 
+
+  const baseFiltered = filter === 'all' ? covers
+                 : filter === 'isimsizler' ? covers.filter(c => isMessy(c.game_name))
                  : covers.filter(c => c.status === filter);
-                 
-  const filtered = searchQuery.trim() 
+
+  const filtered = searchQuery.trim()
                  ? baseFiltered.filter(c => c.game_name.toLowerCase().includes(searchQuery.toLowerCase()))
                  : baseFiltered;
-                 
-  const counts = { 
-    all: covers.length, 
-    pending: covers.filter(c => c.status === 'pending').length, 
-    approved: covers.filter(c => c.status === 'approved').length, 
+
+  const counts = {
+    all: covers.length,
+    pending: covers.filter(c => c.status === 'pending').length,
+    approved: covers.filter(c => c.status === 'approved').length,
     rejected: covers.filter(c => c.status === 'rejected').length,
     isimsizler: covers.filter(c => isMessy(c.game_name)).length
   };
 
+  const filterOptions = [
+    { value: 'all', label: 'Tümü', count: counts.all },
+    { value: 'pending', label: STATUS_CONFIG.pending.label, count: counts.pending },
+    { value: 'approved', label: STATUS_CONFIG.approved.label, count: counts.approved },
+    { value: 'rejected', label: STATUS_CONFIG.rejected.label, count: counts.rejected },
+    { value: 'isimsizler', label: STATUS_CONFIG.isimsizler.label, count: counts.isimsizler },
+  ];
+
   const normalizeForDuplicate = (name) => {
     let n = name.toLowerCase();
-    n = n.replace(/\.(jpg|jpeg|png|webp)$/i, ''); 
-    n = n.replace(/_tgdb_[a-f0-9]+$/i, ''); 
-    n = n.replace(/_[0-9]{10,}$/i, ''); 
-    n = n.replace(/[^a-z0-9]/g, ' '); 
-    return n.replace(/\s+/g, ' ').trim(); 
+    n = n.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+    n = n.replace(/_tgdb_[a-f0-9]+$/i, '');
+    n = n.replace(/_[0-9]{10,}$/i, '');
+    n = n.replace(/[^a-z0-9]/g, ' ');
+    return n.replace(/\s+/g, ' ').trim();
   };
 
   const duplicates = useMemo(() => {
@@ -206,18 +209,14 @@ const CoversPage = () => {
   return (
     <>
       {/* Preview Modal */}
-      {preview && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreview(null)}>
-          <div className="max-w-2xl w-full" onClick={e => e.stopPropagation()}>
-            <img src={preview.file_url} alt={preview.game_name} className="w-full rounded-2xl object-cover shadow-2xl" />
-            <p className="text-white text-center mt-3 font-semibold">{preview.game_name}</p>
-          </div>
-        </div>
-      )}
+      <Modal open={!!preview} onClose={() => setPreview(null)} title={preview?.game_name} width="max-w-2xl">
+        {preview && <img src={preview.file_url} alt={preview.game_name} className="w-full rounded-xl object-cover" />}
+      </Modal>
 
       {/* Bulk Delete Bar */}
       {selectedCovers.length > 0 && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[55] bg-rose-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-top-4">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[55] px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-top-4"
+          style={{ background: 'var(--a-danger)', color: '#fff' }}>
           <span className="font-bold text-sm">{selectedCovers.length} kapak seçildi</span>
           <button onClick={handleBulkDelete} className="bg-white/20 hover:bg-white/30 px-4 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
             <Trash2 size={16} /> Sil
@@ -229,231 +228,178 @@ const CoversPage = () => {
       )}
 
       {/* Duplicate Detection Modal */}
-      {duplicateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setDuplicateModalOpen(false)}>
-          <div className={`${bg} border ${panelBorder} rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden`} onClick={e => e.stopPropagation()}>
-            <div className="p-5 border-b border-white/5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
-                  <Copy size={18} />
-                </div>
-                Kopya Tespiti Merkezi
-              </h2>
-              <button onClick={() => setDuplicateModalOpen(false)} className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5">
-                <XCircle size={24} />
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto flex-1 space-y-8 bg-black/20 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:bg-rose-500/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-rose-500/80">
-              {duplicates.map(([name, group]) => (
-                <div key={name} className="bg-white/5 border border-white/5 rounded-xl p-4">
-                  <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                    <span className="text-rose-400 capitalize">"{name}"</span>
-                    <span className="text-xs font-normal text-gray-400 bg-white/5 px-2 py-1 rounded-md">{group.length} kopya bulundu</span>
-                  </h3>
-                  
-                  <div className="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-black/20 [&::-webkit-scrollbar-thumb]:bg-rose-500/50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                    {group.map(cover => (
-                      <div key={cover.id} className="min-w-[140px] max-w-[140px] flex-shrink-0 snap-start bg-black/40 rounded-lg overflow-hidden border border-white/5 flex flex-col relative">
-                        <img src={cover.file_url} alt={name} className="w-full aspect-[3/4] object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreview(cover)} />
-                        <div className="absolute top-2 left-2"><StatusBadge status={cover.status} /></div>
-                        <div className="p-2 flex flex-col items-center justify-center gap-2 mt-auto">
-                          <button onClick={() => handleDelete(cover.id)} className="w-full py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center gap-1">
-                            <Trash2 size={12} /> Çöpe At
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+      <Modal open={duplicateModalOpen} onClose={() => setDuplicateModalOpen(false)} title="Kopya Tespiti Merkezi" icon={Copy} width="max-w-5xl">
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-1">
+          {duplicates.map(([name, group]) => (
+            <div key={name} className="rounded-xl border p-4" style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)' }}>
+              <h3 className="font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--a-ink)' }}>
+                <span className="capitalize" style={{ color: 'var(--a-accent)' }}>"{name}"</span>
+                <Badge tone="mut">{group.length} kopya bulundu</Badge>
+              </h3>
+
+              <div className="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x">
+                {group.map(cover => (
+                  <div key={cover.id} className="min-w-[140px] max-w-[140px] flex-shrink-0 snap-start rounded-lg overflow-hidden border flex flex-col relative"
+                    style={{ background: 'var(--a-bg)', borderColor: 'var(--a-border)' }}>
+                    <img src={cover.file_url} alt={name} className="w-full aspect-[3/4] object-cover cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setPreview(cover)} />
+                    <div className="absolute top-2 left-2"><StatusBadge status={cover.status} /></div>
+                    <div className="p-2 flex flex-col items-center justify-center gap-2 mt-auto">
+                      <button onClick={() => handleDelete(cover.id)}
+                        className="w-full py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 hover:brightness-110"
+                        style={{ background: 'color-mix(in srgb, var(--a-danger) 15%, transparent)', color: 'var(--a-danger)' }}>
+                        <Trash2 size={12} /> Çöpe At
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-6">
-        {/* Stats + Filter tabs */}
-        <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {Object.entries(counts).map(([key, count]) => (
-              <button key={key} onClick={() => setFilter(key)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${filter === key
-                  ? 'bg-orange-500 text-white border-orange-500 shadow-[0_4px_15px_rgba(249,115,22,0.3)]'
-                  : dark ? 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:border-gray-300'}`}>
-                {key === 'all' ? 'Tümü' : STATUS_CONFIG[key]?.label || key} ({count})
-              </button>
-            ))}
-          </div>
-
-          <div className={`flex items-center gap-2 flex-1 min-w-[250px] sm:max-w-xs px-3 py-2 rounded-xl border ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} transition-all focus-within:ring-2 focus-within:ring-orange-500/40`}>
-            <Search size={16} className="text-gray-500" />
-            <input 
-              type="text" 
-              placeholder="Oyun adı ile ara..." 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none outline-none w-full text-sm placeholder:text-gray-500"
-            />
-          </div>
-          
-          <div className="ml-auto flex items-center gap-2">
-            {user.role === 'admin' && duplicates.length > 0 && (
-              <button onClick={() => setDuplicateModalOpen(true)} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white shadow-[0_4px_15px_rgba(244,63,94,0.3)]`}>
-                <Copy size={16} /> Kopya Tespiti ({duplicates.length})
-              </button>
-            )}
-            <button onClick={fetchCovers} disabled={fetching} className={`p-2.5 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>
-              <RefreshCw size={16} className={fetching ? 'animate-spin' : ''} />
-            </button>
-          </div>
-        </div>
-
-        {/* Upload form (All users can upload now) */}
-        <div className={`${bg} border ${panelBorder} rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden`}>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-          
-          <h3 className={`text-lg font-bold ${txt} mb-6 flex items-center gap-3`}>
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-              <Upload size={20} className="text-orange-500" />
-            </div>
-            {user.role === 'admin' ? 'Admin Cover Yükle' : 'Yeni Cover Yükle'}
-          </h3>
-          
-          <form onSubmit={handleUpload} className="flex flex-col lg:flex-row gap-5 items-start lg:items-end relative z-10">
-            <div className="flex-1 w-full lg:min-w-[250px]">
-              <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Adı (Opsiyonel)</label>
-              <input 
-                type="text" 
-                value={uploadForm.game_name} 
-                onChange={e => setUploadForm({ ...uploadForm, game_name: e.target.value })}
-                placeholder="Örn: Valorant (Boş bırakırsanız dosya adı kullanılır)" 
-                className={`w-full border rounded-xl h-[52px] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`} 
-              />
-            </div>
-            
-            <div className="flex-1 w-full lg:min-w-[300px]">
-              <label className={`block text-[11px] font-bold uppercase tracking-widest ${sub} mb-2`}>Oyun Görseli (JPG/PNG/WEBP)</label>
-              <div className={`relative flex items-center w-full h-[52px] border border-dashed rounded-xl overflow-hidden transition-all group ${
-                uploadForm.files?.length > 0 ? 'border-orange-500/50 bg-orange-500/5' : `hover:border-orange-500/40 ${inputBg}`
-              }`}>
-                <input 
-                  ref={fileRef} 
-                  type="file" 
-                  multiple
-                  accept="image/jpeg,image/png,image/webp" 
-                  required
-                  onChange={e => setUploadForm({ ...uploadForm, files: e.target.files })}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                />
-                <div className="flex items-center gap-3 px-4 h-full w-full pointer-events-none">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                    uploadForm.files?.length > 0 ? 'bg-orange-500 text-white' : 'bg-gray-500/10 text-gray-500 group-hover:text-orange-400 group-hover:bg-orange-500/10'
-                  }`}>
-                    {uploadForm.files?.length > 0 ? <CheckCircle2 size={16} /> : <Image size={16} />}
-                  </div>
-                  <span className={`text-sm truncate font-medium ${uploadForm.files?.length > 0 ? 'text-orange-500' : sub}`}>
-                    {uploadForm.files?.length > 0 ? `${uploadForm.files.length} dosya seçildi` : 'Çoklu görsel seçmek için tıklayın veya sürükleyin...'}
-                  </span>
-                </div>
+                ))}
               </div>
             </div>
-            
-            <button 
-              type="submit" 
-              disabled={uploading}
-              className="w-full lg:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 shadow-[0_4px_20px_rgba(249,115,22,0.3)] transition-all whitespace-nowrap mt-2 lg:mt-0"
-            >
-              {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-              Yükle
-            </button>
-          </form>
+          ))}
+        </div>
+      </Modal>
 
-          {/* Progress Bar & Logs Display */}
-          {(uploadProgress.active || uploadLogs.length > 0) && (
-            <div className="mt-6 pt-6 border-t border-white/5 relative z-10">
-              
-              {uploadProgress.active && (
-                <>
-                  <div className="flex items-center justify-between text-xs font-semibold mb-2">
-                    <span className="text-orange-400">Yükleniyor... ({uploadProgress.current} / {uploadProgress.total})</span>
-                    <span className="text-white">{Math.round((uploadProgress.current / uploadProgress.total) * 100)}%</span>
-                  </div>
-                  <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden flex-shrink-0">
-                    <div 
-                      className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-300"
-                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
-                    ></div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex gap-4 text-[10px] text-gray-500">
-                      <span className="text-emerald-500">Başarılı: {uploadProgress.success}</span>
-                      {uploadProgress.fail > 0 && <span className="text-red-500">Hatalı: {uploadProgress.fail}</span>}
+      <div className="space-y-6">
+        {/* Filter tabs + search + actions */}
+        <Toolbar>
+          <SegFilter value={filter} onChange={setFilter} options={filterOptions} />
+          <SearchInput value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Oyun adı ile ara..." className="w-full sm:w-64" />
+          <div className="ml-auto flex items-center gap-2">
+            {user.role === 'admin' && duplicates.length > 0 && (
+              <Button icon={Copy} onClick={() => setDuplicateModalOpen(true)}>Kopya Tespiti ({duplicates.length})</Button>
+            )}
+            <IconButton icon={RefreshCw} title="Yenile" spinning={fetching} onClick={fetchCovers} disabled={fetching} />
+          </div>
+        </Toolbar>
+
+        {/* Upload form (All users can upload now) */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" style={{ background: 'var(--a-accent-soft)' }} />
+          <CardHeader title={user.role === 'admin' ? 'Admin Cover Yükle' : 'Yeni Cover Yükle'} icon={Upload} />
+
+          <div className="p-5 md:p-6 relative z-10">
+            <form onSubmit={handleUpload} className="flex flex-col lg:flex-row gap-5 items-start lg:items-end">
+              <div className="flex-1 w-full lg:min-w-[250px]">
+                <label className="block text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--a-mut)' }}>Oyun Adı (Opsiyonel)</label>
+                <input
+                  type="text"
+                  value={uploadForm.game_name}
+                  onChange={e => setUploadForm({ ...uploadForm, game_name: e.target.value })}
+                  placeholder="Örn: Valorant (Boş bırakırsanız dosya adı kullanılır)"
+                  className="w-full h-[52px] px-4 rounded-lg border text-sm outline-none transition-colors"
+                  style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)', color: 'var(--a-ink)' }}
+                />
+              </div>
+
+              <div className="flex-1 w-full lg:min-w-[300px]">
+                <label className="block text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--a-mut)' }}>Oyun Görseli (JPG/PNG/WEBP)</label>
+                <div className="relative flex items-center w-full h-[52px] border border-dashed rounded-lg overflow-hidden transition-all group"
+                  style={{ borderColor: uploadForm.files?.length > 0 ? 'var(--a-accent)' : 'var(--a-border)', background: uploadForm.files?.length > 0 ? 'var(--a-accent-soft)' : 'var(--a-card2)' }}>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    required
+                    onChange={e => setUploadForm({ ...uploadForm, files: e.target.files })}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="flex items-center gap-3 px-4 h-full w-full pointer-events-none">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={uploadForm.files?.length > 0 ? { background: 'var(--a-accent)', color: '#04170e' } : { background: 'var(--a-card)', color: 'var(--a-mut)' }}>
+                      {uploadForm.files?.length > 0 ? <CheckCircle2 size={16} /> : <Image size={16} />}
                     </div>
-                    
-                    {/* İptal Butonu */}
-                    {uploading && (
-                      <button 
-                        onClick={() => { cancelUploadRef.current = true; }} 
-                        className="text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-1 rounded transition-colors"
-                      >
-                        İptal Et
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Log Window */}
-              {uploadLogs.length > 0 && (
-                <div className="mt-4 bg-black/50 border border-white/5 rounded-xl p-3 h-40 overflow-y-auto font-mono text-[11px] leading-relaxed flex flex-col-reverse">
-                  <div>
-                    {uploadLogs.map((log, idx) => (
-                      <div key={idx} className={`mb-1 ${log.includes('✅') ? 'text-emerald-400' : log.includes('🛑') ? 'text-yellow-400' : 'text-red-400'}`}>
-                        {log}
-                      </div>
-                    ))}
+                    <span className="text-sm truncate font-medium" style={{ color: uploadForm.files?.length > 0 ? 'var(--a-accent)' : 'var(--a-mut)' }}>
+                      {uploadForm.files?.length > 0 ? `${uploadForm.files.length} dosya seçildi` : 'Çoklu görsel seçmek için tıklayın veya sürükleyin...'}
+                    </span>
                   </div>
                 </div>
-              )}
-              
-              {/* Kapat / Temizle Butonu */}
-              {!uploading && uploadLogs.length > 0 && (
-                <button 
-                  onClick={() => { setUploadLogs([]); setUploadProgress({ active: false, total: 0, current: 0, success: 0, fail: 0 }); }}
-                  className="mt-3 w-full py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg text-xs font-semibold transition-colors"
-                >
-                  Günlükleri Temizle
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+
+              <Button type="submit" size="lg" disabled={uploading} className="w-full lg:w-auto">
+                {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                Yükle
+              </Button>
+            </form>
+
+            {/* Progress Bar & Logs Display */}
+            {(uploadProgress.active || uploadLogs.length > 0) && (
+              <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--a-border)' }}>
+
+                {uploadProgress.active && (
+                  <>
+                    <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                      <span style={{ color: 'var(--a-accent)' }}>Yükleniyor... ({uploadProgress.current} / {uploadProgress.total})</span>
+                      <span style={{ color: 'var(--a-ink)' }}>{Math.round((uploadProgress.current / uploadProgress.total) * 100)}%</span>
+                    </div>
+                    <ProgressBar value={(uploadProgress.current / uploadProgress.total) * 100} height={10} />
+
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex gap-4 text-[10px]">
+                        <span style={{ color: 'var(--a-ok)' }}>Başarılı: {uploadProgress.success}</span>
+                        {uploadProgress.fail > 0 && <span style={{ color: 'var(--a-danger)' }}>Hatalı: {uploadProgress.fail}</span>}
+                      </div>
+
+                      {/* İptal Butonu */}
+                      {uploading && (
+                        <button
+                          onClick={() => { cancelUploadRef.current = true; }}
+                          className="text-xs px-3 py-1 rounded border transition-colors hover:brightness-110"
+                          style={{ color: 'var(--a-danger)', borderColor: 'var(--a-border)' }}
+                        >
+                          İptal Et
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Log Window */}
+                {uploadLogs.length > 0 && (
+                  <div className="mt-4 border rounded-lg p-3 h-40 overflow-y-auto font-mono text-[11px] leading-relaxed flex flex-col-reverse"
+                    style={{ background: 'var(--a-bg)', borderColor: 'var(--a-border)' }}>
+                    <div>
+                      {uploadLogs.map((log, idx) => (
+                        <div key={idx} className="mb-1" style={{ color: log.includes('✅') ? 'var(--a-ok)' : log.includes('🛑') ? 'var(--a-warn)' : 'var(--a-danger)' }}>
+                          {log}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Kapat / Temizle Butonu */}
+                {!uploading && uploadLogs.length > 0 && (
+                  <Button variant="subtle" className="w-full mt-3"
+                    onClick={() => { setUploadLogs([]); setUploadProgress({ active: false, total: 0, current: 0, success: 0, fail: 0 }); }}>
+                    Günlükleri Temizle
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </Card>
 
         {/* Covers Grid */}
         {fetching ? (
-          <div className="flex justify-center py-16"><Loader2 className="animate-spin text-orange-500" size={28} /></div>
+          <Loading />
         ) : filtered.length === 0 ? (
-          <div className={`${bg} border ${panelBorder} rounded-2xl py-16 text-center shadow-sm`}>
-            <Image size={40} className={`mx-auto mb-3 ${sub} opacity-30`} />
-            <p className={`text-sm ${sub}`}>Bu kategoride cover bulunamadı.</p>
-          </div>
+          <Card><EmptyState icon={Image} title="Bu kategoride cover bulunamadı." /></Card>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-4">
             {filtered.map(cover => (
-              <div key={cover.id} className={`${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm group relative`}>
+              <div key={cover.id} className="rounded-xl overflow-hidden border group relative" style={{ background: 'var(--a-card)', borderColor: 'var(--a-border)' }}>
                 <div className="absolute top-2 right-2 z-10">
-                  <input type="checkbox" 
+                  <input type="checkbox"
                     checked={selectedCovers.includes(cover.id)}
                     onChange={(e) => {
                       if (e.target.checked) setSelectedCovers(prev => [...prev, cover.id]);
                       else setSelectedCovers(prev => prev.filter(id => id !== cover.id));
                     }}
-                    className="w-5 h-5 cursor-pointer accent-rose-500 bg-black/50 border-white/20 rounded shadow-sm"
+                    className="w-5 h-5 cursor-pointer rounded shadow-sm"
+                    style={{ accentColor: 'var(--a-accent)' }}
                   />
                 </div>
-                <div className="relative aspect-[3/4] bg-black overflow-hidden cursor-pointer" onClick={() => setPreview(cover)}>
+                <div className="relative aspect-[3/4] overflow-hidden cursor-pointer" style={{ background: 'var(--a-bg)' }} onClick={() => setPreview(cover)}>
                   <img src={cover.file_url} alt={cover.game_name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <Eye size={24} className="text-white" />
@@ -463,20 +409,21 @@ const CoversPage = () => {
                   <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[24px]">
                     {editingCoverId === cover.id ? (
                       <div className="flex-1 flex items-center gap-1">
-                        <input 
-                          type="text" 
-                          value={editGameName} 
-                          onChange={e => setEditGameName(e.target.value)} 
-                          onKeyDown={e => e.key === 'Enter' && handleEditSubmit(cover.id)} 
-                          autoFocus 
-                          className={`w-full text-xs font-bold px-2 py-1 rounded border outline-none ${dark ? 'bg-black/50 border-white/20 text-white' : 'bg-white border-gray-300 text-black'}`} 
+                        <input
+                          type="text"
+                          value={editGameName}
+                          onChange={e => setEditGameName(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleEditSubmit(cover.id)}
+                          autoFocus
+                          className="w-full text-xs font-bold px-2 py-1 rounded border outline-none"
+                          style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)', color: 'var(--a-ink)' }}
                         />
-                        <button onClick={() => handleEditSubmit(cover.id)} className="p-1 rounded text-emerald-400 hover:bg-emerald-500/10"><Check size={14} /></button>
+                        <button onClick={() => handleEditSubmit(cover.id)} className="p-1 rounded hover:brightness-110" style={{ color: 'var(--a-ok)' }}><Check size={14} /></button>
                       </div>
                     ) : (
-                      <div className="flex-1 flex items-center justify-between group/edit cursor-pointer" onClick={() => { if(user.role === 'admin') { setEditingCoverId(cover.id); setEditGameName(cover.game_name); } }}>
-                        <p className={`text-xs font-bold ${txt} truncate`} title={cover.game_name}>{cover.game_name}</p>
-                        {user.role === 'admin' && <Edit2 size={12} className={`opacity-0 group-hover/edit:opacity-100 transition-opacity ${sub}`} />}
+                      <div className="flex-1 flex items-center justify-between group/edit cursor-pointer" onClick={() => { if (user.role === 'admin') { setEditingCoverId(cover.id); setEditGameName(cover.game_name); } }}>
+                        <p className="text-xs font-bold truncate" style={{ color: 'var(--a-ink)' }} title={cover.game_name}>{cover.game_name}</p>
+                        {user.role === 'admin' && <Edit2 size={12} className="opacity-0 group-hover/edit:opacity-100 transition-opacity" style={{ color: 'var(--a-mut)' }} />}
                       </div>
                     )}
                   </div>
@@ -485,7 +432,8 @@ const CoversPage = () => {
                   {user.role === 'admin' && cover.status !== 'approved' && (
                     <div className="flex gap-1 mt-2">
                       <button onClick={() => handleStatus(cover.id, 'approved')}
-                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-1">
+                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 hover:brightness-110"
+                        style={{ background: 'color-mix(in srgb, var(--a-ok) 15%, transparent)', color: 'var(--a-ok)' }}>
                         <CheckCircle2 size={11} /> Onayla
                       </button>
                     </div>
@@ -496,6 +444,8 @@ const CoversPage = () => {
           </div>
         )}
       </div>
+
+      {confirmNode}
     </>
   );
 };

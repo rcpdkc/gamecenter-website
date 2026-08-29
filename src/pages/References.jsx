@@ -1,24 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Clock, Trash2 } from 'lucide-react';
+import { Card, CardHeader, Button, IconButton, Input, StatCard, StatGrid, Badge, EmptyState, Loading, useConfirm } from '../admin/ui';
 
 const References = () => {
-  const context = useOutletContext() || {};
-  const dark = context.dark !== undefined ? context.dark : true;
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [refs, setRefs] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [newCode, setNewCode] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
-
-  const bg = dark ? 'bg-[#111827]' : 'bg-white';
-  const panelBorder = dark ? 'border-white/5' : 'border-gray-100';
-  const txt = dark ? 'text-white' : 'text-gray-900';
-  const sub = dark ? 'text-gray-500' : 'text-gray-400';
-  const inputBg = dark ? 'bg-white/5 border-white/10 text-white placeholder:text-gray-600' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400';
-  const divider = dark ? 'divide-white/5' : 'divide-gray-100';
-  const tableHead = dark ? 'bg-white/3 text-gray-500' : 'bg-gray-50 text-gray-400';
+  const { confirm, confirmNode } = useConfirm();
 
   const fetchReferences = async () => {
     setFetching(true);
@@ -57,7 +48,7 @@ const References = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Bu referans kodunu silmek istediğinize emin misiniz?')) return;
+    if (!(await confirm({ title: 'Referans Kodunu Sil', message: 'Bu referans kodunu silmek istediğinize emin misiniz?', tone: 'danger', confirmLabel: 'Sil' }))) return;
     try {
       const res = await fetch('/api/references', {
         method: 'DELETE',
@@ -75,150 +66,120 @@ const References = () => {
 
   return (
     <div className="space-y-6">
+      {confirmNode}
       {/* Top Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Toplam Kod', value: refs.length, color: 'text-blue-400', bg: dark ? 'bg-blue-500/10' : 'bg-blue-50' },
-          { label: 'Bekliyor', value: pending, color: 'text-emerald-400', bg: dark ? 'bg-emerald-500/10' : 'bg-emerald-50' },
-          { label: 'Kullanıldı', value: used, color: 'text-gray-400', bg: dark ? 'bg-white/5' : 'bg-gray-100' },
-        ].map(s => (
-          <div key={s.label} className={`${bg} border ${panelBorder} rounded-2xl p-4 shadow-sm`}>
-            <p className={`text-xs font-medium ${sub} mb-1`}>{s.label}</p>
-            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
+      <StatGrid cols={3}>
+        <StatCard icon={Key} label="Toplam Kod" value={refs.length} tone="info" />
+        <StatCard icon={Clock} label="Bekliyor" value={pending} tone="ok" />
+        <StatCard icon={CheckCircle2} label="Kullanıldı" value={used} tone="mut" />
+      </StatGrid>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Create Code Panel */}
-        <div className={`xl:col-span-1 ${bg} border ${panelBorder} rounded-2xl p-6 shadow-sm`}>
+        <Card className="xl:col-span-1 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.25)]">
-              <Key size={18} className="text-white" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--a-accent-soft)' }}>
+              <Key size={18} style={{ color: 'var(--a-accent)' }} />
             </div>
             <div>
-              <h3 className={`text-base font-bold ${txt}`}>Yeni Referans Üret</h3>
-              <p className={`text-xs ${sub}`}>E-postaya özel davet kodu</p>
+              <h3 className="text-base font-bold" style={{ color: 'var(--a-ink)' }}>Yeni Referans Üret</h3>
+              <p className="text-xs" style={{ color: 'var(--a-mut)' }}>E-postaya özel davet kodu</p>
             </div>
           </div>
 
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className={`block text-xs font-semibold ${sub} mb-1.5 uppercase tracking-wide`}>Kafenin E-Posta Adresi</label>
-              <div className="relative">
-                <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${sub}`} size={15} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="kafe@mail.com"
-                  required
-                  className={`w-full border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all ${inputBg}`}
-                />
-              </div>
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--a-mut)' }}>Kafenin E-Posta Adresi</label>
+              <Input
+                icon={Mail}
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="kafe@mail.com"
+                required
+              />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold py-2.5 px-4 rounded-xl text-sm flex justify-center items-center gap-2 transition-all shadow-[0_4px_15px_rgba(249,115,22,0.3)] disabled:opacity-60"
-            >
+            <Button type="submit" variant="primary" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
               {loading ? 'Üretiliyor...' : 'Üret ve Kaydet'}
-            </button>
+            </Button>
           </form>
 
           {/* Success card */}
           {newCode && (
-            <div className={`mt-5 p-4 rounded-xl border ${dark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200'}`}>
-              <p className="text-xs font-semibold text-emerald-400 flex items-center gap-1 mb-2">
+            <div className="mt-5 p-4 rounded-xl border"
+              style={{ background: 'color-mix(in srgb, var(--a-ok) 12%, transparent)', borderColor: 'color-mix(in srgb, var(--a-ok) 28%, transparent)' }}>
+              <p className="text-xs font-semibold flex items-center gap-1 mb-2" style={{ color: 'var(--a-ok)' }}>
                 <CheckCircle2 size={13} /> Kod Üretildi!
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 font-mono text-lg font-bold text-emerald-400">{newCode}</code>
+                <code className="flex-1 font-mono text-lg font-bold" style={{ color: 'var(--a-ok)' }}>{newCode}</code>
                 <button
                   onClick={() => copyToClipboard(newCode, 'new')}
-                  className="p-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-colors"
+                  className="p-2 rounded-lg transition-colors hover:brightness-110"
+                  style={{ background: 'color-mix(in srgb, var(--a-ok) 20%, transparent)', color: 'var(--a-ok)' }}
                 >
                   {copiedId === 'new' ? <CheckCircle2 size={16} /> : <Copy size={16} />}
                 </button>
               </div>
-              <p className="text-xs text-emerald-400/60 mt-1">Bu kodu kopyalayıp kafenizle paylaşın.</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--a-ok)', opacity: 0.7 }}>Bu kodu kopyalayıp kafenizle paylaşın.</p>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Codes Table */}
-        <div className={`xl:col-span-2 ${bg} border ${panelBorder} rounded-2xl overflow-hidden shadow-sm`}>
-          <div className={`px-6 py-4 border-b ${panelBorder} flex items-center justify-between`}>
-            <div>
-              <h3 className={`text-base font-bold ${txt}`}>Tüm Referans Kodları</h3>
-              <p className={`text-xs ${sub} mt-0.5`}>Geçmiş ve bekleyen davetler</p>
-            </div>
-            <button
-              onClick={fetchReferences}
-              disabled={fetching}
-              className={`p-2 rounded-xl transition-colors ${dark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
-            >
-              <RefreshCw size={15} className={fetching ? 'animate-spin' : ''} />
-            </button>
-          </div>
+        <Card className="xl:col-span-2 overflow-hidden">
+          <CardHeader title="Tüm Referans Kodları" subtitle="Geçmiş ve bekleyen davetler" icon={Key}
+            right={<IconButton icon={RefreshCw} title="Yenile" spinning={fetching} disabled={fetching} onClick={fetchReferences} />} />
 
           {fetching ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="animate-spin text-orange-500" size={24} />
-            </div>
+            <Loading />
           ) : refs.length === 0 ? (
-            <div className={`py-16 text-center ${sub} text-sm`}>
-              <Key size={32} className="mx-auto mb-3 opacity-30" />
-              Henüz hiç referans kodu üretilmedi.
-            </div>
+            <EmptyState icon={Key} title="Henüz hiç referans kodu üretilmedi." />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className={tableHead}>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">E-Posta</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Referans Kodu</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Durum</th>
-                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-right">İşlem</th>
+                  <tr style={{ background: 'var(--a-card2)' }}>
+                    {['E-Posta', 'Referans Kodu', 'Durum'].map(h => (
+                      <th key={h} className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--a-mut)' }}>{h}</th>
+                    ))}
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--a-mut)' }}>İşlem</th>
                   </tr>
                 </thead>
-                <tbody className={`divide-y ${divider}`}>
+                <tbody>
                   {refs.map(ref => (
-                    <tr key={ref.id} className={`transition-colors ${dark ? 'hover:bg-white/3' : 'hover:bg-gray-50'}`}>
-                      <td className={`px-6 py-3.5 font-medium ${txt}`}>{ref.email}</td>
+                    <tr key={ref.id} className="border-t border-[var(--a-border)] hover:bg-[var(--a-card2)] transition-colors">
+                      <td className="px-6 py-3.5 font-medium" style={{ color: 'var(--a-ink)' }}>{ref.email}</td>
                       <td className="px-6 py-3.5">
-                        <code className={`font-mono font-bold text-sm ${dark ? 'text-orange-400' : 'text-orange-500'}`}>{ref.code}</code>
+                        <code className="font-mono font-bold text-sm" style={{ color: 'var(--a-accent)' }}>{ref.code}</code>
                       </td>
                       <td className="px-6 py-3.5">
                         {ref.is_used ? (
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${dark ? 'bg-gray-500/10 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Kullanıldı
-                          </span>
+                          <Badge tone="mut" dot>Kullanıldı</Badge>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Bekliyor
-                          </span>
+                          <Badge tone="ok" dot>Bekliyor</Badge>
                         )}
                       </td>
-                      <td className="px-6 py-3.5 text-right flex items-center justify-end gap-2">
-                        {!ref.is_used && (
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center justify-end gap-2">
+                          {!ref.is_used && (
+                            <IconButton
+                              icon={copiedId === ref.id ? CheckCircle2 : Copy}
+                              title="Kopyala"
+                              onClick={() => copyToClipboard(ref.code, ref.id)}
+                            />
+                          )}
                           <button
-                            onClick={() => copyToClipboard(ref.code, ref.id)}
-                            className={`p-2 rounded-lg transition-colors ${dark ? 'text-gray-500 hover:text-white hover:bg-white/5' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
-                            title="Kopyala"
+                            onClick={() => handleDelete(ref.id)}
+                            title="Sil"
+                            className="w-8 h-8 grid place-items-center rounded-lg transition-colors hover:bg-[var(--a-card2)]"
+                            style={{ color: 'var(--a-danger)' }}
                           >
-                            {copiedId === ref.id ? <CheckCircle2 size={15} className="text-emerald-400" /> : <Copy size={15} />}
+                            <Trash2 size={15} />
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(ref.id)}
-                          className={`p-2 rounded-lg transition-colors ${dark ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
-                          title="Sil"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -226,7 +187,7 @@ const References = () => {
               </table>
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );
