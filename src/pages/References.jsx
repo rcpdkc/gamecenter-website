@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Users, Trash2, Globe } from 'lucide-react';
+import { Key, Mail, Send, Loader2, CheckCircle2, Copy, RefreshCw, Users, Trash2, Globe, Tag } from 'lucide-react';
 import { Card, CardHeader, Button, IconButton, Input, StatCard, StatGrid, Badge, EmptyState, Loading, useConfirm } from '../admin/ui';
 
 const References = () => {
   const [email, setEmail] = useState('');
   const [maxUses, setMaxUses] = useState(1);
+  const [groupId, setGroupId] = useState('');
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refs, setRefs] = useState([]);
   const [fetching, setFetching] = useState(true);
@@ -22,7 +24,15 @@ const References = () => {
     finally { setFetching(false); }
   };
 
-  useEffect(() => { fetchReferences(); }, []);
+  const fetchGroups = async () => {
+    try {
+      const res = await fetch('/api/groups');
+      const data = await res.json();
+      if (data.success) setGroups(data.data || []);
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => { fetchReferences(); fetchGroups(); }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -32,10 +42,10 @@ const References = () => {
       const res = await fetch('/api/references', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() || null, max_uses: Math.max(1, parseInt(maxUses, 10) || 1) })
+        body: JSON.stringify({ email: email.trim() || null, max_uses: Math.max(1, parseInt(maxUses, 10) || 1), group_id: groupId ? parseInt(groupId, 10) : null })
       });
       const data = await res.json();
-      if (data.success) { setNewCode(data.code); setEmail(''); setMaxUses(1); fetchReferences(); }
+      if (data.success) { setNewCode(data.code); setEmail(''); setMaxUses(1); setGroupId(''); fetchReferences(); }
       else alert(data.error);
     } catch { alert("Hata oluştu."); }
     finally { setLoading(false); }
@@ -125,6 +135,27 @@ const References = () => {
               </p>
             </div>
 
+            <div>
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--a-mut)' }}>Üye Grubu <span style={{ opacity: 0.6, textTransform: 'none' }}>(opsiyonel)</span></label>
+              <div className="relative flex items-center">
+                <Tag size={15} className="absolute left-3 pointer-events-none" style={{ color: 'var(--a-mut2)' }} />
+                <select
+                  value={groupId}
+                  onChange={e => setGroupId(e.target.value)}
+                  className="w-full h-9 rounded-lg border text-[13px] outline-none transition-colors pl-9 pr-3 appearance-none"
+                  style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)', color: 'var(--a-ink)' }}
+                >
+                  <option value="">Grup atama (varsayılan)</option>
+                  {groups.map(g => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-[11px] mt-1" style={{ color: 'var(--a-mut)', opacity: 0.75 }}>
+                Bu kodla üye olan doğrudan seçilen gruba eklenir.
+              </p>
+            </div>
+
             <Button type="submit" variant="primary" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
               {loading ? 'Üretiliyor...' : 'Üret ve Kaydet'}
@@ -179,11 +210,19 @@ const References = () => {
                     return (
                     <tr key={ref.id} className="border-t border-[var(--a-border)] hover:bg-[var(--a-card2)] transition-colors">
                       <td className="px-6 py-3.5 font-medium" style={{ color: 'var(--a-ink)' }}>
-                        {ref.email ? ref.email : (
-                          <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--a-mut)' }}>
-                            <Globe size={13} /> Herkese açık
-                          </span>
-                        )}
+                        <div className="flex flex-col gap-1">
+                          {ref.email ? <span>{ref.email}</span> : (
+                            <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--a-mut)' }}>
+                              <Globe size={13} /> Herkese açık
+                            </span>
+                          )}
+                          {ref.group_name && (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold w-fit px-2 py-0.5 rounded-md"
+                              style={{ color: ref.group_color || 'var(--a-accent)', background: `color-mix(in srgb, ${ref.group_color || 'var(--a-accent)'} 15%, transparent)` }}>
+                              <Tag size={11} /> {ref.group_name}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-3.5">
                         <code className="font-mono font-bold text-sm" style={{ color: 'var(--a-accent)' }}>{ref.code}</code>

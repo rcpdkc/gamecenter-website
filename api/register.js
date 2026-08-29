@@ -34,6 +34,7 @@ export default async function handler(req, res) {
     try { await sql`ALTER TABLE reference_codes ALTER COLUMN email DROP NOT NULL`; } catch {}
     try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT 1`; } catch {}
     try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS used_count INT DEFAULT 0`; } catch {}
+    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS group_id INTEGER`; } catch {}
     try { await sql`UPDATE reference_codes SET used_count = max_uses WHERE is_used = true AND used_count = 0`; } catch {}
 
     // 1. Referans kodunu doğrula — çok-kullanımlı: kullanım hakkı bitmemiş olmalı
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, 12);
     const { rows: newUsers } = await sql`
       INSERT INTO users (first_name, last_name, cafe_name, phone, email, password, group_id, cafe_id)
-      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${hashedPassword}, NULL, ${cafeId})
+      VALUES (${firstName}, ${lastName}, ${cafeName}, ${phone}, ${email}, ${hashedPassword}, ${rc.group_id || null}, ${cafeId})
       RETURNING id, email, first_name, last_name, cafe_name, cafe_id
     `;
 
