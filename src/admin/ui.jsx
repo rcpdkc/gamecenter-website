@@ -191,10 +191,10 @@ export function Modal({ open, onClose, title, subtitle, icon: Icon, children, wi
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={onClose}>
-      <div className={`w-full ${width} rounded-2xl border shadow-2xl overflow-hidden animate-in zoom-in-95`}
+      <div className={`w-full ${width} rounded-2xl border shadow-2xl overflow-hidden animate-in zoom-in-95 max-h-[90vh] flex flex-col`}
         style={{ background: 'var(--a-card)', borderColor: 'var(--a-border)' }} onClick={(e) => e.stopPropagation()}>
         {title && (
-          <div className="flex items-center gap-3 px-6 py-4 border-b" style={{ borderColor: 'var(--a-border)' }}>
+          <div className="flex items-center gap-3 px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--a-border)' }}>
             {Icon && <span className="w-9 h-9 rounded-xl grid place-items-center" style={{ background: 'var(--a-accent-soft)' }}><Icon size={18} style={{ color: 'var(--a-accent)' }} /></span>}
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-extrabold" style={{ color: 'var(--a-ink)' }}>{title}</h2>
@@ -203,7 +203,7 @@ export function Modal({ open, onClose, title, subtitle, icon: Icon, children, wi
             <IconButton icon={X} onClick={onClose} title="Kapat" />
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

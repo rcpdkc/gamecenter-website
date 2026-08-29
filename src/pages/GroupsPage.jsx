@@ -56,10 +56,14 @@ const LOCAL_MODULES = [
   { id: '/global/client-mode', label: 'İstemci Modu', group: 'Genel Ayarlar' },
   { id: '/global/temperature', label: 'Sıcaklık Ölçümü', group: 'Genel Ayarlar' },
   { id: '/global/staff', label: 'Personel & Yetkiler', group: 'Genel Ayarlar' },
+  // Bulut — sunucudan buluta arşiv gönderme yetkileri
+  { id: '/cloud/mklink-send', label: 'Buluta MkLink Gönderme', group: 'Bulut' },
+  { id: '/cloud/shader-send', label: 'Buluta Shader Gönderme', group: 'Bulut' },
+  { id: '/cloud/archive-manage', label: 'Bulut Arşiv Yönetimi', group: 'Bulut' },
 ];
 
 // Workspace görünüm sırası (başlıklar için)
-const MODULE_GROUPS = ['GameCenter', 'CafeCenter', 'FilterCenter', 'Genel Ayarlar'];
+const MODULE_GROUPS = ['GameCenter', 'CafeCenter', 'FilterCenter', 'Genel Ayarlar', 'Bulut'];
 
 const labelCls = 'block text-xs font-semibold uppercase tracking-wider mb-2';
 const fieldStyle = { background: 'var(--a-card2)', borderColor: 'var(--a-border)', color: 'var(--a-ink)' };
@@ -167,7 +171,7 @@ const GroupModal = ({ group, dark, onClose, onSave }) => {
               {permissions.length === LOCAL_MODULES.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
             </button>
           </div>
-          <div className="border rounded-xl p-4 flex-1 overflow-y-auto h-[380px] shadow-inner space-y-4"
+          <div className="border rounded-xl p-4 overflow-y-auto max-h-[48vh] shadow-inner space-y-4"
             style={{ background: 'var(--a-card2)', borderColor: 'var(--a-border)' }}>
             {MODULE_GROUPS.map(gname => {
               const mods = LOCAL_MODULES.filter(m => m.group === gname);
