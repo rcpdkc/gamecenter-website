@@ -2,14 +2,11 @@ import { sql } from './_db.js';
 
 // Sunucu Durumu KAYNAK master listesi — YÖNETİCİ (superadmin) bakımını yapar.
 // Kafeler yerel panelden "Buluttan Çek" ile içe aktarır. ?action=status → canlı durum.
-// TÜR (type):
-//   'statuspage' → Atlassian Statuspage URL'i (/api/v2/status.json) OTOMATİK durum.
-//   'manual'     → API yok; durumu ADMIN elle ayarlar (manual_status: ok|warn|down).
-// Her şey sonradan düzenlenebilir (ad/yayıncı/tür/URL/durum).
+// TÜR: 'statuspage' (URL → otomatik) | 'manual' (API yok → admin durumu elle ayarlar).
+// NOT: TAZE tablo (status_sources) — ALTER yok → kilit fırtınası/write-hang yaşanmaz.
 
 let _ready = false;
 
-// İlk kurulumda popüler oyunlar (Statuspage'i olan → otomatik; olmayan → manuel/ok)
 const SEED = [
   ['Fortnite', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
   ['Rocket League', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
@@ -33,7 +30,7 @@ const SEED = [
 async function ensure() {
   if (_ready) return;
   await sql`
-    CREATE TABLE IF NOT EXISTS game_status_sources (
+    CREATE TABLE IF NOT EXISTS status_sources (
       id SERIAL PRIMARY KEY,
       name VARCHAR(120) NOT NULL,
       pub VARCHAR(120),
@@ -44,17 +41,13 @@ async function ensure() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
-  try { await sql`ALTER TABLE game_status_sources ADD COLUMN IF NOT EXISTS type VARCHAR(20) DEFAULT 'statuspage'`; } catch { /* */ }
-  try { await sql`ALTER TABLE game_status_sources ADD COLUMN IF NOT EXISTS manual_status VARCHAR(10) DEFAULT 'ok'`; } catch { /* */ }
-  try { await sql`ALTER TABLE game_status_sources ALTER COLUMN url DROP NOT NULL`; } catch { /* */ }
-  // Boşsa popüler oyunlarla doldur — TEK toplu INSERT (yavaş pooler'da timeout olmasin)
   try {
-    const { rows } = await sql`SELECT COUNT(*)::int AS n FROM game_status_sources`;
+    const { rows } = await sql`SELECT COUNT(*)::int AS n FROM status_sources`;
     if (rows[0].n === 0) {
       const esc = (s) => `'${String(s).replace(/'/g, "''")}'`;
       const vals = SEED.map(([name, pub, type, url, ms], i) =>
         `(${esc(name)},${esc(pub)},${esc(type)},${url ? esc(url) : 'NULL'},${esc(ms)},${i})`).join(',');
-      await sql.query(`INSERT INTO game_status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`);
+      await sql.query(`INSERT INTO status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`);
     }
   } catch (e) { console.error('seed:', e && e.message); }
   _ready = true;
@@ -95,7 +88,7 @@ export default async function handler(req, res) {
     await ensure();
 
     if (req.method === 'GET') {
-      const { rows } = await sql`SELECT id, name, pub, type, url, manual_status FROM game_status_sources ORDER BY sort, id`;
+      const { rows } = await sql`SELECT id, name, pub, type, url, manual_status FROM status_sources ORDER BY sort, id`;
       const list = rows.map(r => ({ id: r.id, name: r.name, pub: r.pub || '', type: r.type || 'statuspage', url: r.url || '', manual_status: r.manual_status || 'ok' }));
       if (req.query?.action === 'status') {
         const games = await Promise.all(list.map(async s => ({ id: s.id, name: s.name, pub: s.pub, type: s.type, ...(await statusOf(s)) })));
@@ -115,10 +108,10 @@ export default async function handler(req, res) {
       if (!name) return res.status(400).json({ error: 'Ad gerekli.' });
       if (type === 'statuspage' && !url) return res.status(400).json({ error: 'Statuspage türü için URL gerekli.' });
       if (req.method === 'POST') {
-        await sql`INSERT INTO game_status_sources (name, pub, type, url, manual_status) VALUES (${name}, ${b.pub || null}, ${type}, ${url || null}, ${ms})`;
+        await sql`INSERT INTO status_sources (name, pub, type, url, manual_status) VALUES (${name}, ${b.pub || null}, ${type}, ${url || null}, ${ms})`;
       } else {
         if (!b.id) return res.status(400).json({ error: 'id gerekli.' });
-        await sql`UPDATE game_status_sources SET name=${name}, pub=${b.pub || null}, type=${type}, url=${url || null}, manual_status=${ms} WHERE id=${b.id}`;
+        await sql`UPDATE status_sources SET name=${name}, pub=${b.pub || null}, type=${type}, url=${url || null}, manual_status=${ms} WHERE id=${b.id}`;
       }
       return res.status(200).json({ success: true });
     }
@@ -126,7 +119,7 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const { id } = req.body || {};
       if (!id) return res.status(400).json({ error: 'id gerekli.' });
-      await sql`DELETE FROM game_status_sources WHERE id=${id}`;
+      await sql`DELETE FROM status_sources WHERE id=${id}`;
       return res.status(200).json({ success: true });
     }
 
