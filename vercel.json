@@ -21,6 +21,7 @@
     { "source": "/api/announcements", "destination": "/api/cloud?_svc=announcements" },
     { "source": "/api/covers", "destination": "/api/cloud?_svc=covers" },
     { "source": "/api/reset-codes", "destination": "/api/cloud?_svc=reset-codes" },
+    { "source": "/api/status-sources", "destination": "/api/cloud?_svc=status-sources" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

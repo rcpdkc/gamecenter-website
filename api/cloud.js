@@ -15,6 +15,7 @@ import gameStatus from './_game-status.js';
 import announcements from './_announcements.js';
 import covers from './_covers.js';
 import resetCodes from './_reset-codes.js';
+import statusSources from './_status-sources.js';
 
 const ROUTES = {
   'gdrive': gdriveOauth,
@@ -23,6 +24,7 @@ const ROUTES = {
   'announcements': announcements,
   'covers': covers,
   'reset-codes': resetCodes,
+  'status-sources': statusSources,
 };
 
 export default async function handler(req, res) {

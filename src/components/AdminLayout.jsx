@@ -3,7 +3,7 @@ import { useRef, useEffect, useState, createContext } from 'react';
 import { ToastProvider } from '../admin/ui';
 import {
   LayoutDashboard, Server, Settings, LogOut, Key, Users, Layers, Image, Megaphone, FolderSync,
-  Sun, Moon, Bell, Menu, ScrollText, HardDrive, Gamepad2, Thermometer, MonitorDot, DatabaseZap, KeyRound,
+  Sun, Moon, Bell, Menu, ScrollText, HardDrive, Gamepad2, Thermometer, MonitorDot, DatabaseZap, KeyRound, Activity,
 } from 'lucide-react';
 
 export const ThemeContext = createContext({ dark: true, toggleTheme: () => {} });
@@ -19,7 +19,7 @@ const SECTIONS_ADMIN = [
     ['/superadmin/covers', 'Cover Yönetimi', Image], ['/superadmin/mklink-archive', 'Mklink Arşivi', FolderSync], ['/superadmin/shader-archive', 'Shader Arşivi', DatabaseZap],
   ] },
   { id: 'sistem', label: 'Sistem', icon: Settings, items: [
-    ['/superadmin/announcements', 'Duyurular', Megaphone], ['/superadmin/logs', 'Loglar', ScrollText], ['/superadmin/settings', 'Ayarlar', Settings],
+    ['/superadmin/announcements', 'Duyurular', Megaphone], ['/superadmin/server-status', 'Sunucu Durumu', Activity], ['/superadmin/logs', 'Loglar', ScrollText], ['/superadmin/settings', 'Ayarlar', Settings],
   ] },
 ];
 const SECTIONS_CAFE = [
@@ -34,7 +34,7 @@ const SECTIONS_CAFE = [
 const SECTION_LABEL = { genel: 'Genel', yonetim: 'Yönetim', icerik: 'İçerik', sistem: 'Sistem', izleme: 'İzleme' };
 const TITLES = {
   '/superadmin': 'Dashboard', '/superadmin/users': 'Kullanıcılar', '/superadmin/groups': 'Gruplar',
-  '/superadmin/references': 'Referans & Davet', '/superadmin/reset-codes': 'Şifre Sıfırlama Kodları', '/superadmin/covers': 'Cover Yönetimi', '/superadmin/mklink-archive': 'Mklink Arşivi',
+  '/superadmin/references': 'Referans & Davet', '/superadmin/reset-codes': 'Şifre Sıfırlama Kodları', '/superadmin/server-status': 'Sunucu Durumu', '/superadmin/covers': 'Cover Yönetimi', '/superadmin/mklink-archive': 'Mklink Arşivi',
   '/superadmin/shader-archive': 'Shader Arşivi', '/superadmin/announcements': 'Duyurular', '/superadmin/logs': 'Loglar',
   '/superadmin/settings': 'Ayarlar', '/superadmin/clients': 'Bilgisayarlar', '/superadmin/hardware': 'Donanım',
   '/superadmin/games': 'Oyunlar', '/superadmin/monitoring': 'İzleme',
