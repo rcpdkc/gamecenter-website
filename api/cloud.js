@@ -8,11 +8,13 @@
 //   /api/game-status     -> ?_svc=gamestatus
 //   /api/announcements   -> ?_svc=announcements
 //   /api/covers          -> ?_svc=covers
+//   /api/reset-codes     -> ?_svc=reset-codes
 import gdriveOauth from './_gdrive-oauth.js';
 import gdriveCallback from './_gdrive-callback.js';
 import gameStatus from './_game-status.js';
 import announcements from './_announcements.js';
 import covers from './_covers.js';
+import resetCodes from './_reset-codes.js';
 
 const ROUTES = {
   'gdrive': gdriveOauth,
@@ -20,6 +22,7 @@ const ROUTES = {
   'gamestatus': gameStatus,
   'announcements': announcements,
   'covers': covers,
+  'reset-codes': resetCodes,
 };
 
 export default async function handler(req, res) {

@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
 import SuperAdmin from './pages/SuperAdmin';
 import References from './pages/References';
+import AdminResetCodesPage from './pages/AdminResetCodesPage';
 import UsersPage from './pages/UsersPage';
 import GroupsPage from './pages/GroupsPage';
 import CoversPage from './pages/CoversPage';
@@ -38,6 +39,7 @@ function TitleUpdater() {
       '/reset-password': 'Şifre Sıfırla - Game Center Plus',
       '/superadmin': 'Sistem Yönetimi - Game Center Plus',
       '/superadmin/references': 'Referans Kodları - Game Center Plus',
+      '/superadmin/reset-codes': 'Şifre Sıfırlama Kodları - Game Center Plus',
       '/superadmin/users': 'Kullanıcılar - Game Center Plus',
       '/superadmin/groups': 'Lisans Grupları - Game Center Plus',
       '/superadmin/covers': 'Oyun Kapakları - Game Center Plus',
@@ -75,6 +77,7 @@ function App() {
         <Route path="/superadmin" element={<AdminLayout />}>
           <Route index element={<SuperAdmin />} />
           <Route path="references" element={<References />} />
+          <Route path="reset-codes" element={<AdminResetCodesPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="covers" element={<CoversPage />} />
