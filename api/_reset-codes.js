@@ -3,6 +3,26 @@ import { sql } from './_db.js';
 // Yerel panel admin şifre sıfırlama kodları — SÜPERADMIN üretir, kafeye verir.
 // Genel · TEK KULLANIMLIK · 1 saat geçerli (kullanılmazsa pasif).
 // cloud.js dispatcher üzerinden ?_svc=reset-codes ile çağrılır (12-fonksiyon limiti).
+
+// PERF: tablo yalnız warm instance başına BİR kez oluşturulur (her istekte değil).
+let _rcReady = false;
+async function ensureRc() {
+  if (_rcReady) return;
+  await sql`
+    CREATE TABLE IF NOT EXISTS admin_reset_codes (
+      id SERIAL PRIMARY KEY,
+      code VARCHAR(24) UNIQUE NOT NULL,
+      note VARCHAR(255),
+      used BOOLEAN DEFAULT FALSE,
+      used_by VARCHAR(160),
+      used_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      expires_at TIMESTAMP NOT NULL
+    );
+  `;
+  _rcReady = true;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
@@ -10,18 +30,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS admin_reset_codes (
-        id SERIAL PRIMARY KEY,
-        code VARCHAR(24) UNIQUE NOT NULL,
-        note VARCHAR(255),
-        used BOOLEAN DEFAULT FALSE,
-        used_by VARCHAR(160),
-        used_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        expires_at TIMESTAMP NOT NULL
-      );
-    `;
+    await ensureRc();
 
     if (req.method === 'GET') {
       const { rows } = await sql`

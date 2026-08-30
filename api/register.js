@@ -1,6 +1,8 @@
 import { sql } from './_db.js';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
+
+let _regReady = false;  // PERF: referans kolon göçü warm-instance başına BİR kez
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,12 +32,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 0. Kolon göçü (References sayfası hiç açılmadıysa da çalışsın — idempotent)
-    try { await sql`ALTER TABLE reference_codes ALTER COLUMN email DROP NOT NULL`; } catch {}
-    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT 1`; } catch {}
-    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS used_count INT DEFAULT 0`; } catch {}
-    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS group_id INTEGER`; } catch {}
-    try { await sql`UPDATE reference_codes SET used_count = max_uses WHERE is_used = true AND used_count = 0`; } catch {}
+    // 0. Kolon göçü — warm-instance başına BİR kez (References sayfası hiç açılmadıysa da çalışsın)
+    if (!_regReady) {
+      try { await sql`ALTER TABLE reference_codes ALTER COLUMN email DROP NOT NULL`; } catch {}
+      try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT 1`; } catch {}
+      try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS used_count INT DEFAULT 0`; } catch {}
+      try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS group_id INTEGER`; } catch {}
+      try { await sql`UPDATE reference_codes SET used_count = max_uses WHERE is_used = true AND used_count = 0`; } catch {}
+      _regReady = true;
+    }
 
     // 1. Referans kodunu doğrula — çok-kullanımlı: kullanım hakkı bitmemiş olmalı
     const { rows: codes } = await sql`

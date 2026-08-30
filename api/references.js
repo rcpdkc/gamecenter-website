@@ -1,27 +1,31 @@
 import { sql } from './_db.js';
 
+// PERF: tablo+göç HER istekte değil, warm instance başına BİR kez çalışır (Supabase gecikmesi azalır).
+let _refReady = false;
+async function ensureRef() {
+  if (_refReady) return;
+  await sql`
+    CREATE TABLE IF NOT EXISTS reference_codes (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(255),
+      code VARCHAR(50) UNIQUE NOT NULL,
+      is_used BOOLEAN DEFAULT FALSE,
+      max_uses INT DEFAULT 1,
+      used_count INT DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  try { await sql`ALTER TABLE reference_codes ALTER COLUMN email DROP NOT NULL`; } catch {}
+  try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT 1`; } catch {}
+  try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS used_count INT DEFAULT 0`; } catch {}
+  try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS group_id INTEGER`; } catch {}
+  try { await sql`UPDATE reference_codes SET used_count = max_uses WHERE is_used = true AND used_count = 0`; } catch {}
+  _refReady = true;
+}
+
 export default async function handler(request, response) {
   try {
-    // Tablo + göç: e-posta artık OPSİYONEL, kodlar çok-kullanımlı olabilir
-    await sql`
-      CREATE TABLE IF NOT EXISTS reference_codes (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255),
-        code VARCHAR(50) UNIQUE NOT NULL,
-        is_used BOOLEAN DEFAULT FALSE,
-        max_uses INT DEFAULT 1,
-        used_count INT DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    // Var olan tabloya kolon/kısıt göçü (idempotent)
-    try { await sql`ALTER TABLE reference_codes ALTER COLUMN email DROP NOT NULL`; } catch {}
-    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT 1`; } catch {}
-    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS used_count INT DEFAULT 0`; } catch {}
-    // Kod ile üye olan doğrudan bu gruba atanır (opsiyonel)
-    try { await sql`ALTER TABLE reference_codes ADD COLUMN IF NOT EXISTS group_id INTEGER`; } catch {}
-    // Eski kullanılmış kodları koru: is_used=true ise hakkı dolmuş say (yeniden açılmasın)
-    try { await sql`UPDATE reference_codes SET used_count = max_uses WHERE is_used = true AND used_count = 0`; } catch {}
+    await ensureRef();
 
     if (request.method === 'GET') {
       const { rows } = await sql`
