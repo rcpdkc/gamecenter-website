@@ -47,16 +47,16 @@ async function ensure() {
   try { await sql`ALTER TABLE game_status_sources ADD COLUMN IF NOT EXISTS type VARCHAR(20) DEFAULT 'statuspage'`; } catch { /* */ }
   try { await sql`ALTER TABLE game_status_sources ADD COLUMN IF NOT EXISTS manual_status VARCHAR(10) DEFAULT 'ok'`; } catch { /* */ }
   try { await sql`ALTER TABLE game_status_sources ALTER COLUMN url DROP NOT NULL`; } catch { /* */ }
-  // Boşsa popüler oyunlarla doldur (tek sefer)
+  // Boşsa popüler oyunlarla doldur — TEK toplu INSERT (yavaş pooler'da timeout olmasin)
   try {
     const { rows } = await sql`SELECT COUNT(*)::int AS n FROM game_status_sources`;
     if (rows[0].n === 0) {
-      let i = 0;
-      for (const [name, pub, type, url, ms] of SEED) {
-        await sql`INSERT INTO game_status_sources (name, pub, type, url, manual_status, sort) VALUES (${name}, ${pub}, ${type}, ${url || null}, ${ms}, ${i++})`;
-      }
+      const esc = (s) => `'${String(s).replace(/'/g, "''")}'`;
+      const vals = SEED.map(([name, pub, type, url, ms], i) =>
+        `(${esc(name)},${esc(pub)},${esc(type)},${url ? esc(url) : 'NULL'},${esc(ms)},${i})`).join(',');
+      await sql.query(`INSERT INTO game_status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`);
     }
-  } catch { /* */ }
+  } catch (e) { console.error('seed:', e && e.message); }
   _ready = true;
 }
 
