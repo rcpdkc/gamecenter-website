@@ -80,7 +80,7 @@ const AdminServerStatus = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-bold truncate" style={{ color: 'var(--a-ink)' }}>{g.name}</div>
-                      <div className="text-[11px] truncate" style={{ color: 'var(--a-mut)' }}>{g.pub}</div>
+                      <div className="text-[11px] truncate" title={g.detail || g.pub || ''} style={{ color: g.detail ? t.c : 'var(--a-mut)' }}>{g.detail || g.pub}</div>
                     </div>
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: t.c, background: t.bg }}>{g.label || t.label}</span>
                   </div>

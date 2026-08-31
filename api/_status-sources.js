@@ -72,6 +72,12 @@ async function fetchJson(url, ms = 6000) {
 const IND = { none: ['ok', 'Çalışıyor'], minor: ['warn', 'Küçük sorun'], major: ['down', 'Sorunlu'], critical: ['down', 'Ciddi kesinti'], maintenance: ['warn', 'Bakımda'] };
 const MANUAL_LABEL = { ok: 'Çalışıyor', warn: 'Sorun (elle)', down: 'Kesinti (elle)' };
 
+// Riot çok-dilli metinlerden tr_TR (yoksa en_US) seçer
+const pickLocale = (arr) => {
+  const m = Object.fromEntries((arr || []).map(t => [t.locale, t.content]));
+  return m.tr_TR || m.en_US || (arr && arr[0] && arr[0].content) || '';
+};
+
 async function statusOf(s) {
   const url = (s.url || '').replace(/\/+$/, '');
   try {
@@ -84,9 +90,15 @@ async function statusOf(s) {
       const j = await fetchJson(url);
       const inc = j?.incidents || []; const mnt = j?.maintenances || [];
       if (!inc.length && !mnt.length) return { status: 'ok', label: 'Çalışıyor' };
+      const onlyMnt = !inc.length && mnt.length;
+      const items = inc.length ? inc : mnt;
+      const first = items[0] || {};
+      const title = pickLocale(first.titles);                                   // ör: "Oyun Sunucusu Devre Dışı"
+      const upd = pickLocale((first.updates && first.updates[0] && first.updates[0].translations) || []); // ör: "Dubai ..."
+      const extra = items.length > 1 ? ` +${items.length - 1}` : '';
+      const detail = (title || (onlyMnt ? 'Planlı bakım' : 'Sorun')) + (upd ? ' — ' + upd : '') + extra;
       const crit = inc.some(x => String(x.incident_severity || '').toLowerCase() === 'critical');
-      if (crit) return { status: 'down', label: 'Kesinti' };
-      return { status: 'warn', label: mnt.length ? 'Bakım' : 'Sorun bildirimi' };
+      return { status: crit ? 'down' : 'warn', label: onlyMnt ? 'Bakım' : crit ? 'Kesinti' : 'Sorun', detail };
     }
     if (s.type === 'steam_players') {
       // url = Steam appid → resmi Valve API (key'siz) → GERÇEK canlı oyuncu sayısı
@@ -108,12 +120,19 @@ async function statusOf(s) {
       if (svc.some(v => v.includes('slow') || v.includes('delayed') || v === 'surge' || v === 'minor')) return { status: 'warn', label: 'Yavaş/Sorun' };
       return { status: 'ok', label: 'Çalışıyor' };
     }
-    // statuspage
+    // statuspage — summary.json hem durumu hem AÇIK arıza başlıklarını verir
     if (!url) return { status: 'unknown', label: 'Kaynak yok' };
-    const j = await fetchJson(url + '/api/v2/status.json');
+    const j = await fetchJson(url + '/api/v2/summary.json');
     const ind = j?.status?.indicator || 'none';
     const m = IND[ind] || ['unknown', 'Bilinmiyor'];
-    return { status: m[0], label: j?.status?.description || m[1] };
+    const incs = (j?.incidents || []).filter(i => i.status && i.status !== 'resolved' && i.status !== 'postmortem');
+    if (incs.length) {
+      const body = (incs[0]?.incident_updates?.[0]?.body || '').trim().slice(0, 180);
+      const st = m[0] === 'ok' ? 'warn' : m[0];
+      const extra = incs.length > 1 ? ` +${incs.length - 1}` : '';
+      return { status: st, label: st === 'down' ? 'Kesinti' : 'Sorun', detail: (incs[0].name || 'Sorun') + (body ? ' — ' + body : '') + extra };
+    }
+    return { status: m[0], label: m[1] };
   } catch { return { status: 'unknown', label: 'Alınamadı' }; }
 }
 
