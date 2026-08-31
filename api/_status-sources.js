@@ -89,16 +89,19 @@ async function statusOf(s) {
       if (!url) return { status: 'unknown', label: 'Kaynak yok' };
       const j = await fetchJson(url);
       const inc = j?.incidents || []; const mnt = j?.maintenances || [];
-      if (!inc.length && !mnt.length) return { status: 'ok', label: 'Çalışıyor' };
-      const onlyMnt = !inc.length && mnt.length;
-      const items = inc.length ? inc : mnt;
+      const sev = (x) => String(x.incident_severity || '').toLowerCase();
+      const crit = inc.filter(x => sev(x) === 'critical');
+      const warns = inc.filter(x => sev(x) === 'warning');
+      // NOT: 'info' seviyesi = bölgesel/bilgilendirme (ör. uzak bir sunucu lokasyonu Dubai/Bahrain) →
+      // oyun bizim için ÇALIŞIR, alarm verme. Yalnız warning/critical/bakım sarı-kırmızı yapar.
+      if (!crit.length && !warns.length && !mnt.length) return { status: 'ok', label: 'Çalışıyor' };
+      const items = crit.length ? crit : warns.length ? warns : mnt;
       const first = items[0] || {};
-      const title = pickLocale(first.titles);                                   // ör: "Oyun Sunucusu Devre Dışı"
-      const upd = pickLocale((first.updates && first.updates[0] && first.updates[0].translations) || []); // ör: "Dubai ..."
+      const title = pickLocale(first.titles);
+      const upd = pickLocale((first.updates && first.updates[0] && first.updates[0].translations) || []);
       const extra = items.length > 1 ? ` +${items.length - 1}` : '';
-      const detail = (title || (onlyMnt ? 'Planlı bakım' : 'Sorun')) + (upd ? ' — ' + upd : '') + extra;
-      const crit = inc.some(x => String(x.incident_severity || '').toLowerCase() === 'critical');
-      return { status: crit ? 'down' : 'warn', label: onlyMnt ? 'Bakım' : crit ? 'Kesinti' : 'Sorun', detail };
+      const detail = (title || (crit.length ? 'Kesinti' : warns.length ? 'Sorun' : 'Planlı bakım')) + (upd ? ' — ' + upd : '') + extra;
+      return { status: crit.length ? 'down' : 'warn', label: crit.length ? 'Kesinti' : warns.length ? 'Sorun' : 'Bakım', detail };
     }
     if (s.type === 'steam_players') {
       // url = Steam appid → resmi Valve API (key'siz) → GERÇEK canlı oyuncu sayısı
