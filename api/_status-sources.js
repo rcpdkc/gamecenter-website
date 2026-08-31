@@ -1,4 +1,4 @@
-import { sql, client } from './_db.js';
+import { sql } from './_db.js';
 
 // Sunucu Durumu KAYNAK master listesi — YÖNETİCİ (superadmin) bakımını yapar.
 // ?action=status → canlı durum (GERÇEK sağlayıcı API'leri). ?action=reseed → listeyi sıfırla+doldur.
@@ -35,13 +35,13 @@ function seedSql() {
   return `INSERT INTO status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`;
 }
 
-// ATOMIK seed: DELETE+INSERT tek transaction → timeout/kesinti olursa geri alinir,
-// tablo ASLA yari-bos kalmaz (onceki 'kaynak:0' hatasinin koku buydu).
-async function doSeed(replace) {
-  await client.begin(async (tx) => {
-    if (replace) await tx.unsafe('DELETE FROM status_sources');
-    await tx.unsafe(seedSql());
-  });
+// GUVENLI seed: YALNIZ tablo bossa 16 kaynagi ekler (INSERT-only, DELETE YOK).
+// Onceki DELETE+INSERT reseed pooler'da takilip DELETE commit + INSERT fail olunca
+// tabloyu bosaltiyordu ('kaynak:0'). DELETE kaldirilinca tablo bir daha ASLA bosalmaz.
+async function seedIfEmpty() {
+  const { rows } = await sql`SELECT COUNT(*)::int AS n FROM status_sources`;
+  if (rows[0].n === 0) { await sql.query(seedSql()); return SEED.length; }
+  return rows[0].n;
 }
 
 async function ensure() {
@@ -53,10 +53,7 @@ async function ensure() {
       sort INT DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
-  try {
-    const { rows } = await sql`SELECT COUNT(*)::int AS n FROM status_sources`;
-    if (rows[0].n === 0) await doSeed(false);
-  } catch (e) { console.error('seed:', e && e.message); }
+  try { await seedIfEmpty(); } catch (e) { console.error('seed:', e && e.message); }
   _ready = true;
 }
 
@@ -149,10 +146,10 @@ export default async function handler(req, res) {
     await ensure();
 
     if (req.method === 'GET') {
-      // Mevcut listeyi doğru kaynaklarla sıfırla+doldur (bir kez çağrılır)
-      if (req.query?.action === 'reseed') {
-        await doSeed(true);
-        return res.status(200).json({ success: true, message: 'reseeded', count: SEED.length });
+      // GUVENLI: tablo bossa 16 kaynagi doldurur, doluysa DOKUNMAZ (DELETE yok → bosalmaz).
+      if (req.query?.action === 'reseed' || req.query?.action === 'seed') {
+        const n = await seedIfEmpty();
+        return res.status(200).json({ success: true, count: n });
       }
       const { rows } = await sql`SELECT id, name, pub, type, url, manual_status FROM status_sources ORDER BY sort, id`;
       const list = rows.map(r => ({ id: r.id, name: r.name, pub: r.pub || '', type: r.type || 'statuspage', url: r.url || '', manual_status: r.manual_status || 'ok' }));
