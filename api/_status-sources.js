@@ -1,4 +1,4 @@
-import { sql } from './_db.js';
+import { sql, client } from './_db.js';
 
 // Sunucu Durumu KAYNAK master listesi — YÖNETİCİ (superadmin) bakımını yapar.
 // ?action=status → canlı durum (GERÇEK sağlayıcı API'leri). ?action=reseed → listeyi sıfırla+doldur.
@@ -35,6 +35,15 @@ function seedSql() {
   return `INSERT INTO status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`;
 }
 
+// ATOMIK seed: DELETE+INSERT tek transaction → timeout/kesinti olursa geri alinir,
+// tablo ASLA yari-bos kalmaz (onceki 'kaynak:0' hatasinin koku buydu).
+async function doSeed(replace) {
+  await client.begin(async (tx) => {
+    if (replace) await tx.unsafe('DELETE FROM status_sources');
+    await tx.unsafe(seedSql());
+  });
+}
+
 async function ensure() {
   if (_ready) return;
   await sql`
@@ -46,7 +55,7 @@ async function ensure() {
   `;
   try {
     const { rows } = await sql`SELECT COUNT(*)::int AS n FROM status_sources`;
-    if (rows[0].n === 0) await sql.query(seedSql());
+    if (rows[0].n === 0) await doSeed(false);
   } catch (e) { console.error('seed:', e && e.message); }
   _ready = true;
 }
@@ -120,8 +129,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       // Mevcut listeyi doğru kaynaklarla sıfırla+doldur (bir kez çağrılır)
       if (req.query?.action === 'reseed') {
-        await sql`DELETE FROM status_sources`;
-        await sql.query(seedSql());
+        await doSeed(true);
         return res.status(200).json({ success: true, message: 'reseeded', count: SEED.length });
       }
       const { rows } = await sql`SELECT id, name, pub, type, url, manual_status FROM status_sources ORDER BY sort, id`;
