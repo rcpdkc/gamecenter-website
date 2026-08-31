@@ -12,7 +12,6 @@ const SEED = [
   ['Fortnite', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
   ['Rocket League', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
   ['Fall Guys', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
-  ['Roblox', 'Roblox', 'statuspage', 'https://status.roblox.com', 'ok'],
   ['Discord', 'Discord', 'statuspage', 'https://discordstatus.com', 'ok'],
   ['Valorant', 'Riot Games', 'riot', 'https://valorant.secure.dyn.riotcdn.net/channels/public/x/status/eu.json', 'ok'],
   ['League of Legends', 'Riot Games', 'riot', 'https://lol.secure.dyn.riotcdn.net/channels/public/x/status/euw1.json', 'ok'],
