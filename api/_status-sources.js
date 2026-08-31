@@ -16,15 +16,16 @@ const SEED = [
   ['Discord', 'Discord', 'statuspage', 'https://discordstatus.com', 'ok'],
   ['Valorant', 'Riot Games', 'riot', 'https://valorant.secure.dyn.riotcdn.net/channels/public/x/status/eu.json', 'ok'],
   ['League of Legends', 'Riot Games', 'riot', 'https://lol.secure.dyn.riotcdn.net/channels/public/x/status/euw1.json', 'ok'],
-  ['Counter-Strike 2', 'Valve', 'steam', 'https://crowbar.steamstat.us/gravity.json', 'ok'],
-  ['Dota 2', 'Valve', 'steam', 'https://crowbar.steamstat.us/gravity.json', 'ok'],
-  ['Steam', 'Valve', 'steam', 'https://crowbar.steamstat.us/gravity.json', 'ok'],
-  ['GTA V Online', 'Rockstar', 'manual', '', 'ok'],
-  ['Apex Legends', 'EA', 'manual', '', 'ok'],
-  ['PUBG: BATTLEGROUNDS', 'Krafton', 'manual', '', 'ok'],
-  ['Call of Duty: Warzone', 'Activision', 'manual', '', 'ok'],
-  ['Minecraft', 'Mojang', 'manual', '', 'ok'],
-  ['Overwatch 2', 'Blizzard', 'manual', '', 'ok'],
+  // steam_players: url = Steam appid → GERÇEK canlı oyuncu sayısı (key'siz)
+  ['Counter-Strike 2', 'Valve', 'steam_players', '730', 'ok'],
+  ['Dota 2', 'Valve', 'steam_players', '570', 'ok'],
+  ['PUBG: BATTLEGROUNDS', 'Krafton', 'steam_players', '578080', 'ok'],
+  ['Apex Legends', 'EA', 'steam_players', '1172470', 'ok'],
+  ['GTA V', 'Rockstar', 'steam_players', '271590', 'ok'],
+  ['Call of Duty', 'Activision', 'steam_players', '1938090', 'ok'],
+  ['Overwatch 2', 'Blizzard', 'steam_players', '2357570', 'ok'],
+  ['Rust', 'Facepunch', 'steam_players', '252490', 'ok'],
+  ['Team Fortress 2', 'Valve', 'steam_players', '440', 'ok'],
   ['Genshin Impact', 'HoYoverse', 'manual', '', 'ok'],
 ];
 
@@ -79,6 +80,18 @@ async function statusOf(s) {
       if (crit) return { status: 'down', label: 'Kesinti' };
       return { status: 'warn', label: mnt.length ? 'Bakım' : 'Sorun bildirimi' };
     }
+    if (s.type === 'steam_players') {
+      // url = Steam appid → resmi Valve API (key'siz) → GERÇEK canlı oyuncu sayısı
+      const appid = String(s.url || '').trim();
+      if (!appid) return { status: 'unknown', label: 'AppID yok' };
+      const j = await fetchJson(`https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appid}`);
+      const cnt = j?.response?.player_count;
+      if (j?.response?.result === 1 && typeof cnt === 'number') {
+        const fmt = cnt >= 1e6 ? (cnt / 1e6).toFixed(1) + 'M' : cnt >= 1000 ? Math.round(cnt / 1000) + 'K' : String(cnt);
+        return cnt > 0 ? { status: 'ok', label: `${fmt} çevrimiçi` } : { status: 'warn', label: 'Oyuncu yok' };
+      }
+      return { status: 'unknown', label: 'Alınamadı' };
+    }
     if (s.type === 'steam') {
       const j = await fetchJson('https://crowbar.steamstat.us/gravity.json');
       const svc = Object.values(j?.services || {}).map(v => String(v).toLowerCase());
@@ -124,11 +137,11 @@ export default async function handler(req, res) {
     if (req.method === 'POST' || req.method === 'PUT') {
       const b = req.body || {};
       const name = (b.name || '').trim();
-      const type = ['statuspage', 'riot', 'steam', 'manual'].includes(b.type) ? b.type : 'statuspage';
+      const type = ['statuspage', 'riot', 'steam', 'steam_players', 'manual'].includes(b.type) ? b.type : 'statuspage';
       const url = type === 'manual' ? '' : String(b.url || '').trim().replace(/\/+$/, '');
       const ms = ['ok', 'warn', 'down'].includes(b.manual_status) ? b.manual_status : 'ok';
       if (!name) return res.status(400).json({ error: 'Ad gerekli.' });
-      if ((type === 'statuspage' || type === 'riot') && !url) return res.status(400).json({ error: 'Bu tür için URL gerekli.' });
+      if ((type === 'statuspage' || type === 'riot' || type === 'steam_players') && !url) return res.status(400).json({ error: 'Bu tür için URL/AppID gerekli.' });
       if (req.method === 'POST') {
         await sql`INSERT INTO status_sources (name, pub, type, url, manual_status) VALUES (${name}, ${b.pub || null}, ${type}, ${url || null}, ${ms})`;
       } else {
