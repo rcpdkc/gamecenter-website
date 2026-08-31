@@ -1,23 +1,24 @@
 import { sql } from './_db.js';
 
 // Sunucu Durumu KAYNAK master listesi — YÖNETİCİ (superadmin) bakımını yapar.
-// Kafeler yerel panelden "Buluttan Çek" ile içe aktarır. ?action=status → canlı durum.
-// TÜR: 'statuspage' (URL → otomatik) | 'manual' (API yok → admin durumu elle ayarlar).
-// NOT: TAZE tablo (status_sources) — ALTER yok → kilit fırtınası/write-hang yaşanmaz.
+// ?action=status → canlı durum (GERÇEK sağlayıcı API'leri). ?action=reseed → listeyi sıfırla+doldur.
+// TÜR: 'statuspage' (Atlassian /api/v2/status.json) | 'riot' (Riot status json) |
+//      'steam' (steamstat.us) | 'manual' (API yok → admin elle).
 
 let _ready = false;
 
+// url alanı: statuspage=base URL · riot=Riot status json URL · steam=gravity.json · manual=boş
 const SEED = [
   ['Fortnite', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
   ['Rocket League', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
   ['Fall Guys', 'Epic Games', 'statuspage', 'https://status.epicgames.com', 'ok'],
   ['Roblox', 'Roblox', 'statuspage', 'https://status.roblox.com', 'ok'],
   ['Discord', 'Discord', 'statuspage', 'https://discordstatus.com', 'ok'],
-  ['Valorant', 'Riot Games', 'manual', '', 'ok'],
-  ['League of Legends', 'Riot Games', 'manual', '', 'ok'],
-  ['Counter-Strike 2', 'Valve', 'manual', '', 'ok'],
-  ['Dota 2', 'Valve', 'manual', '', 'ok'],
-  ['Steam', 'Valve', 'manual', '', 'ok'],
+  ['Valorant', 'Riot Games', 'riot', 'https://valorant.secure.dyn.riotcdn.net/channels/public/x/status/eu.json', 'ok'],
+  ['League of Legends', 'Riot Games', 'riot', 'https://lol.secure.dyn.riotcdn.net/channels/public/x/status/euw1.json', 'ok'],
+  ['Counter-Strike 2', 'Valve', 'steam', 'https://crowbar.steamstat.us/gravity.json', 'ok'],
+  ['Dota 2', 'Valve', 'steam', 'https://crowbar.steamstat.us/gravity.json', 'ok'],
+  ['Steam', 'Valve', 'steam', 'https://crowbar.steamstat.us/gravity.json', 'ok'],
   ['GTA V Online', 'Rockstar', 'manual', '', 'ok'],
   ['Apex Legends', 'EA', 'manual', '', 'ok'],
   ['PUBG: BATTLEGROUNDS', 'Krafton', 'manual', '', 'ok'],
@@ -27,51 +28,68 @@ const SEED = [
   ['Genshin Impact', 'HoYoverse', 'manual', '', 'ok'],
 ];
 
+function seedSql() {
+  const esc = (s) => `'${String(s).replace(/'/g, "''")}'`;
+  const vals = SEED.map(([name, pub, type, url, ms], i) =>
+    `(${esc(name)},${esc(pub)},${esc(type)},${url ? esc(url) : 'NULL'},${esc(ms)},${i})`).join(',');
+  return `INSERT INTO status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`;
+}
+
 async function ensure() {
   if (_ready) return;
   await sql`
     CREATE TABLE IF NOT EXISTS status_sources (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(120) NOT NULL,
-      pub VARCHAR(120),
-      type VARCHAR(20) DEFAULT 'statuspage',
-      url TEXT,
-      manual_status VARCHAR(10) DEFAULT 'ok',
-      sort INT DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      id SERIAL PRIMARY KEY, name VARCHAR(120) NOT NULL, pub VARCHAR(120),
+      type VARCHAR(20) DEFAULT 'statuspage', url TEXT, manual_status VARCHAR(10) DEFAULT 'ok',
+      sort INT DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
   try {
     const { rows } = await sql`SELECT COUNT(*)::int AS n FROM status_sources`;
-    if (rows[0].n === 0) {
-      const esc = (s) => `'${String(s).replace(/'/g, "''")}'`;
-      const vals = SEED.map(([name, pub, type, url, ms], i) =>
-        `(${esc(name)},${esc(pub)},${esc(type)},${url ? esc(url) : 'NULL'},${esc(ms)},${i})`).join(',');
-      await sql.query(`INSERT INTO status_sources (name, pub, type, url, manual_status, sort) VALUES ${vals}`);
-    }
+    if (rows[0].n === 0) await sql.query(seedSql());
   } catch (e) { console.error('seed:', e && e.message); }
   _ready = true;
 }
 
-const IND = {
-  none: ['ok', 'Çalışıyor'], minor: ['warn', 'Küçük sorun'], major: ['down', 'Sorunlu'],
-  critical: ['down', 'Ciddi kesinti'], maintenance: ['warn', 'Bakımda'],
-};
+async function fetchJson(url, ms = 6000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'GameCenter-Status/1.0' } });
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+const IND = { none: ['ok', 'Çalışıyor'], minor: ['warn', 'Küçük sorun'], major: ['down', 'Sorunlu'], critical: ['down', 'Ciddi kesinti'], maintenance: ['warn', 'Bakımda'] };
 const MANUAL_LABEL = { ok: 'Çalışıyor', warn: 'Sorun (elle)', down: 'Kesinti (elle)' };
 
 async function statusOf(s) {
-  if (s.type === 'manual') {
-    const st = ['ok', 'warn', 'down'].includes(s.manual_status) ? s.manual_status : 'unknown';
-    return { status: st, label: MANUAL_LABEL[st] || 'Bilinmiyor' };
-  }
   const url = (s.url || '').replace(/\/+$/, '');
-  if (!url) return { status: 'unknown', label: 'Kaynak yok' };
   try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 6000);
-    const r = await fetch(url + '/api/v2/status.json', { signal: ctrl.signal, headers: { 'User-Agent': 'GameCenter-Status/1.0' } });
-    clearTimeout(t);
-    const j = await r.json();
+    if (s.type === 'manual') {
+      const st = ['ok', 'warn', 'down'].includes(s.manual_status) ? s.manual_status : 'unknown';
+      return { status: st, label: MANUAL_LABEL[st] || 'Bilinmiyor' };
+    }
+    if (s.type === 'riot') {
+      if (!url) return { status: 'unknown', label: 'Kaynak yok' };
+      const j = await fetchJson(url);
+      const inc = j?.incidents || []; const mnt = j?.maintenances || [];
+      if (!inc.length && !mnt.length) return { status: 'ok', label: 'Çalışıyor' };
+      const crit = inc.some(x => String(x.incident_severity || '').toLowerCase() === 'critical');
+      if (crit) return { status: 'down', label: 'Kesinti' };
+      return { status: 'warn', label: mnt.length ? 'Bakım' : 'Sorun bildirimi' };
+    }
+    if (s.type === 'steam') {
+      const j = await fetchJson('https://crowbar.steamstat.us/gravity.json');
+      const svc = Object.values(j?.services || {}).map(v => String(v).toLowerCase());
+      if (!svc.length) return { status: 'unknown', label: 'Bilinmiyor' };
+      if (svc.some(v => v.includes('down') || v === 'offline' || v === 'major')) return { status: 'down', label: 'Kesinti' };
+      if (svc.some(v => v.includes('slow') || v.includes('delayed') || v === 'surge' || v === 'minor')) return { status: 'warn', label: 'Yavaş/Sorun' };
+      return { status: 'ok', label: 'Çalışıyor' };
+    }
+    // statuspage
+    if (!url) return { status: 'unknown', label: 'Kaynak yok' };
+    const j = await fetchJson(url + '/api/v2/status.json');
     const ind = j?.status?.indicator || 'none';
     const m = IND[ind] || ['unknown', 'Bilinmiyor'];
     return { status: m[0], label: j?.status?.description || m[1] };
@@ -88,13 +106,17 @@ export default async function handler(req, res) {
     await ensure();
 
     if (req.method === 'GET') {
+      // Mevcut listeyi doğru kaynaklarla sıfırla+doldur (bir kez çağrılır)
+      if (req.query?.action === 'reseed') {
+        await sql`DELETE FROM status_sources`;
+        await sql.query(seedSql());
+        return res.status(200).json({ success: true, message: 'reseeded', count: SEED.length });
+      }
       const { rows } = await sql`SELECT id, name, pub, type, url, manual_status FROM status_sources ORDER BY sort, id`;
       const list = rows.map(r => ({ id: r.id, name: r.name, pub: r.pub || '', type: r.type || 'statuspage', url: r.url || '', manual_status: r.manual_status || 'ok' }));
       if (req.query?.action === 'status') {
         const games = await Promise.all(list.map(async s => ({ id: s.id, name: s.name, pub: s.pub, type: s.type, ...(await statusOf(s)) })));
-        const down = games.filter(g => g.status === 'down').length;
-        const warn = games.filter(g => g.status === 'warn').length;
-        return res.status(200).json({ success: true, games, down, warn });
+        return res.status(200).json({ success: true, games, down: games.filter(g => g.status === 'down').length, warn: games.filter(g => g.status === 'warn').length });
       }
       return res.status(200).json({ success: true, data: list });
     }
@@ -102,11 +124,11 @@ export default async function handler(req, res) {
     if (req.method === 'POST' || req.method === 'PUT') {
       const b = req.body || {};
       const name = (b.name || '').trim();
-      const type = b.type === 'manual' ? 'manual' : 'statuspage';
-      const url = type === 'statuspage' ? String(b.url || '').trim().replace(/\/+$/, '') : '';
+      const type = ['statuspage', 'riot', 'steam', 'manual'].includes(b.type) ? b.type : 'statuspage';
+      const url = type === 'manual' ? '' : String(b.url || '').trim().replace(/\/+$/, '');
       const ms = ['ok', 'warn', 'down'].includes(b.manual_status) ? b.manual_status : 'ok';
       if (!name) return res.status(400).json({ error: 'Ad gerekli.' });
-      if (type === 'statuspage' && !url) return res.status(400).json({ error: 'Statuspage türü için URL gerekli.' });
+      if ((type === 'statuspage' || type === 'riot') && !url) return res.status(400).json({ error: 'Bu tür için URL gerekli.' });
       if (req.method === 'POST') {
         await sql`INSERT INTO status_sources (name, pub, type, url, manual_status) VALUES (${name}, ${b.pub || null}, ${type}, ${url || null}, ${ms})`;
       } else {
