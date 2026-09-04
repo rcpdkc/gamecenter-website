@@ -12,8 +12,9 @@ const REVOKE_URL = 'https://oauth2.googleapis.com/revoke';
 const REDIRECT = 'https://gamecenter.rcpdkc.com/api/gdrive-callback';
 const SCOPE = 'openid email https://www.googleapis.com/auth/drive.file';
 
-const CID = () => (process.env.GOOGLE_WEB_CLIENT_ID || '').trim();
-const CSEC = () => (process.env.GOOGLE_WEB_CLIENT_SECRET || '').trim();
+// İki isim de kabul: GOOGLE_WEB_CLIENT_ID (yeni) veya GOOGLE_DRIVE_CLIENT_ID (Vercel'de kurulu olan).
+const CID = () => (process.env.GOOGLE_WEB_CLIENT_ID || process.env.GOOGLE_DRIVE_CLIENT_ID || '').trim();
+const CSEC = () => (process.env.GOOGLE_WEB_CLIENT_SECRET || process.env.GOOGLE_DRIVE_CLIENT_SECRET || '').trim();
 
 async function row(cafe) {
   try {

@@ -31,8 +31,8 @@ export default async function handler(req, res) {
 
   if (!code || !cafe || !secret) return res.status(200).send(page('Bağlantı başarısız', 'Eksik bilgi. Panele dönüp tekrar deneyin.', false));
 
-  const cid = (process.env.GOOGLE_WEB_CLIENT_ID || '').trim();
-  const csec = (process.env.GOOGLE_WEB_CLIENT_SECRET || '').trim();
+  const cid = (process.env.GOOGLE_WEB_CLIENT_ID || process.env.GOOGLE_DRIVE_CLIENT_ID || '').trim();
+  const csec = (process.env.GOOGLE_WEB_CLIENT_SECRET || process.env.GOOGLE_DRIVE_CLIENT_SECRET || '').trim();
   if (!cid || !csec) return res.status(200).send(page('Yapılandırma eksik', 'Sunucu OAuth ayarı tamamlanmamış (Vercel env).', false));
 
   try {
